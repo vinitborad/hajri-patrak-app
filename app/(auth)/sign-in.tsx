@@ -19,6 +19,7 @@ const SignIn = () => {
       });
       console.log(respose.data.token);
       await SecureStore.setItem('token', respose.data.token);
+      await SecureStore.setItem('role', 'student');
       router.navigate('/');
     } catch (error) {
       //TODO: error is not showing proper messages which backend is sending

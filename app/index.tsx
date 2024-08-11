@@ -1,23 +1,35 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
-import { Redirect } from 'expo-router'
+import { Button, StyleSheet, Text, View } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { Redirect, useRouter } from 'expo-router'
 import * as SecureStore from 'expo-secure-store'
 
 const index = () => {
 
-  const token = SecureStore.getItem('token');
+  const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!token) {
-    return <Redirect href={"/(auth)/sign-in"} />
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      const storedToken = await SecureStore.getItemAsync('token');
+      setToken(storedToken);
+      setLoading(false);
+    };
+
+    fetchToken();
+  }, []);
+
+  if (loading) {
+    // Optionally, you can show a loading indicator here
+    return null;
   }
 
-  return (
-    <View
-      className='flex-1 justify-center items-center bg-gray-100 p-4'
-    >
-      <Text>index</Text>
-    </View>
-  )
+  if (!token) {
+    return <Redirect href="/(auth)/sign-in" />;
+  }
+
+  return <Redirect href="/(student)" />;
 }
 
 export default index
