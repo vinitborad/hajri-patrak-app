@@ -1,19 +1,20 @@
-import { Button, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { Redirect, useRouter } from 'expo-router'
+import { Redirect } from 'expo-router'
 import * as SecureStore from 'expo-secure-store'
 
 const index = () => {
 
   const [token, setToken] = useState<string | null>(null);
+  const [role, setRole] = useState<'faculty' | 'student'>();
   const [loading, setLoading] = useState(true);
-
-  const router = useRouter();
 
   useEffect(() => {
     const fetchToken = async () => {
       const storedToken = await SecureStore.getItemAsync('token');
+      const role = await SecureStore.getItemAsync('role');
       setToken(storedToken);
+      setRole(role as 'faculty' | 'student');
       setLoading(false);
     };
 
@@ -26,10 +27,14 @@ const index = () => {
   }
 
   if (!token) {
-    return <Redirect href="/(auth)/sign-in" />;
+    return <Redirect href="/sign-in" />;
   }
 
-  return <Redirect href="/(student)" />;
+  if (role === 'faculty') {
+    return <Redirect href='/faculty/(tabs)/' />;
+  }
+
+  return <Redirect href="/student/(tabs)" />;
 }
 
 export default index

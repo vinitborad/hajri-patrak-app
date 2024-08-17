@@ -1,10 +1,8 @@
 
 
-1. create add-subject api and add some data into it.
+later changes :
+    - in student subject list show lab or lec type from subjectType
 
-2. think about some data if may needed to render on frontend at development.
 
-3. Build frontend
-    1.student home page with details fetched.
-    2.step 1 for faculty
-    ...
+later minor ui changes :
+    - subject/[id] ma reloading ma proper stack header and screen loader return karvu

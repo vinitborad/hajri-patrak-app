@@ -19,8 +19,8 @@ const SignIn = () => {
       });
       console.log(respose.data.token);
       await SecureStore.setItem('token', respose.data.token);
-      await SecureStore.setItem('role', 'student');
-      router.navigate('/');
+      await SecureStore.setItem('role', role);
+      router.replace('/');
     } catch (error) {
       //TODO: error is not showing proper messages which backend is sending
       console.log(error);
@@ -53,6 +53,7 @@ const SignIn = () => {
         placeholder="Username"
         value={username}
         onChangeText={setUsername}
+        keyboardType='number-pad'
         className="border border-gray-300 rounded-full px-4 py-2 mb-4 w-full"
       />
 
