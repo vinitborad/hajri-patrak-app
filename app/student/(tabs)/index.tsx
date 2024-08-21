@@ -25,7 +25,7 @@ const Index = () => {
       className='flex-1 items-center bg-gray-100 p-4'
     >
       <TouchableOpacity
-        onPress={handlePress}
+        onPress={() => router.push('/student/qr')}
         className="mt-6 bg-zinc-200 w-full h-32 rounded-lg flex items-center justify-center"
         activeOpacity={0.7}
       >

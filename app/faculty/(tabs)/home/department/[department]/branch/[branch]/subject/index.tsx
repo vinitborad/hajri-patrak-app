@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, FlatList } from 'react-native';
-import { useLocalSearchParams, Stack } from 'expo-router';
+import { View, Text, FlatList, TouchableOpacity, Alert } from 'react-native';
+import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { useGetSubjectsStructure } from '@/api/faculty';
 
 interface Subject {
@@ -23,6 +23,8 @@ const SubjectsList: React.FC = () => {
   //@ts-ignore
   const { department, branch, graduationLevel, sem, division } = useLocalSearchParams<Params>();
 
+  const router = useRouter();
+
   // Fetching data using your custom hook
   const { data: subjectsStructure, isLoading, error } = useGetSubjectsStructure();
 
@@ -37,9 +39,18 @@ const SubjectsList: React.FC = () => {
       <Text className="text-lg font-semibold text-gray-800 p-3 bg-slate-300 rounded-t-2xl">
         {item.subjectName}
       </Text>
-      <Text className="text-gray-800 text-lg font-semibold p-2 pb-3 ml-1">
-        {item.subjectType}
-      </Text>
+      <View className=' flex flex-row justify-between items-center'>
+        <Text className="text-gray-800 text-lg font-semibold p-2 pb-3 ml-1">
+          {item.subjectType}
+        </Text>
+        <TouchableOpacity
+          onPress={() => router.push(`/faculty/(tabs)/home/department/${department}/branch/${branch}/subject/${item.subjectId}`)}
+        >
+          <Text className="text-blue-500 mr-3 border-b border-blue-400">
+            View Details
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -52,7 +63,7 @@ const SubjectsList: React.FC = () => {
       />
 
       {subjects.length === 0 && (
-        <Text 
+        <Text
           className="bg-white p-4 rounded-lg shadow-md mt-7 mx-4 text-center text-lg font-semibold text-gray-800"
         >No subjects available.</Text>
       )}

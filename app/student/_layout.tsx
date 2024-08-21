@@ -23,6 +23,12 @@ export default function Layout() {
       <Stack.Screen
         name="subject/[id]"
       />
+      <Stack.Screen
+        name="qr"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 }
