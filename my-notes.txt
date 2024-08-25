@@ -1,8 +1,0 @@
-
-
-later changes :
-    - in student subject list show lab or lec type from subjectType
-
-
-later minor ui changes :
-    - subject/[id] ma reloading ma proper stack header and screen loader return karvu

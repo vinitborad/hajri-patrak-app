@@ -43,6 +43,7 @@ export default function App() {
   async function handleScan(data: any) {
     try {
       const fetchedTimeOffset = await fetchTimeOffset();
+      console.log('Fetched time offset:', fetchedTimeOffset);
       const now = new Date();
       const adjustedTime = new Date(now.getTime() + fetchedTimeOffset * 1000);
 
@@ -55,8 +56,6 @@ export default function App() {
       const code = value.slice(5);
 
       const token = await SecureStore.getItemAsync('token');
-      console.log('Token:', token);
-      console.log('ApiEndpoint:', studentEndpoints.QR_MARK_ATTENDANCE);
 
       const response = await axios.post(studentEndpoints.QR_MARK_ATTENDANCE,
         {
@@ -70,8 +69,6 @@ export default function App() {
           },
         }
       );
-
-      console.log('Response:', response.data);
 
       const success = response.data.success;
 
