@@ -1,13 +1,27 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { useRouter } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { useFonts } from 'expo-font';
+
+SplashScreen.preventAutoHideAsync();
 
 const SignIn = () => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [role, setRole] = useState<'faculty' | 'student'>('student');
+
+  const [loaded, error] = useFonts({
+    'Rubik-Bold': require('../../assets/fonts/rubik/Rubik-Medium.ttf'),
+  });
+
+  useEffect(() => {
+    if (loaded || error) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded, error]);
 
   const router = useRouter();
 
@@ -26,11 +40,18 @@ const SignIn = () => {
       console.log(error);
     }
   }
- 
+
+  if (!loaded && !error) {
+    return null;
+  }
+
   return (
     <View className="flex-1 justify-center items-center bg-gray-100 p-4">
 
-      <Text className="text-2xl font-bold mb-8 bg-blue-200 p-2 rounded-2xl">Sign In</Text>
+      <Text 
+        className="text-2xl font-rubikBold mb-8 bg-blue-200 p-2 rounded-2xl"
+        // style={{ fontFamily: 'Rubik-Bold' }}
+      >Hey, Vinit Borad</Text>
 
       <View className="flex-row mb-4">
         <TouchableOpacity

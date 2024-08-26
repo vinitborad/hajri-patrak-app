@@ -7,7 +7,13 @@ module.exports = {
     './screens/**/*.{js,jsx,ts,tsx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        // rubik: ['Rubik_400Regular'],
+        // rubikMedium: ['Rubik_500Medium'],
+        rubikBold: ['Rubik-Bold'],
+      },
+    },
   },
   plugins: [],
 }
