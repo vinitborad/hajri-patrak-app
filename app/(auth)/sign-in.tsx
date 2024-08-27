@@ -1,94 +1,83 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { useRouter } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useFonts } from 'expo-font';
-
-SplashScreen.preventAutoHideAsync();
 
 const SignIn = () => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [role, setRole] = useState<'faculty' | 'student'>('student');
 
-  const [loaded, error] = useFonts({
-    'Rubik-Bold': require('../../assets/fonts/rubik/Rubik-Medium.ttf'),
-  });
-
-  useEffect(() => {
-    if (loaded || error) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded, error]);
-
   const router = useRouter();
 
-  const onCLick = async () => {
+  const onClick = async () => {
     try {
-      const respose = await axios.post(`${process.env.EXPO_PUBLIC_API_ENDPOINT}/auth/${role}-signin`, {
+      const response = await axios.post(`${process.env.EXPO_PUBLIC_API_ENDPOINT}/auth/${role}-signin`, {
         username,
         password,
       });
-      console.log(respose.data.token);
-      await SecureStore.setItem('token', respose.data.token);
-      await SecureStore.setItem('role', role);
+      console.log(response.data.token);
+      await SecureStore.setItemAsync('token', response.data.token);
+      await SecureStore.setItemAsync('role', role);
       router.replace('/');
     } catch (error) {
-      //TODO: error is not showing proper messages which backend is sending
       console.log(error);
     }
-  }
-
-  if (!loaded && !error) {
-    return null;
-  }
+  };
 
   return (
-    <View className="flex-1 justify-center items-center bg-gray-100 p-4">
+    <View className="bg-background flex items-center justify-center h-full">
 
-      <Text 
-        className="text-2xl font-rubikBold mb-8 bg-blue-200 p-2 rounded-2xl"
-        // style={{ fontFamily: 'Rubik-Bold' }}
-      >Hey, Vinit Borad</Text>
+      <Text className=" text-fontColor font-NunitoBold text-3xl -mt-32 mb-32">
+        Ld College of Engg.
+      </Text>
 
-      <View className="flex-row mb-4">
+      <View className="flex-row justify-center mb-8 border-b-buttonBlueBorder border-b-4 rounded-xl">
         <TouchableOpacity
-          className={`px-4 py-2 rounded-l-full ${role === 'student' ? 'bg-blue-500 text-white' : 'bg-white'
-            }`}
+          className={`px-4 py-2 rounded-tl-lg rounded-bl-lg w-32 flex items-center justify-center ${role === 'student' ? 'bg-lightBlue text-text' : 'bg-gray-600'}`}
           onPress={() => setRole('student')}
         >
-          <Text>Student</Text>
+          <Text className={`font-NunitoBold text-lg ${role === 'student' ? 'text-darkBlue' : 'text-fontColor'}`}>Student</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          className={`px-4 py-2 rounded-r-full ${role === 'faculty' ? 'bg-blue-500 text-white' : 'bg-white'
-            }`}
+          className={`px-4 py-2 rounded-tr-lg rounded-br-lg w-32 flex items-center justify-center ${role === 'faculty' ? 'bg-lightBlue text-text' : 'bg-gray-600'}`}
           onPress={() => setRole('faculty')}
         >
-          <Text>Faculty</Text>
+          <Text className={`font-NunitoBold text-lg ${role === 'faculty' ? 'text-darkBlue' : 'text-fontColor'}`}>Faculty</Text>
         </TouchableOpacity>
       </View>
 
-      <TextInput
-        placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
-        keyboardType='number-pad'
-        className="border border-gray-300 rounded-full px-4 py-2 mb-4 w-full"
-      />
+      <View className="flex gap-y-5 w-10/12 items-center">
+        <TextInput
+          placeholder="Username"
+          placeholderTextColor="#A0A0A0"
+          value={username}
+          onChangeText={setUsername}
+          keyboardType='default'
+          className=" w-full border border-inputBorderStrokeColor bg-inputBoxBackground rounded-lg px-4 py-3 text-fontColor font-NunitoLight text-lg "
+          selectionColor={'#A0A0A0'}
+          selectionHandleColor={'#A0A0A0'}
+        />
 
-      <TextInput
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        className="border border-gray-300 rounded-full px-4 py-2 mb-4 w-full"
-      />
 
-      <TouchableOpacity className="bg-blue-500 rounded-full px-4 py-2 w-full" onPress={onCLick}>
-        <Text className="text-white text-center">Verify</Text>
-      </TouchableOpacity>
+        <TextInput
+          placeholder="Password"
+          placeholderTextColor="#A0A0A0"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          className=" w-full border border-inputBorderStrokeColor bg-inputBoxBackground rounded-lg px-4 py-3 mb-4 text-fontColor font-NunitoLight text-lg"
+          selectionColor={'#A0A0A0'}
+        />
 
+        <TouchableOpacity
+          className="bg-bluePrimary py-2 bg-lightBlue w-36 border-b-4 border-buttonBlueBorder rounded-t-lg rounded-b-lg"
+          onPress={onClick}
+        >
+          <Text className=" text-center font-NunitoBold text-xl">Log In</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };

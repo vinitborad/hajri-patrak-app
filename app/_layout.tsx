@@ -1,3 +1,4 @@
+import QueryProvider from '@/utils/QueryProvider';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
@@ -22,6 +23,22 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    'NunitoBlack': require('../assets/fonts/nunito/Nunito-Black.ttf'),
+    'NunitoBlackItalic': require('../assets/fonts/nunito/Nunito-BlackItalic.ttf'),
+    'NunitoBold': require('../assets/fonts/nunito/Nunito-Bold.ttf'),
+    'NunitoBoldItalic': require('../assets/fonts/nunito/Nunito-BoldItalic.ttf'),
+    'NunitoExtraBold': require('../assets/fonts/nunito/Nunito-ExtraBold.ttf'),
+    'NunitoExtraBoldItalic': require('../assets/fonts/nunito/Nunito-ExtraBoldItalic.ttf'),
+    'NunitoExtraLight': require('../assets/fonts/nunito/Nunito-ExtraLight.ttf'),
+    'NunitoExtraLightItalic': require('../assets/fonts/nunito/Nunito-ExtraLightItalic.ttf'),
+    'NunitoItalic': require('../assets/fonts/nunito/Nunito-Italic.ttf'),
+    'NunitoLight': require('../assets/fonts/nunito/Nunito-Light.ttf'),
+    'NunitoLightItalic': require('../assets/fonts/nunito/Nunito-LightItalic.ttf'),
+    'NunitoMedium': require('../assets/fonts/nunito/Nunito-Medium.ttf'),
+    'NunitoMediumItalic': require('../assets/fonts/nunito/Nunito-MediumItalic.ttf'),
+    'NunitoRegular': require('../assets/fonts/nunito/Nunito-Regular.ttf'),
+    'NunitoSemiBold': require('../assets/fonts/nunito/Nunito-SemiBold.ttf'),
+    'NunitoSemiBoldItalic': require('../assets/fonts/nunito/Nunito-SemiBoldItalic.ttf'),
     ...FontAwesome.font,
   });
 
@@ -47,12 +64,14 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="student" options={{ headerShown: false }} />
-        <Stack.Screen name="faculty" options={{ headerShown: false }} />
-      </Stack>
+      <QueryProvider>
+        <Stack>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="student" options={{ headerShown: false }} />
+          <Stack.Screen name="faculty" options={{ headerShown: false }} />
+        </Stack>
+      </QueryProvider>
     </ThemeProvider>
   );
 }

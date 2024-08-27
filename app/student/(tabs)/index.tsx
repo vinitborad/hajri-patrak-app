@@ -1,7 +1,6 @@
 
-import { View, Text, Button, FlatList, TouchableOpacity, Alert } from 'react-native'
+import { View, Text, FlatList, TouchableOpacity, Alert } from 'react-native'
 import React from 'react'
-import * as SecureStore from 'expo-secure-store'
 import { useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { useGetStudentSubjects } from '@/api/student';
@@ -15,10 +14,6 @@ const Index = () => {
     data: subjects,
   } = useGetStudentSubjects();
 
-  const handlePress = () => {
-    Alert.alert("Coming Soon...");
-  };
-
 
   return (
     <View
@@ -31,7 +26,6 @@ const Index = () => {
       >
         <View className="flex items-center justify-center">
           <FontAwesome name="qrcode" size={40} color="black" />
-          <Text className="mt-2 text-sm font-semibold">SCAN CODE</Text>
         </View>
       </TouchableOpacity>
 

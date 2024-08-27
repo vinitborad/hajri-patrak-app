@@ -34,7 +34,22 @@
         "expo-font",
         {
           "fonts": [
-            "assets/fonts/rubik/Rubik-Bold.ttf"
+            "assets/fonts/nunito/Nunito-Black.ttf",
+            "assets/fonts/nunito/Nunito-BlackItalic.ttf",
+            "assets/fonts/nunito/Nunito-Bold.ttf",
+            "assets/fonts/nunito/Nunito-BoldItalic.ttf",
+            "assets/fonts/nunito/Nunito-ExtraBold.ttf",
+            "assets/fonts/nunito/Nunito-ExtraBoldItalic.ttf",
+            "assets/fonts/nunito/Nunito-ExtraLight.ttf",
+            "assets/fonts/nunito/Nunito-ExtraLightItalic.ttf",
+            "assets/fonts/nunito/Nunito-Italic.ttf",
+            "assets/fonts/nunito/Nunito-Light.ttf",
+            "assets/fonts/nunito/Nunito-LightItalic.ttf",
+            "assets/fonts/nunito/Nunito-Medium.ttf",
+            "assets/fonts/nunito/Nunito-MediumItalic.ttf",
+            "assets/fonts/nunito/Nunito-Regular.ttf",
+            "assets/fonts/nunito/Nunito-SemiBold.ttf",
+            "assets/fonts/nunito/Nunito-SemiBoldItalic.ttf"
           ]
         }
       ],
