@@ -31,7 +31,7 @@ const ManualAttendanceScreen = () => {
 
   const handleSubmit = async () => {
     const presentStudents =
-    //@ts-ignore
+      //@ts-ignore
       markMode === 'present' ? selectedStudents : sortedStudents.map((s) => s.id).filter((id) => !selectedStudents.includes(id));
 
     markAttendanceMutation.mutate(

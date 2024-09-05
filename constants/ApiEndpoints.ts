@@ -9,6 +9,7 @@ export const authEndpoints = {
 
 export const profileENdpoints = {
   STUDENT_PROFILE: `${BASE_URL}/profile/student`,
+  FACULTY_PROFILE: `${BASE_URL}/profile/faculty`,
 };
 
 export const studentEndpoints = {

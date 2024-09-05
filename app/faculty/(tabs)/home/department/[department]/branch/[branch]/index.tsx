@@ -22,11 +22,11 @@ const Branch = () => {
   const { data: subjectsStructure, isLoading, error } = useGetSubjectsStructure();
 
   // Handle loading and error states
-  if (isLoading) return <Text className="text-center text-white mt-4">Loading...</Text>;
-  if (error) return <Text className="text-center text-red-500 mt-4">Error loading data</Text>;
+  if (isLoading) return <Text className="text-center text-[#F6F5F5] mt-4">Loading...</Text>;
+  if (error) return <Text className="text-center text-[#FF6B6B] mt-4">Error loading data</Text>;
 
   if (!department || !branch || !subjectsStructure) {
-    return <Text className="text-center text-red-500 mt-4">Invalid department or branch</Text>;
+    return <Text className="text-center text-[#FF6B6B] mt-4">Invalid department or branch</Text>;
   }
 
   // Extract the degrees (e.g., B.Tech, M.Tech, MCA)
@@ -40,10 +40,10 @@ const Branch = () => {
   const renderDivisionItem: React.FC<any> = ({ sem, div, gradLevel }) => (
     <TouchableOpacity
       key={sem + div}
-      className="bg-white p-4 rounded-lg shadow-md my-2 flex-row justify-between items-center mx-4"
-      onPress={() => handleDivisionPress(gradLevel, sem, div)} 
+      className="bg-[#3b3e44] p-4 rounded-lg shadow-md my-2 flex-row justify-between items-center mx-4 border border-[#9DBDFF]"
+      onPress={() => handleDivisionPress(gradLevel, sem, div)}
     >
-      <Text className="text-gray-800 text-lg">{`Sem ${sem} Div ${div}`}</Text>
+      <Text className="text-lg font-NunitoBold text-[#9DBDFF]">{`Sem ${sem} Div ${div}`}</Text>
     </TouchableOpacity>
   );
 
@@ -53,7 +53,7 @@ const Branch = () => {
 
     return (
       <View key={item} className="mb-4">
-        <Text className="text-xl font-bold text-gray-800 mb-2 ml-4">
+        <Text className="text-xl font-NunitoExtraBold text-[#F6F5F5] mt-4 ml-4">
           {item}
         </Text>
         {semesters.map((sem) => (
@@ -68,7 +68,7 @@ const Branch = () => {
   };
 
   return (
-    <View className="flex flex-1 justify-center bg-gray-100">
+    <View className="flex flex-1 justify-center bg-[#1E1E1E]">
       <Stack.Screen
         options={{
           headerShown: false,

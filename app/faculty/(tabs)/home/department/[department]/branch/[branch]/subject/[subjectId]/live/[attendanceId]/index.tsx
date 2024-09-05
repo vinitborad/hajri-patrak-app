@@ -5,7 +5,6 @@ import { useGetLiveAttendanceInfo, useCloseAttendance } from '@/api/faculty/atte
 import { FontAwesome } from '@expo/vector-icons';
 
 const LiveAttendanceScreen = () => {
-
   const { attendanceId } = useLocalSearchParams();
   const router = useRouter();
 
@@ -13,7 +12,7 @@ const LiveAttendanceScreen = () => {
   const [message, setMessage] = useState('');
   const closeAttendanceMutation = useCloseAttendance();
 
-  if (isLoading) return <Text className="text-center text-white mt-4">Loading...</Text>;
+  if (isLoading) return <Text className="text-center text-[#F6F5F5] mt-4">Loading...</Text>;
   if (error) return <Text className="text-center text-red-500 mt-4">Error loading data</Text>;
 
   const attendanceDetails = data?.attendance || {};
@@ -22,8 +21,7 @@ const LiveAttendanceScreen = () => {
   const allStudents = data?.allStudentLists || [];
 
   const isStudentPresent = (studentId: string) => {
-    //@ts-ignore
-    return presentStudents.some(student => student.id === studentId);
+    return presentStudents.some(student => student._id === studentId);
   };
 
   const handleCloseAttendance = () => {
@@ -45,7 +43,7 @@ const LiveAttendanceScreen = () => {
   };
 
   return (
-    <View className="flex flex-1 bg-gray-900">
+    <View className="flex flex-1 bg-[#1E1E1E]">
       <Stack.Screen
         options={{
           headerShown: false,
@@ -54,88 +52,102 @@ const LiveAttendanceScreen = () => {
 
       <FlatList
         data={allStudents}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         ListHeaderComponent={() => (
           <View className="p-4">
             {/* Top Card with Attendance Details */}
-            <View className="bg-slate-300 p-4 rounded-lg mb-4">
-              <Text className="text-2xl font-semibold text-gray-800 mb-2">{subjectDetails.subjectName}</Text>
-              <Text className="text-gray-700">Code: {subjectDetails.subjectCode}</Text>
-              <Text className="text-gray-700">Department: {subjectDetails.department}</Text>
-              <Text className="text-gray-700">Branch: {subjectDetails.branch}</Text>
-              <Text className="text-gray-700">Semester: {subjectDetails.semester}</Text>
-              <Text className="text-gray-700">Division: {subjectDetails.division}</Text>
-              <Text className="text-gray-700">Passout Year: {subjectDetails.passoutYear}</Text>
-              <Text className="text-gray-700 mt-4">Lecture Hours: {attendanceDetails.value}</Text>
-              <Text className="text-gray-700">Created At: {new Date(attendanceDetails.createdAt).toLocaleString()}</Text>
-              <Text className="text-gray-700">Updated At: {new Date(attendanceDetails.updatedAt).toLocaleString()}</Text>
+            <View className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
+              <Text className="text-2xl font-NunitoExtraBold text-[#9DBDFF] mb-2">{subjectDetails.subjectName}</Text>
+              <View className="flex flex-row items-center mb-1">
+                <FontAwesome name="book" size={16} color="#9DBDFF" />
+                <Text className="text-[#F6F5F5] ml-2">Code: {subjectDetails.subjectCode}</Text>
+              </View>
+              <View className="flex flex-row items-center mb-1">
+                <FontAwesome name="code" size={16} color="#9DBDFF" />
+                <Text className="text-[#F6F5F5] ml-2">Branch: {subjectDetails.branch}</Text>
+              </View>
+              <View className="flex flex-row items-center mb-1">
+                <FontAwesome name="calendar" size={16} color="#9DBDFF" />
+                <Text className="text-[#F6F5F5] ml-2">Semester: {subjectDetails.semester}</Text>
+              </View>
+              <View className="flex flex-row items-center mb-1">
+                <FontAwesome name="users" size={16} color="#9DBDFF" />
+                <Text className="text-[#F6F5F5] ml-2">Division: {subjectDetails.division}</Text>
+              </View>
+              <View className="flex flex-row items-center mb-1">
+                <FontAwesome name="hourglass-half" size={16} color="#9DBDFF" />
+                <Text className="text-[#F6F5F5] ml-2">Lecture Hours: {attendanceDetails.value}</Text>
+              </View>
             </View>
 
             {/* Buttons for QR and Manual */}
             <View className="flex-row justify-between mb-4">
               <TouchableOpacity
-                className="flex-1 bg-gray-700 p-4 rounded-lg mr-2 flex-row justify-center items-center"
+                className="flex-1 bg-[#9DBDFF] p-4 rounded-lg mr-2 flex-row justify-center items-center"
                 onPress={() => Alert.alert('QR Code', 'Coming soon! 🔥')}
               >
-                <FontAwesome name="qrcode" size={24} color="white" />
-                <Text className="text-center text-white text-lg ml-2">QR</Text>
+                <FontAwesome name="qrcode" size={24} color="#1E1E1E" />
+                <Text className="text-center text-[#1E1E1E] text-lg ml-2">QR</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                className="flex-1 bg-gray-700 p-4 rounded-lg ml-2 flex-row justify-center items-center"
+                className="flex-1 bg-[#9DBDFF] p-4 rounded-lg ml-2 flex-row justify-center items-center"
                 onPress={() => router.push(`/faculty/(tabs)/home/department/[department]/branch/[branch]/subject/[subjectId]/live/${attendanceId}/manual`)}
               >
-                <FontAwesome name="pencil" size={24} color="white" />
-                <Text className="text-center text-white text-lg ml-2">Manual</Text>
+                <FontAwesome name="pencil" size={24} color="#1E1E1E" />
+                <Text className="text-center text-[#1E1E1E] text-lg ml-2">Manual</Text>
               </TouchableOpacity>
             </View>
 
             {/* Input for adding a message */}
-            <View className="flex-row justify-between items-center bg-gray-800 p-4 rounded-lg mb-4">
+            <View className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
               <TextInput
-                className="flex-1 text-white bg-gray-900 p-2 rounded-lg"
-                placeholder="Add message ..."
-                placeholderTextColor="#ccc"
+                className="text-[#F6F5F5] bg-[#1E1E1E] p-2 rounded-lg"
+                placeholder="Add message..."
+                placeholderTextColor="#9DBDFF"
                 value={message}
                 onChangeText={setMessage}
               />
             </View>
 
-            <Text className="text-white text-lg font-semibold mb-2">Live Status</Text>
+            <Text className="text-[#F6F5F5] text-lg font-NunitoExtraBold mb-2">Live Status</Text>
           </View>
         )}
         renderItem={({ item }) => {
-          const isPresent = isStudentPresent(item.id);
+          const isPresent = isStudentPresent(item._id);
           return (
             <View
-              className={`p-4 rounded-lg mb-4 mx-4 flex-row justify-between items-center ${isPresent ? 'bg-green-700' : 'bg-red-700'}`}
+              className={`p-4 rounded-lg mb-4 mx-4 flex-row justify-between items-center ${isPresent ? 'bg-[#2D6A4F]' : 'bg-[#9D0208]'
+                } border border-[#1B4332]`}
             >
               <View>
-                <Text className="text-white font-bold text-lg">Enrollment: {item.username}</Text>
-                <Text className="text-gray-300">Name: {item.personalInfo.firstName} {item.personalInfo.lastName}</Text>
+                <Text className="text-[#F6F5F5] font-NunitoExtraBold text-lg">Enrollment: {item.username}</Text>
+                <Text className="text-[#F6F5F5]">Name: {item.personalInfo.firstName} {item.personalInfo.lastName}</Text>
               </View>
             </View>
           );
         }}
-        contentContainerStyle={{ paddingBottom: 16 }}
+        contentContainerStyle={{ paddingBottom: 250 }}
       />
 
       {/* Fixed buttons at the bottom */}
-      <View className="flex-row justify-between bg-gray-900 p-2">
-        <TouchableOpacity
-          className="bg-red-500 p-3 rounded-lg flex-1 mr-2 flex-row justify-center items-center"
-          onPress={handleCloseAttendance}
-        >
-          <FontAwesome name="times-circle" size={20} color="white" />
-          <Text className="text-center text-white text-lg ml-2">Close</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          className="bg-gray-700 p-3 rounded-lg flex-1 ml-2 flex-row justify-center items-center"
-          //@ts-ignore
-          onPress={refetch}
-        >
-          <FontAwesome name="refresh" size={20} color="white" />
-          <Text className="text-center text-white text-lg ml-2">Refresh</Text>
-        </TouchableOpacity>
+      <View className=' w-full flex items-center'>
+        <View className="flex-row absolute bottom-24 w-8/12 ">
+          <TouchableOpacity
+            className="bg-[#FF6B6B] p-2 flex-1 flex-row justify-center items-center rounded-l-full"
+            onPress={handleCloseAttendance}
+          >
+            <FontAwesome name="times-circle" size={20} color="white" />
+            <Text className="text-center text-white text-lg ml-2">Close</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="bg-[#3b3e44] p-2 flex-1 flex-row justify-center items-center rounded-r-full"
+            //@ts-ignore
+            onPress={refetch}
+          >
+            <Text className="text-center text-[#9DBDFF] text-lg mr-2">Refresh</Text>
+            <FontAwesome name="refresh" size={20} color="#9DBDFF" />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );

@@ -18,3 +18,18 @@ export const useGetStudentProfile = () => {
     }
   });
 }
+
+export const useGetFacultyProfile = () => {
+  return useQuery({
+    queryKey: ["profile", "faculty"],
+    queryFn: async () => {
+      const token = await SecureStore.getItemAsync('token');
+      const response = await axios.get(profileENdpoints.FACULTY_PROFILE, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      return response.data.data;
+    }
+  });
+}

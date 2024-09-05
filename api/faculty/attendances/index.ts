@@ -10,13 +10,13 @@ export const useGetPreviousAttendances = (subjectId: string) => {
     queryKey: ['previous-attendances', subjectId],
     queryFn: async () => {
       const token = await SecureStore.getItemAsync('token');
-      const response = await axios.post(facultyEndpoints.GET_PREVIOUS_ATTENDANCES,
-        {
-          subjectId,
-        },
+      const response = await axios.get(facultyEndpoints.GET_PREVIOUS_ATTENDANCES,
         {
           headers: {
             Authorization: `Bearer ${token}`,
+          },
+          params: {
+            subjectId: subjectId,
           },
         }
       );
@@ -33,13 +33,13 @@ export const useGetAnalyseAttendance = (subjectId: string) => {
     queryKey: ['analyse-attendance', subjectId],
     queryFn: async () => {
       const token = await SecureStore.getItemAsync('token');
-      const response = await axios.post(facultyEndpoints.GET_ANALYSE_ATTENDANCE,
-        {
-          subjectId,
-        },
+      const response = await axios.get(facultyEndpoints.GET_ANALYSE_ATTENDANCE,
         {
           headers: {
             Authorization: `Bearer ${token}`,
+          },
+          params: {
+            subjectId: subjectId,
           },
         }
       );
@@ -55,7 +55,7 @@ export const useCreateAttendance = () => {
   //@ts-ignore
   return useMutation(async ({ subjectId, value, interDivisions }: { subjectId: string; value: number; interDivisions: string[] }) => {
     const token = await SecureStore.getItemAsync('token');
-    const response = await axios.post(facultyEndpoints.CREATE_ATTENDANCE, 
+    const response = await axios.post(facultyEndpoints.CREATE_ATTENDANCE,
       {
         subjectId,
         value,
@@ -76,13 +76,13 @@ export const useGetAttendanceInfo = (attendanceId: string) => {
     queryKey: ['attendance-info', attendanceId],
     queryFn: async () => {
       const token = await SecureStore.getItemAsync('token');
-      const response = await axios.post(facultyEndpoints.GET_ATTENDANCE_INFO,
-        {
-          attendanceId,
-        },
+      const response = await axios.get(facultyEndpoints.GET_ATTENDANCE_INFO,
         {
           headers: {
             Authorization: `Bearer ${token}`,
+          },
+          params: {
+            attendanceId: attendanceId,
           },
         }
       );
@@ -98,13 +98,13 @@ export const useGetLiveAttendanceInfo = (attendanceId: string) => {
     queryKey: ['get-live-attendance-info', attendanceId],
     queryFn: async () => {
       const token = await SecureStore.getItemAsync('token');
-      const response = await axios.post(facultyEndpoints.GET_LIVE_ATTENDANCE_INFO,
-        {
-          attendanceId,
-        },
+      const response = await axios.get(facultyEndpoints.GET_LIVE_ATTENDANCE_INFO,
         {
           headers: {
             Authorization: `Bearer ${token}`,
+          },
+          params: {
+            attendanceId: attendanceId,
           },
         }
       );
@@ -117,7 +117,7 @@ export const useGetLiveAttendanceInfo = (attendanceId: string) => {
 
 export const useManualMarkAttendance = () => {
   return useMutation({
-    async mutationFn({attendanceId, studentIdLists}: {attendanceId: string; studentIdLists: string[];}){
+    async mutationFn({ attendanceId, studentIdLists }: { attendanceId: string; studentIdLists: string[]; }) {
       const token = await SecureStore.getItemAsync('token');
       const response = await axios.post(facultyEndpoints.MANUAL_MARK_ATTENDANCE,
         {
@@ -137,7 +137,7 @@ export const useManualMarkAttendance = () => {
 
 export const useCloseAttendance = () => {
   return useMutation({
-    async mutationFn({attendanceId, message}: {attendanceId: string; message: string;}){
+    async mutationFn({ attendanceId, message }: { attendanceId: string; message: string; }) {
       const token = await SecureStore.getItemAsync('token');
       const response = await axios.post(facultyEndpoints.CLOSE_ATTENDANCE,
         {

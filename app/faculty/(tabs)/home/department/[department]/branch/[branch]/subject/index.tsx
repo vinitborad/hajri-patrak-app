@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, FlatList, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { useGetSubjectsStructure } from '@/api/faculty';
 
@@ -28,25 +28,25 @@ const SubjectsList: React.FC = () => {
   // Fetching data using your custom hook
   const { data: subjectsStructure, isLoading, error } = useGetSubjectsStructure();
 
-  if (isLoading) return <Text className="text-center text-white mt-4">Loading...</Text>;
-  if (error) return <Text className="text-center text-red-500 mt-4">Error loading data</Text>;
+  if (isLoading) return <Text className="text-center text-[#F6F5F5] mt-4">Loading...</Text>;
+  if (error) return <Text className="text-center text-[#FF6B6B] mt-4">Error loading data</Text>;
 
   // Safely accessing the subjects based on the query parameters
   const subjects: Subject[] = subjectsStructure?.ldce?.[department]?.[branch]?.[graduationLevel]?.[sem]?.[division] || [];
 
   const renderSubjectItem = ({ item }: { item: Subject }) => (
-    <View key={item.subjectId} className="bg-white rounded-lg shadow-md my-2 mx-4">
-      <Text className="text-lg font-semibold text-gray-800 p-3 bg-slate-300 rounded-t-2xl">
+    <View key={item.subjectId} className="bg-[#3b3e44] rounded-lg shadow-md my-2 mx-4 border border-[#9DBDFF]">
+      <Text className="text-xl font-NunitoExtraBold text-[#9DBDFF] p-3 rounded-t-lg bg-[#3b3e44]">
         {item.subjectName}
       </Text>
-      <View className=' flex flex-row justify-between items-center'>
-        <Text className="text-gray-800 text-lg font-semibold p-2 pb-3 ml-1">
+      <View className="flex flex-row justify-between items-center bg-[#2D2D2D] p-3 rounded-b-lg">
+        <Text className="text-[#F6F5F5] text-base font-NunitoBold">
           {item.subjectType}
         </Text>
         <TouchableOpacity
           onPress={() => router.push(`/faculty/(tabs)/home/department/${department}/branch/${branch}/subject/${item.subjectId}`)}
         >
-          <Text className="text-blue-500 mr-3 border-b border-blue-400">
+          <Text className="text-[#9DBDFF] border-b border-[#9DBDFF]">
             View Details
           </Text>
         </TouchableOpacity>
@@ -55,7 +55,7 @@ const SubjectsList: React.FC = () => {
   );
 
   return (
-    <View className="flex flex-1 justify-center bg-gray-100">
+    <View className="flex flex-1 justify-center bg-[#1E1E1E]">
       <Stack.Screen
         options={{
           headerShown: false,
@@ -64,7 +64,7 @@ const SubjectsList: React.FC = () => {
 
       {subjects.length === 0 && (
         <Text
-          className="bg-white p-4 rounded-lg shadow-md mt-7 mx-4 text-center text-lg font-semibold text-gray-800"
+          className="bg-[#3b3e44] p-4 rounded-lg shadow-md mt-7 mx-4 text-center text-lg font-NunitoBold text-[#F6F5F5]"
         >No subjects available.</Text>
       )}
 

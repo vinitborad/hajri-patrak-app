@@ -17,19 +17,20 @@ const Index = () => {
 
   return (
     <View
-      className='flex-1 items-center bg-gray-100 p-4'
+      className='flex-1 items-center bg-[#1E1E1E] p-6'
     >
       <TouchableOpacity
         onPress={() => router.push('/student/qr')}
-        className="mt-6 bg-zinc-200 w-full h-32 rounded-lg flex items-center justify-center"
+        className="mt-6 bg-[#686D76] w-full h-32 rounded-lg flex items-center justify-center border border-[#9DBDFF]"
         activeOpacity={0.7}
       >
         <View className="flex items-center justify-center">
-          <FontAwesome name="qrcode" size={40} color="black" />
+          <FontAwesome name="qrcode" size={50} color="#9DBDFF"/>
+          <Text className=' font-NunitoExtraBold text-[#9DBDFF]'>SCAN</Text>
         </View>
       </TouchableOpacity>
 
-      <Text className="mt-6 mb-2 text-lg font-bold">SUBJECTS</Text>
+      <Text className="mt-8 mb-4 w-full pl-3 text-[#F6F5F5] text-xl font-NunitoExtraBold">SUBJECTS</Text>
 
       <FlatList
         data={subjects}
@@ -53,12 +54,12 @@ const SubjectItem = ({ subject, router }) => {
   return (
     <TouchableOpacity
       onPress={handleSubjectPress}
-      className="flex flex-row justify-between items-center bg-white p-4 mb-2 rounded-lg shadow w-full"
+      className="flex flex-row justify-between items-center bg-[#3b3e44] p-3 pl-6 mb-2 rounded-xl w-full border border-[#9DBDFF]"
       activeOpacity={0.7}
     >
-      <Text className="text-lg font-semibold">{subject.subjectName}</Text>
-      <View className="bg-gray-200 p-2 w-12 h-12 rounded-full flex items-center justify-center">
-        <Text className="text-xs font-semibold">{Math.round(subject.attendancePercentage)}</Text>
+      <Text className="text-xl font-NunitoBold text-fontColor">{subject.subjectName}</Text>
+      <View className=" bg-[#FFD7C4] p-2 w-14 h-14 rounded-full flex items-center justify-center">
+        <Text className="text-lg font-NunitoExtraBold text-[#3b3939]">{Math.round(subject.attendancePercentage)}</Text>
       </View>
     </TouchableOpacity>
   );

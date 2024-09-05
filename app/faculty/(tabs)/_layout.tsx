@@ -1,9 +1,8 @@
+import { TabBar } from "@/components/faculty-tabbar/TabBar";
 import { FontAwesome, Ionicons, Octicons } from "@expo/vector-icons";
 import { Redirect, Tabs, useRouter } from "expo-router";
 import * as SecureStore from 'expo-secure-store';
 
-
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
   color: string;
@@ -11,7 +10,7 @@ function TabBarIcon(props: {
   return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
 }
 
-export default function StudentTabsLayout() {
+export default function FacultyTabsLayout() {
 
   const router = useRouter();
 
@@ -22,36 +21,54 @@ export default function StudentTabsLayout() {
   }
 
   return (
-    <Tabs>
+    <Tabs tabBar={props => <TabBar {...props} />}>
       <Tabs.Screen
         name="home"
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
-          tabBarActiveTintColor: 'black',
+          tabBarActiveTintColor: '#9DBDFF',  // Updated color to match the theme
           title: 'Home',
           headerTitle: "LDCE Faculty",
+          headerStyle: {
+            backgroundColor: '#3b3e44', // Consistent header background
+          },
+          headerTitleStyle: {
+            color: '#9DBDFF', // Consistent header title color
+            fontFamily: 'NunitoExtraBold', // Font style
+            fontSize: 20, // Font size consistent with other screens
+          },
           headerRight: () => (
             <Ionicons
               name="notifications"
               size={25}
+              color="#9DBDFF" // Matching icon color
               onPress={() => router.push('/faculty/notifications')}
               style={{ marginRight: 20 }}
             />
           ),
         }}
       />
-    
+
       <Tabs.Screen
         name="material"
         options={{
-          tabBarIcon: ({ color }) =>  <FontAwesome size={23} name="files-o" color={color}/>,
-          tabBarActiveTintColor: 'black',
+          tabBarIcon: ({ color }) => <FontAwesome size={23} name="files-o" color={color} />,
+          tabBarActiveTintColor: '#9DBDFF', // Updated color to match the theme
           title: 'Material',
+          headerStyle: {
+            backgroundColor: '#3b3e44',
+          },
+          headerTitleStyle: {
+            color: '#9DBDFF',
+            fontFamily: 'NunitoExtraBold',
+            fontSize: 20,
+          },
           headerRight: () => (
             <Ionicons
               name="notifications"
               size={25}
-              onPress={() => router.push('/student/notifications')}
+              color="#9DBDFF"
+              onPress={() => router.push('/faculty/notifications')}
               style={{ marginRight: 20 }}
             />
           )
@@ -62,7 +79,7 @@ export default function StudentTabsLayout() {
         name="profile"
         options={{
           tabBarIcon: ({ color }) => <Octicons name="person-fill" size={28} color={color} />,
-          tabBarActiveTintColor: 'black',
+          tabBarActiveTintColor: '#9DBDFF', // Updated color to match the theme
           title: 'Profile',
           tabBarLabelStyle: {
             marginTop: -5, // Adjust this value to change the spacing
@@ -70,11 +87,20 @@ export default function StudentTabsLayout() {
           tabBarIconStyle: {
             marginBottom: -5, // Adjust this value to change the spacing
           },
+          headerStyle: {
+            backgroundColor: '#3b3e44',
+          },
+          headerTitleStyle: {
+            color: '#9DBDFF',
+            fontFamily: 'NunitoExtraBold',
+            fontSize: 20,
+          },
           headerRight: () => (
             <Ionicons
               name="notifications"
               size={25}
-              onPress={() => router.push('/student/notifications')}
+              color="#9DBDFF"
+              onPress={() => router.push('/faculty/notifications')}
               style={{ marginRight: 20 }}
             />
           )

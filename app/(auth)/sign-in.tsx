@@ -17,7 +17,6 @@ const SignIn = () => {
         username,
         password,
       });
-      console.log(response.data.token);
       await SecureStore.setItemAsync('token', response.data.token);
       await SecureStore.setItemAsync('role', role);
       router.replace('/');
@@ -27,24 +26,24 @@ const SignIn = () => {
   };
 
   return (
-    <View className="bg-background flex items-center justify-center h-full">
+    <View className="bg-[#1E1E1E] flex items-center justify-center h-full">
 
-      <Text className=" text-fontColor font-NunitoBold text-3xl -mt-32 mb-32">
-        Ld College of Engg.
+      <Text className="text-[#9DBDFF] font-NunitoExtraBold text-3xl -mt-32 mb-32">
+        LD College of Engg.
       </Text>
 
-      <View className="flex-row justify-center mb-8 border-b-buttonBlueBorder border-b-4 rounded-xl">
+      <View className="flex-row justify-center mb-8 border-b-4 border-[#6c7382] rounded-xl">
         <TouchableOpacity
-          className={`px-4 py-2 rounded-tl-lg rounded-bl-lg w-32 flex items-center justify-center ${role === 'student' ? 'bg-lightBlue text-text' : 'bg-gray-600'}`}
+          className={`px-4 py-2 rounded-tl-lg rounded-bl-lg w-32 flex items-center justify-center ${role === 'student' ? 'bg-[#9DBDFF]' : 'bg-[#3b3e44]'}`}
           onPress={() => setRole('student')}
         >
-          <Text className={`font-NunitoBold text-lg ${role === 'student' ? 'text-darkBlue' : 'text-fontColor'}`}>Student</Text>
+          <Text className={`font-NunitoBold text-lg ${role === 'student' ? 'text-[#1E1E1E]' : 'text-[#F6F5F5]'}`}>Student</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          className={`px-4 py-2 rounded-tr-lg rounded-br-lg w-32 flex items-center justify-center ${role === 'faculty' ? 'bg-lightBlue text-text' : 'bg-gray-600'}`}
+          className={`px-4 py-2 rounded-tr-lg rounded-br-lg w-32 flex items-center justify-center ${role === 'faculty' ? 'bg-[#9DBDFF]' : 'bg-[#3b3e44]'}`}
           onPress={() => setRole('faculty')}
         >
-          <Text className={`font-NunitoBold text-lg ${role === 'faculty' ? 'text-darkBlue' : 'text-fontColor'}`}>Faculty</Text>
+          <Text className={`font-NunitoBold text-lg ${role === 'faculty' ? 'text-[#1E1E1E]' : 'text-[#F6F5F5]'}`}>Faculty</Text>
         </TouchableOpacity>
       </View>
 
@@ -55,11 +54,9 @@ const SignIn = () => {
           value={username}
           onChangeText={setUsername}
           keyboardType='default'
-          className=" w-full border border-inputBorderStrokeColor bg-inputBoxBackground rounded-lg px-4 py-3 text-fontColor font-NunitoLight text-lg "
+          className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5] font-NunitoLight text-lg"
           selectionColor={'#A0A0A0'}
-          selectionHandleColor={'#A0A0A0'}
         />
-
 
         <TextInput
           placeholder="Password"
@@ -67,15 +64,15 @@ const SignIn = () => {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
-          className=" w-full border border-inputBorderStrokeColor bg-inputBoxBackground rounded-lg px-4 py-3 mb-4 text-fontColor font-NunitoLight text-lg"
+          className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5] font-NunitoLight text-lg mb-4"
           selectionColor={'#A0A0A0'}
         />
 
         <TouchableOpacity
-          className="bg-bluePrimary py-2 bg-lightBlue w-36 border-b-4 border-buttonBlueBorder rounded-t-lg rounded-b-lg"
+          className="bg-[#9DBDFF] py-2 w-36 border-b-4 border-[#3b3e44] rounded-t-lg rounded-b-lg"
           onPress={onClick}
         >
-          <Text className=" text-center font-NunitoBold text-xl">Log In</Text>
+          <Text className="text-center font-NunitoBold text-xl text-[#1E1E1E]">Log In</Text>
         </TouchableOpacity>
       </View>
     </View>

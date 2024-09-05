@@ -20,18 +20,16 @@ export const useGetStudentSubjects = () => {
 }
 
 export const useGetStudentSubjectInfo = ({subjectId}: {subjectId: string}) => {
-  console.log(subjectId);
   return useQuery({
     queryKey: ["subject-info", "student", subjectId],
     queryFn: async () => {
       const token = await SecureStore.getItemAsync('token');
-      const response = await axios.post(studentEndpoints.STUDENT_SUBJECT_DETAILS, 
-        {
-          "subjectId": subjectId
-        }, 
-        {
+      const response = await axios.get(studentEndpoints.STUDENT_SUBJECT_DETAILS, {
         headers: {
           Authorization: `Bearer ${token}`,
+        },
+        params: {
+          subjectId: subjectId,
         },
       });
       return response.data.data;
