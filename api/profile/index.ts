@@ -1,4 +1,5 @@
 import { profileENdpoints } from "@/constants/ApiEndpoints";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery } from "@tanstack/react-query"
 import axios from "axios";
 import * as SecureStore from 'expo-secure-store';
@@ -14,8 +15,14 @@ export const useGetStudentProfile = () => {
           Authorization: `Bearer ${token}`
         }
       });
+      if (response.data.success) {
+        await AsyncStorage.setItem('studentProfile', JSON.stringify(response.data.data));
+      }
       return response.data.data;
-    }
+    },
+    //TODO: later fix this parameters properly
+    refetchOnMount: true, // Do not refetch on component mount
+    refetchOnWindowFocus: true, // Do not refetch when window regains focus
   });
 }
 
@@ -29,7 +36,13 @@ export const useGetFacultyProfile = () => {
           Authorization: `Bearer ${token}`
         }
       });
+      if (response.data.success) {
+        await AsyncStorage.setItem('facultyProfile', JSON.stringify(response.data.data));
+      }
       return response.data.data;
-    }
+    },
+    //TODO: later fix this parameters properly
+    refetchOnMount: true, // Do not refetch on component mount
+    refetchOnWindowFocus: true, // Do not refetch when window regains focus    
   });
 }

@@ -1,36 +1,98 @@
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useGetAttendanceInfo } from '@/api/faculty/attendances';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const STORAGE_KEY = (attendanceId: string) => `attendance-info-${attendanceId}`;
 
 const ViewAttendanceScreen = () => {
   const { attendanceId } = useLocalSearchParams();
 
+  const [offlineData, setOfflineData] = useState(null); // Store offline data
+  const [isOfflineLoading, setIsOfflineLoading] = useState(true); // Track offline loading state
+  const [allStudents, setAllStudents] = useState([]); // Store combined students from divisions
+
+  // Fetch data from the API (hook always called in the same order)
   const { data, isLoading, error } = useGetAttendanceInfo(attendanceId as string);
 
-  if (isLoading) return <Text className="text-center text-white mt-4">Loading...</Text>;
-  if (error) return <Text className="text-center text-red-500 mt-4">Error loading data</Text>;
+  // Fetch offline data on mount
+  useEffect(() => {
+    const fetchOfflineData = async () => {
+      try {
+        const cachedData = await AsyncStorage.getItem(STORAGE_KEY(attendanceId as string));
+        console.log('cachedData:', cachedData);
+        if (cachedData) {
+          setOfflineData(JSON.parse(cachedData));
+        }
+      } catch (error) {
+        console.log('Error fetching offline data:', error);
+      } finally {
+        setIsOfflineLoading(false);
+      }
+    };
 
-  // Extract subject, attendance, and student details from the response data
-  const attendanceDetails = data?.attendance || {};
+    fetchOfflineData();
+  }, [attendanceId]);
+
+  // Store the fetched data in AsyncStorage
+  useEffect(() => {
+    if (data) {
+      try {
+        AsyncStorage.setItem(STORAGE_KEY(attendanceId as string), JSON.stringify(data));
+      } catch (error) {
+        console.log('Error saving offline data:', error);
+      }
+    }
+  }, [data, attendanceId]);
+
+  const dataToShow = data || offlineData;
+
+  // Extract data from the response
+  const attendanceDetails = dataToShow?.attendance || {};
   const subjectDetails = attendanceDetails?.subject || {};
-  const allStudents = data?.allStudents || [];
-  const presentStudents = data?.presentStudents || [];
+  const divisions = dataToShow?.divisions || [];
+  const presentStudents = dataToShow?.presentStudents || [];
 
-  // Helper function to determine if a student was present
-  const isStudentPresent = (username: string) => {
-    return presentStudents.some(student => student.username === username);
+  // Function to fetch students from each division stored in AsyncStorage
+  const fetchStudentsFromDivisions = async (divisionIds: string[]) => {
+    let combinedStudents = [];
+    for (const divisionId of divisionIds) {
+      try {
+        const storedDivisionData = await AsyncStorage.getItem(`division-students-list-data-${divisionId}`);
+        const parsedData = storedDivisionData ? JSON.parse(storedDivisionData).students || [] : [];
+        combinedStudents = combinedStudents.concat(parsedData);
+      } catch (error) {
+        console.log('Error fetching students from offline data:', error);
+      }
+    }
+    return combinedStudents;
   };
 
-  // Sort students by enrollment number (username)
-  const sortedStudents = allStudents.sort((a, b) => {
-    return parseInt(a.username) - parseInt(b.username);
-  });
+  // Fetch students once when divisions are available
+  useEffect(() => {
+    const getAllStudents = async () => {
+      if (divisions.length > 0) {
+        const students = await fetchStudentsFromDivisions(divisions);
+        setAllStudents(students);
+      }
+    };
+    getAllStudents(); // Ensuring the effect runs only once based on divisions array
+  }, [divisions]);
 
-  // Calculate number of students present
+  // Helper function to check if a student was present
+  const isStudentPresent = (studentId: string) => presentStudents.includes(studentId);
+
+  // Sort students by enrollment number (username)
+  const sortedStudents = allStudents.sort((a, b) => parseInt(a.username) - parseInt(b.username));
+
+  // Calculate present/total counts
   const presentCount = presentStudents.length;
-  const totalCount = allStudents.length;
+  const totalCount = sortedStudents.length;
+
+  if (isLoading && isOfflineLoading) return <Text className="text-center text-[#F6F5F5] mt-4">Loading...</Text>;
+  if (error && !offlineData) return <Text className="text-center text-[#FF6B6B] mt-4">Error loading data</Text>;
 
   return (
     <View className="flex flex-1 bg-[#1E1E1E]">
@@ -85,9 +147,9 @@ const ViewAttendanceScreen = () => {
 
       <FlatList
         data={sortedStudents}
-        keyExtractor={(item) => item.username}
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
-          const isPresent = isStudentPresent(item.username);
+          const isPresent = isStudentPresent(item.id);
           return (
             <View
               className={`p-4 rounded-lg mb-4 mx-4 flex-row justify-between items-center ${isPresent ? 'bg-[#2D6A4F] border-[#BEDC74]' : 'bg-[#9D0208] border-[#FF6B6B]'

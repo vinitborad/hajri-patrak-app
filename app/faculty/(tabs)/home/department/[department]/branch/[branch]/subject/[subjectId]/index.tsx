@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, TextInput, Modal } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useGetPreviousAttendances } from '@/api/faculty/attendances';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import { facultyEndpoints } from "@/constants/ApiEndpoints";
+import { facultyEndpoints } from '@/constants/ApiEndpoints';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const STORAGE_KEY = (subjectId: string) => `subject-attendance-${subjectId}`;
 
 const SubjectDetailScreen = () => {
   const { department, branch, subjectId } = useLocalSearchParams();
@@ -16,26 +19,65 @@ const SubjectDetailScreen = () => {
   // State for modal visibility and form input
   const [isModalVisible, setModalVisible] = useState(false);
   const [value, setValue] = useState('');
-  const [interDivisions, setInterDivisions] = useState('');
+  const [selectedInterDivisions, setSelectedInterDivisions] = useState<string[]>([]); // To hold multiple interDivisions
+  const [offlineData, setOfflineData] = useState(null); // Store offline data
+  const [isOfflineLoading, setIsOfflineLoading] = useState(true);
 
-  if (isLoading) return <Text className="text-center text-[#F6F5F5] mt-4">Loading...</Text>;
-  if (error) return <Text className="text-center text-[#FF6B6B] mt-4">Error loading data</Text>;
+  // Fetch offline data on mount
+  useEffect(() => {
+    const fetchOfflineData = async () => {
+      try {
+        const cachedData = await AsyncStorage.getItem(STORAGE_KEY(subjectId as string));
+        if (cachedData) {
+          setOfflineData(JSON.parse(cachedData));
+        }
+      } catch (error) {
+        console.log('Error fetching offline data:', error);
+      } finally {
+        setIsOfflineLoading(false);
+      }
+    };
+
+    fetchOfflineData();
+  }, [subjectId]);
+
+  // Validation function to check API response
+  const isValidApiResponse = (data: any): boolean => {
+    if (!data || !data.subject || !Array.isArray(data.attendances)) {
+      return false; // Invalid if subject or attendances are missing
+    }
+    return true;
+  };
+
+  // Save fetched API data to offline storage only if valid
+  useEffect(() => {
+    if (data && isValidApiResponse(data)) {
+      AsyncStorage.setItem(STORAGE_KEY(subjectId as string), JSON.stringify(data));
+    }
+  }, [data, subjectId]);
+
+  if (isLoading && isOfflineLoading) return <Text className="text-center text-[#F6F5F5] mt-4">Loading...</Text>;
+  if (error && !offlineData) return <Text className="text-center text-[#FF6B6B] mt-4">Error loading data</Text>;
+
+  const dataToShow = data || offlineData;
 
   // Extract subject details and attendances from the response data
-  const subjectDetails = data?.subject || {};
-  const attendances = data?.attendances || [];
-  const liveAttendances = attendances.filter(attendance => attendance.type === 'live');
-  const closedAttendances = attendances.filter(attendance => attendance.type !== 'live');
+  const subjectDetails = dataToShow?.subject || {};
+  const attendances = dataToShow?.attendances || [];
+  //@ts-ignore
+  const liveAttendances = attendances.filter((attendance) => attendance.type === 'live');
+  //@ts-ignore
+  const closedAttendances = attendances.filter((attendance) => attendance.type !== 'live');
 
   // Create Attendance API Call
   const createAttendance = async () => {
     const token = await SecureStore.getItemAsync('token');
-    //TODO: handle loading and error states
-    await axios.post(facultyEndpoints.CREATE_ATTENDANCE,
+    await axios.post(
+      facultyEndpoints.CREATE_ATTENDANCE,
       {
         subjectId,
         value: parseInt(value),
-        interDivisions: interDivisions.split(',').map(item => item.trim()),
+        interDivisions: selectedInterDivisions,
       },
       {
         headers: {
@@ -47,6 +89,18 @@ const SubjectDetailScreen = () => {
     refetch(); // Refresh the screen after creating attendance
   };
 
+  // Toggle interDivision selection (multiple select functionality)
+  const toggleInterDivision = (div: string) => {
+    setSelectedInterDivisions((prev) => {
+      if (prev.includes(div)) {
+        return prev.filter((d) => d !== div); // Remove if already selected
+      } else {
+        return [...prev, div]; // Add if not selected
+      }
+    });
+  };
+
+  //@ts-ignore
   const renderAttendanceItem = ({ item }) => (
     <View key={item.id} className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
       <Text className="text-[#F6F5F5] text-lg mb-2">{new Date(item.createdAt).toLocaleString()}</Text>
@@ -74,7 +128,6 @@ const SubjectDetailScreen = () => {
       </View>
     </View>
   );
-
 
   return (
     <View className="flex flex-1 bg-[#1E1E1E] p-4">
@@ -133,74 +186,89 @@ const SubjectDetailScreen = () => {
             </TouchableOpacity>
 
             {/* Display All Live Attendances */}
-            {liveAttendances.length > 0 && liveAttendances.map(attendance => (
-              <View key={attendance.id} className="bg-[#2D6A4F] p-2 rounded-lg mb-4 flex-row justify-between items-center border border-[#1B4332] pr-4">
-                <View className="p-1 w-56 flex flex-col justify-center items-start">
-                  <View className="flex flex-row items-center mb-1">
-                    <Ionicons name="pulse-outline" size={20} color="#F6F5F5" />
-                    <Text className="text-[#F6F5F5] font-NunitoExtraBold text-lg ml-2">Live</Text>
-                  </View>
-                  <View className="flex flex-row items-center mb-1">
-                    <Ionicons name="time-outline" size={16} color="#F6F5F5" />
-                    <Text className="text-[#F6F5F5] ml-2">Value: {attendance.value}</Text>
-                  </View>
-                  <View className="flex flex-row items-center">
-                    <Ionicons name="people-outline" size={16} color="#F6F5F5" />
-                    <Text className="text-[#F6F5F5] ml-2">Total Students: {attendance.totalStudents}</Text>
-                  </View>
-                </View>
-                <TouchableOpacity
-                  className="bg-[#1B4332] p-2 rounded-lg flex flex-row items-center"
-                  onPress={() => router.push(`/faculty/(tabs)/home/department/${department}/branch/${branch}/subject/${subjectId}/live/${attendance.id}`)}
+            {liveAttendances.length > 0 &&
+              // @ts-ignore  
+              liveAttendances.map((attendance) => (
+                <View
+                  key={attendance.id}
+                  className="bg-[#2D6A4F] p-2 rounded-lg mb-4 flex-row justify-between items-center border border-[#1B4332] pr-4"
                 >
-                  <Ionicons name="eye-outline" size={20} color="#9DBDFF" />
-                  <Text className="ml-2 text-[#F6F5F5]">View</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-
+                  <View className="p-1 w-56 flex flex-col justify-center items-start">
+                    <View className="flex flex-row items-center mb-1">
+                      <Ionicons name="pulse-outline" size={20} color="#F6F5F5" />
+                      <Text className="text-[#F6F5F5] font-NunitoExtraBold text-lg ml-2">Live</Text>
+                    </View>
+                    <View className="flex flex-row items-center mb-1">
+                      <Ionicons name="time-outline" size={16} color="#F6F5F5" />
+                      <Text className="text-[#F6F5F5] ml-2">Value: {attendance.value}</Text>
+                    </View>
+                    <View className="flex flex-row items-center">
+                      <Ionicons name="people-outline" size={16} color="#F6F5F5" />
+                      <Text className="text-[#F6F5F5] ml-2">Total Students: {attendance.totalStudents}</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity
+                    className="bg-[#1B4332] p-2 rounded-lg flex flex-row items-center"
+                    onPress={() =>
+                      router.push(`/faculty/(tabs)/home/department/${department}/branch/${branch}/subject/${subjectId}/live/${attendance.id}`)
+                    }
+                  >
+                    <Ionicons name="eye-outline" size={20} color="#9DBDFF" />
+                    <Text className="ml-2 text-[#F6F5F5]">View</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
           </>
         )}
         renderItem={renderAttendanceItem}
-        contentContainerStyle={{ paddingBottom: 16 }}
+        contentContainerStyle={{ paddingBottom: 40 }} // Add extra space for the tab bar
+        showsVerticalScrollIndicator={false} // Hide the vertical scrollbar
       />
 
       {/* Create Attendance Modal */}
-      <Modal
-        visible={isModalVisible}
-        transparent={true}
-        animationType="slide"
-      >
+      <Modal visible={isModalVisible} transparent={true} animationType="slide">
         <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-          <View className="bg-[#3b3e44] p-6 rounded-lg border border-[#9DBDFF]">
-            <Text className="text-lg font-NunitoExtraBold text-[#9DBDFF] mb-4">Create Attendance</Text>
-            <TextInput
-              className="border p-2 rounded-lg mb-4 bg-[#2D2D2D] text-[#F6F5F5] border-[#9DBDFF]"
-              placeholder="Enter Value (Hours)"
-              placeholderTextColor="#A0A0A0"
-              value={value}
-              onChangeText={setValue}
-              keyboardType="numeric"
-            />
-            <TextInput
-              className="border p-2 rounded-lg mb-4 bg-[#2D2D2D] text-[#F6F5F5] border-[#9DBDFF]"
-              placeholder="Enter InterDivisions (e.g., 1,2,3)"
-              placeholderTextColor="#A0A0A0"
-              value={interDivisions}
-              onChangeText={setInterDivisions}
-            />
-            <View className="flex-row justify-between">
-              <TouchableOpacity
-                className="bg-red-500 p-2 rounded-lg"
-                onPress={() => setModalVisible(false)}
-              >
-                <Text className="text-white">Cancel</Text>
+          <View className="bg-[#3b3e44] p-6 rounded-lg border border-[#9DBDFF] w-[85%]">
+            <Text className="text-lg font-NunitoExtraBold text-[#9DBDFF] mb-4 text-center">Create Attendance</Text>
+
+            {/* Value Selector (Single Select) */}
+            <Text className="text-[#F6F5F5] font-NunitoExtraBold mb-2">Select Value (Hours):</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 10 }}>
+              {[1, 2, 3, 4, 5].map((val) => (
+                <TouchableOpacity
+                  key={val}
+                  onPress={() => setValue(val.toString())}
+                  className={`mx-2 p-4 rounded-lg ${value === val.toString() ? 'bg-[#9DBDFF]' : 'bg-[#2D2D2D]'}`}
+                >
+                  <Text className={`text-lg ${value === val.toString() ? 'text-white' : 'text-[#F6F5F5]'}`}>
+                    {val}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {/* InterDivisions Selector (Multiple Select) */}
+            <Text className="text-[#F6F5F5] font-NunitoExtraBold mt-4 mb-2">Select InterDivisions:</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 10 }}>
+              {subjectDetails.interDivisions?.map((div: any) => (
+                <TouchableOpacity
+                  key={div._id}
+                  onPress={() => toggleInterDivision(div.interDivision)}
+                  className={`mx-2 p-4 rounded-lg ${selectedInterDivisions.includes(div.interDivision) ? 'bg-[#9DBDFF]' : 'bg-[#2D2D2D]'}`}
+                >
+                  <Text className={`text-lg ${selectedInterDivisions.includes(div.interDivision) ? 'text-white' : 'text-[#F6F5F5]'}`}>
+                    {div.interDivision}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <View className="flex-row justify-between mt-6">
+              <TouchableOpacity className="bg-red-500 p-3 rounded-lg w-[45%]" onPress={() => setModalVisible(false)}>
+                <Text className="text-white text-center">Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                className="bg-green-500 p-2 rounded-lg"
-                onPress={createAttendance}
-              >
-                <Text className="text-white">Create</Text>
+              <TouchableOpacity className="bg-green-500 p-3 rounded-lg w-[45%]" onPress={createAttendance}>
+                <Text className="text-white text-center">Create</Text>
               </TouchableOpacity>
             </View>
           </View>

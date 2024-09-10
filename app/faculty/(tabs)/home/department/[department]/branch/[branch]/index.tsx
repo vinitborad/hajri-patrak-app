@@ -1,43 +1,71 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { useGetSubjectsStructure } from '@/api/faculty';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-interface DivisionItemProps {
-  sem: string;
-  div: string;
-}
-
-interface DegreeItemProps {
-  item: string;
-}
+const STORAGE_KEY = 'subjects-structure';
 
 const Branch = () => {
-  // Extract the department and branch from the URL parameters
   const { department, branch } = useLocalSearchParams<{ department: string; branch: string }>();
-
   const router = useRouter();
 
-  // Fetch the data using your custom hook
-  const { data: subjectsStructure, isLoading, error } = useGetSubjectsStructure();
+  const [offlineData, setOfflineData] = useState(null); // To hold offline data
+  const [isOfflineLoading, setIsOfflineLoading] = useState(true); // Manage offline data loading
 
-  // Handle loading and error states
-  if (isLoading) return <Text className="text-center text-[#F6F5F5] mt-4">Loading...</Text>;
-  if (error) return <Text className="text-center text-[#FF6B6B] mt-4">Error loading data</Text>;
+  // Fetch the data from the API using custom hook
+  const { data: apiResponse, isLoading, error } = useGetSubjectsStructure();
 
-  if (!department || !branch || !subjectsStructure) {
-    return <Text className="text-center text-[#FF6B6B] mt-4">Invalid department or branch</Text>;
+  // Fetch offline data on mount
+  useEffect(() => {
+    const fetchOfflineData = async () => {
+      try {
+        const cachedData = await AsyncStorage.getItem(STORAGE_KEY);
+        if (cachedData) {
+          setOfflineData(JSON.parse(cachedData)); // Set offline data
+        }
+      } catch (error) {
+        console.log('Error fetching offline data:', error);
+      } finally {
+        setIsOfflineLoading(false); // Done loading offline data
+      }
+    };
+
+    fetchOfflineData();
+  }, []);
+
+  // Update offline data if API returns updated data
+  useEffect(() => {
+    if (apiResponse?.isUpdated && apiResponse?.data) {
+      setOfflineData(apiResponse.data); // Set new data
+    }
+  }, [apiResponse]);
+
+  // Determine the data to display (either offline or API)
+  const dataToShow = apiResponse?.data || offlineData;
+
+  // Conditional rendering moved outside hook logic to avoid violations of hooks order
+  if (isOfflineLoading || isLoading) {
+    return <Text className="text-center text-[#F6F5F5] mt-4">Loading...</Text>;
   }
 
-  // Extract the degrees (e.g., B.Tech, M.Tech, MCA)
-  const degrees = subjectsStructure.ldce[department]?.[branch] ?? {};
+  if (error && !offlineData) {
+    return <Text className="text-center text-[#FF6B6B] mt-4">Error loading data</Text>;
+  }
+
+  if (!dataToShow) {
+    return <Text className="text-center text-[#FF6B6B] mt-4">No Data Available !</Text>;
+  }
+
+  // Extract degrees under the selected department and branch
+  const degrees = dataToShow.ldce?.[department]?.[branch] || {};
 
   const handleDivisionPress = (gradLevel: string, sem: string, div: string) => {
     router.push(`/faculty/home/department/${department}/branch/${branch}/subject?graduationLevel=${gradLevel}&sem=${sem}&division=${div}`);
   };
 
   // Render a card for each division
-  const renderDivisionItem: React.FC<any> = ({ sem, div, gradLevel }) => (
+  const renderDivisionItem = ({ sem, div, gradLevel }: { sem: string, div: string, gradLevel: string }) => (
     <TouchableOpacity
       key={sem + div}
       className="bg-[#3b3e44] p-4 rounded-lg shadow-md my-2 flex-row justify-between items-center mx-4 border border-[#9DBDFF]"
@@ -48,19 +76,15 @@ const Branch = () => {
   );
 
   // Render each degree and its respective semesters and divisions
-  const renderDegreeItem: React.FC<DegreeItemProps> = ({ item }) => {
+  const renderDegreeItem = ({ item }: { item: string }) => {
     const semesters = Object.keys(degrees[item]);
 
     return (
       <View key={item} className="mb-4">
-        <Text className="text-xl font-NunitoExtraBold text-[#F6F5F5] mt-4 ml-4">
-          {item}
-        </Text>
+        <Text className="text-xl font-NunitoExtraBold text-[#F6F5F5] mt-4 ml-4">{item}</Text>
         {semesters.map((sem) => (
           <View key={sem}>
-            {Object.keys(degrees[item][sem]).map((div) => (
-              renderDivisionItem({ sem, div, gradLevel: item })
-            ))}
+            {Object.keys(degrees[item][sem]).map((div) => renderDivisionItem({ sem, div, gradLevel: item }))}
           </View>
         ))}
       </View>
@@ -69,11 +93,7 @@ const Branch = () => {
 
   return (
     <View className="flex flex-1 justify-center bg-[#1E1E1E]">
-      <Stack.Screen
-        options={{
-          headerShown: false,
-        }}
-      />
+      <Stack.Screen options={{ headerShown: false }} />
 
       <FlatList
         data={Object.keys(degrees)}

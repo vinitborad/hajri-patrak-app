@@ -21,7 +21,12 @@ export default function StudentTabsLayout() {
   }
 
   return (
-    <Tabs tabBar={props => <TabBar {...props} />}>
+    <Tabs 
+      tabBar={props => <TabBar {...props} />}
+      screenOptions={{
+        tabBarHideOnKeyboard: true,
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{

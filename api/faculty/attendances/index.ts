@@ -24,7 +24,28 @@ export const useGetPreviousAttendances = (subjectId: string) => {
     },
     //TODO: later add proper timings for caching here rather than fetching at every focus
     refetchOnWindowFocus: true,
-    staleTime: 0,
+  });
+}
+
+export const useGetAttendanceInfo = (attendanceId: string) => {
+  return useQuery({
+    queryKey: ['attendance-info', attendanceId],
+    queryFn: async () => {
+      const token = await SecureStore.getItemAsync('token');
+      const response = await axios.get(facultyEndpoints.GET_ATTENDANCE_INFO,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: {
+            attendanceId: attendanceId,
+          },
+        }
+      );
+      return response.data.data;
+    },
+    //TODO: later add proper timings for caching here rather than fetching at every focus
+    // refetchOnWindowFocus: true,
   });
 }
 
@@ -70,28 +91,6 @@ export const useCreateAttendance = () => {
     return response.data;
   });
 };
-
-export const useGetAttendanceInfo = (attendanceId: string) => {
-  return useQuery({
-    queryKey: ['attendance-info', attendanceId],
-    queryFn: async () => {
-      const token = await SecureStore.getItemAsync('token');
-      const response = await axios.get(facultyEndpoints.GET_ATTENDANCE_INFO,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          params: {
-            attendanceId: attendanceId,
-          },
-        }
-      );
-      return response.data.data;
-    },
-    //TODO: later add proper timings for caching here rather than fetching at every focus
-    // refetchOnWindowFocus: true,
-  });
-}
 
 export const useGetLiveAttendanceInfo = (attendanceId: string) => {
   return useQuery({

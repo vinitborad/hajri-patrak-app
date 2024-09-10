@@ -15,7 +15,8 @@ export const profileENdpoints = {
 export const studentEndpoints = {
   STUDENT_SUBJECTS_LIST: `${BASE_URL}/subject/student-subjects`,
   STUDENT_SUBJECT_DETAILS: `${BASE_URL}/subject/student-subject-details`,
-  QR_MARK_ATTENDANCE: `${BASE_URL}/code-pairs/temp/mark-attendance`,
+  QR_MARK_ATTENDANCE: `${BASE_URL}/code-pairs/mark-attendance`,
+  CHANGE_PASSWORD: `${BASE_URL}/auth/student/change-password`,
 };
 
 export const facultyEndpoints = {
@@ -27,6 +28,8 @@ export const facultyEndpoints = {
   GET_LIVE_ATTENDANCE_INFO: `${BASE_URL}/attendance/live-info`,
   MANUAL_MARK_ATTENDANCE: `${BASE_URL}/attendance/manual-mark`,
   CLOSE_ATTENDANCE: `${BASE_URL}/attendance/close-live`,
+  GET_DIVISION_STUDENTS_LIST: `${BASE_URL}/data/division-students-list`,
+  CHANGE_PASSWORD: `${BASE_URL}/auth/faculty/change-password`,
 }
 
 export const generalEndpoints = {

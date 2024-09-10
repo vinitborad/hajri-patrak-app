@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { useGetSubjectsStructure } from '@/api/faculty';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Subject {
   subjectId: string;
@@ -10,29 +11,66 @@ interface Subject {
   subjectType: string;
 }
 
-interface Params {
-  department: string;
-  branch: string;
-  graduationLevel: string;
-  sem: string;
-  division: string;
-}
+const STORAGE_KEY = 'subjects-structure';
 
 const SubjectsList: React.FC = () => {
-  // Extracting parameters from the URL query string
-  //@ts-ignore
-  const { department, branch, graduationLevel, sem, division } = useLocalSearchParams<Params>();
-
+  const { department, branch, graduationLevel, sem, division } = useLocalSearchParams();
   const router = useRouter();
 
-  // Fetching data using your custom hook
-  const { data: subjectsStructure, isLoading, error } = useGetSubjectsStructure();
+  const [offlineData, setOfflineData] = useState(null); // To hold offline data
+  const [isOfflineLoading, setIsOfflineLoading] = useState(true); // Manage offline data loading
 
-  if (isLoading) return <Text className="text-center text-[#F6F5F5] mt-4">Loading...</Text>;
-  if (error) return <Text className="text-center text-[#FF6B6B] mt-4">Error loading data</Text>;
+  // Fetching data using the custom hook
+  const { data: apiResponse, isLoading, error } = useGetSubjectsStructure();
 
-  // Safely accessing the subjects based on the query parameters
-  const subjects: Subject[] = subjectsStructure?.ldce?.[department]?.[branch]?.[graduationLevel]?.[sem]?.[division] || [];
+  // Fetch offline data on component mount
+  useEffect(() => {
+    const fetchOfflineData = async () => {
+      try {
+        const cachedData = await AsyncStorage.getItem(STORAGE_KEY);
+        if (cachedData) {
+          setOfflineData(JSON.parse(cachedData)); // Set offline data
+        }
+      } catch (error) {
+        console.log('Error fetching offline data:', error);
+      } finally {
+        setIsOfflineLoading(false); // Done loading offline data
+      }
+    };
+
+    fetchOfflineData();
+  }, []);
+
+  // Update offline data if API returns updated data
+  useEffect(() => {
+    if (apiResponse?.isUpdated && apiResponse?.data) {
+      setOfflineData(apiResponse.data); // Set new data
+    }
+  }, [apiResponse]);
+
+  // Determine the data to show (either from API or offline)
+  const dataToShow = apiResponse?.data || offlineData;
+
+  //@ts-ignore
+  // Extract subjects from the data based on department, branch, graduationLevel, sem, and division
+  const subjects: Subject[] = dataToShow?.ldce?.[department]?.[branch]?.[graduationLevel]?.[sem]?.[division] || [];
+
+  // Conditional rendering to avoid hooks violation
+  if (isOfflineLoading || isLoading) {
+    return <Text className="text-center text-[#F6F5F5] mt-4">Loading...</Text>;
+  }
+
+  if (error && !offlineData) {
+    return <Text className="text-center text-[#FF6B6B] mt-4">Error loading data</Text>;
+  }
+
+  if (subjects.length === 0) {
+    return (
+      <Text className="bg-[#3b3e44] p-4 rounded-lg shadow-md mt-7 mx-4 text-center text-lg font-NunitoBold text-[#F6F5F5]">
+        No subjects available.
+      </Text>
+    );
+  }
 
   const renderSubjectItem = ({ item }: { item: Subject }) => (
     <View key={item.subjectId} className="bg-[#3b3e44] rounded-lg shadow-md my-2 mx-4 border border-[#9DBDFF]">
@@ -40,15 +78,13 @@ const SubjectsList: React.FC = () => {
         {item.subjectName}
       </Text>
       <View className="flex flex-row justify-between items-center bg-[#2D2D2D] p-3 rounded-b-lg">
-        <Text className="text-[#F6F5F5] text-base font-NunitoBold">
-          {item.subjectType}
-        </Text>
+        <Text className="text-[#F6F5F5] text-base font-NunitoBold">{item.subjectType}</Text>
         <TouchableOpacity
-          onPress={() => router.push(`/faculty/(tabs)/home/department/${department}/branch/${branch}/subject/${item.subjectId}`)}
+          onPress={() =>
+            router.push(`/faculty/(tabs)/home/department/${department}/branch/${branch}/subject/${item.subjectId}`)
+          }
         >
-          <Text className="text-[#9DBDFF] border-b border-[#9DBDFF]">
-            View Details
-          </Text>
+          <Text className="text-[#9DBDFF] border-b border-[#9DBDFF]">View Details</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -56,17 +92,7 @@ const SubjectsList: React.FC = () => {
 
   return (
     <View className="flex flex-1 justify-center bg-[#1E1E1E]">
-      <Stack.Screen
-        options={{
-          headerShown: false,
-        }}
-      />
-
-      {subjects.length === 0 && (
-        <Text
-          className="bg-[#3b3e44] p-4 rounded-lg shadow-md mt-7 mx-4 text-center text-lg font-NunitoBold text-[#F6F5F5]"
-        >No subjects available.</Text>
-      )}
+      <Stack.Screen options={{ headerShown: false }} />
 
       <FlatList
         data={subjects}

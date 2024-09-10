@@ -1,21 +1,36 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native';
-import React from 'react';
-import { useGetStudentProfile } from '@/api/profile';
+import { View, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { useGetFacultyProfile } from '@/api/profile';
 import { Octicons, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import defaultImage from '@/assets/images/default-profile.png';
 
-const Profile = () => {
+const FacultyProfile = () => {
 
   const router = useRouter();
+  const [localProfile, setLocalProfile] = useState<any>(null);
+  const { data: facultyProfile, isLoading, isError } = useGetFacultyProfile();
 
-  const { data: studentProfile } = useGetStudentProfile();
+  // Fetch the local profile data on component mount
+  useEffect(() => {
+    const fetchLocalProfile = async () => {
+      try {
+        const storedProfile = await AsyncStorage.getItem('facultyProfile');
+        console.log('Stored Profile:', storedProfile);
+        if (storedProfile) {
+          setLocalProfile(JSON.parse(storedProfile));
+        }
+      } catch (error) {
+        console.error("Error fetching stored profile:", error);
+      }
+    };
+    fetchLocalProfile();
+  }, []);
 
-  // Handle loading state or return a placeholder
-  if (!studentProfile) return null;
-
-  const { personalInfo } = studentProfile;
-  const { firstName, lastName, photoUrl } = personalInfo;
+  // Decide whether to use local profile or fetched profile
+  const profile = facultyProfile || localProfile;
 
   const onSignOut = () => {
     SecureStore.deleteItemAsync('token');
@@ -23,21 +38,24 @@ const Profile = () => {
     router.replace('/(auth)/sign-in');
   }
 
+  // Render placeholder if no profile data (first-time load)
+  const renderPlaceholderName = () => "User";
+
   return (
     <View className="flex-1 bg-[#1E1E1E]">
       {/* Header with the background color and name */}
       <View className="bg-[#3b3e44] pt-12 pb-6 h-40 rounded-b-2xl shadow-lg">
         <Text className="text-[#9DBDFF] text-2xl text-center font-NunitoExtraBold">
-          Hi, {firstName.charAt(0).toUpperCase() + firstName.slice(1)} {lastName.charAt(0).toUpperCase() + lastName.slice(1)} !
+          Hi, {profile ? `${profile.personalInfo?.firstName} ${profile.personalInfo?.lastName}` : renderPlaceholderName()} !
         </Text>
       </View>
 
       {/* Profile Picture */}
       <View className="mt-[-50px] flex items-center">
         <View className="bg-[#3b3e44] p-2 rounded-full">
-          {photoUrl ? (
+          {profile?.personalInfo?.photoUrl ? (
             <Image
-              source={{ uri: photoUrl }}
+              source={profile.personalInfo.photoUrl ? { uri: profile.personalInfo.photoUrl } : defaultImage}
               className="w-24 h-24 rounded-full"
             />
           ) : (
@@ -50,11 +68,17 @@ const Profile = () => {
 
       {/* Buttons */}
       <View className="mt-12 px-8">
-        <TouchableOpacity className="flex-row items-center mb-4 p-4 bg-[#3b3e44] rounded-lg border border-[#9DBDFF]">
+        <TouchableOpacity
+          className="flex-row items-center mb-4 p-4 bg-[#3b3e44] rounded-lg border border-[#9DBDFF]"
+          onPress={() => router.push('/faculty/(tabs)/profile/profile-info')}
+        >
           <Octicons name="person" size={24} color="#9DBDFF" />
           <Text className="text-[#F6F5F5] text-lg ml-4 font-NunitoBold">Profile</Text>
         </TouchableOpacity>
-        <TouchableOpacity className="flex-row items-center mb-4 p-4 bg-[#3b3e44] rounded-lg border border-[#9DBDFF]">
+        <TouchableOpacity
+          className="flex-row items-center mb-4 p-4 bg-[#3b3e44] rounded-lg border border-[#9DBDFF]"
+          onPress={() => router.push('/faculty/(tabs)/profile/reset-password')}
+        >
           <Ionicons name="key" size={24} color="#9DBDFF" />
           <Text className="text-[#F6F5F5] text-lg ml-4 font-NunitoBold">Reset Password</Text>
         </TouchableOpacity>
@@ -74,8 +98,11 @@ const Profile = () => {
           <Text className="text-white text-center text-lg font-NunitoExtraBold ml-4">LOG OUT</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Loading indicator */}
+      {isLoading && <ActivityIndicator size="large" color="#9DBDFF" />}
     </View>
   );
 };
 
-export default Profile;
+export default FacultyProfile;

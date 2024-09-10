@@ -31,7 +31,7 @@ const index = () => {
   }
 
   if (role === 'faculty') {
-    return <Redirect href='/faculty/(tabs)/' />;
+    return <Redirect href='/faculty/(tabs)/home/' />;
   }
 
   return <Redirect href="/student/(tabs)" />;
