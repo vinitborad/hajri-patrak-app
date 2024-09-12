@@ -4,8 +4,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { useGetAttendanceInfo } from '@/api/faculty/attendances';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const STORAGE_KEY = (attendanceId: string) => `attendance-info-${attendanceId}`;
+import { ATTENDANCE_INFO, DIVISION_STUDENTS_LIST } from '@/constants/async-store-keys';
 
 const ViewAttendanceScreen = () => {
   const { attendanceId } = useLocalSearchParams();
@@ -21,7 +20,7 @@ const ViewAttendanceScreen = () => {
   useEffect(() => {
     const fetchOfflineData = async () => {
       try {
-        const cachedData = await AsyncStorage.getItem(STORAGE_KEY(attendanceId as string));
+        const cachedData = await AsyncStorage.getItem(ATTENDANCE_INFO(attendanceId as string));
         console.log('cachedData:', cachedData);
         if (cachedData) {
           setOfflineData(JSON.parse(cachedData));
@@ -40,7 +39,7 @@ const ViewAttendanceScreen = () => {
   useEffect(() => {
     if (data) {
       try {
-        AsyncStorage.setItem(STORAGE_KEY(attendanceId as string), JSON.stringify(data));
+        AsyncStorage.setItem(ATTENDANCE_INFO(attendanceId as string), JSON.stringify(data));
       } catch (error) {
         console.log('Error saving offline data:', error);
       }
@@ -60,7 +59,7 @@ const ViewAttendanceScreen = () => {
     let combinedStudents = [];
     for (const divisionId of divisionIds) {
       try {
-        const storedDivisionData = await AsyncStorage.getItem(`division-students-list-data-${divisionId}`);
+        const storedDivisionData = await AsyncStorage.getItem(DIVISION_STUDENTS_LIST(divisionId));
         const parsedData = storedDivisionData ? JSON.parse(storedDivisionData).students || [] : [];
         combinedStudents = combinedStudents.concat(parsedData);
       } catch (error) {

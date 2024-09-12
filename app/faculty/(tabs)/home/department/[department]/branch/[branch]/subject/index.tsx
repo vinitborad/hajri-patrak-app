@@ -3,6 +3,7 @@ import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { useGetSubjectsStructure } from '@/api/faculty';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SUBJECT_STRUCTURE } from '@/constants/async-store-keys';
 
 interface Subject {
   subjectId: string;
@@ -10,8 +11,6 @@ interface Subject {
   subjectCode: string;
   subjectType: string;
 }
-
-const STORAGE_KEY = 'subjects-structure';
 
 const SubjectsList: React.FC = () => {
   const { department, branch, graduationLevel, sem, division } = useLocalSearchParams();
@@ -27,7 +26,7 @@ const SubjectsList: React.FC = () => {
   useEffect(() => {
     const fetchOfflineData = async () => {
       try {
-        const cachedData = await AsyncStorage.getItem(STORAGE_KEY);
+        const cachedData = await AsyncStorage.getItem(SUBJECT_STRUCTURE);
         if (cachedData) {
           setOfflineData(JSON.parse(cachedData)); // Set offline data
         }

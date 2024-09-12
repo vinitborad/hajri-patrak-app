@@ -1,4 +1,5 @@
 import { profileENdpoints } from "@/constants/ApiEndpoints";
+import { FACULTY_PROFILE, STUDENT_PROFILE } from "@/constants/async-store-keys";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery } from "@tanstack/react-query"
 import axios from "axios";
@@ -16,7 +17,7 @@ export const useGetStudentProfile = () => {
         }
       });
       if (response.data.success) {
-        await AsyncStorage.setItem('studentProfile', JSON.stringify(response.data.data));
+        await AsyncStorage.setItem(STUDENT_PROFILE, JSON.stringify(response.data.data));
       }
       return response.data.data;
     },
@@ -37,7 +38,7 @@ export const useGetFacultyProfile = () => {
         }
       });
       if (response.data.success) {
-        await AsyncStorage.setItem('facultyProfile', JSON.stringify(response.data.data));
+        await AsyncStorage.setItem(FACULTY_PROFILE, JSON.stringify(response.data.data));
       }
       return response.data.data;
     },

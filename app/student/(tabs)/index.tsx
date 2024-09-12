@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useGetStudentSubjects } from '@/api/student';
+import { STUDENT_SUBJECTS_LIST } from '@/constants/async-store-keys';
 
 const Index = () => {
 
@@ -16,7 +17,7 @@ const Index = () => {
   useEffect(() => {
     const fetchOfflineData = async () => {
       try {
-        const cachedData = await AsyncStorage.getItem('student-subjects-list');
+        const cachedData = await AsyncStorage.getItem(STUDENT_SUBJECTS_LIST);
         if (cachedData) {
           setOfflineData(JSON.parse(cachedData));
         }
@@ -33,7 +34,7 @@ const Index = () => {
   // When we receive API data, update the offline data with the new data
   useEffect(() => {
     if (subjects && !error) {
-      AsyncStorage.setItem('student-subjects-list', JSON.stringify(subjects)).catch(err =>
+      AsyncStorage.setItem(STUDENT_SUBJECTS_LIST, JSON.stringify(subjects)).catch(err =>
         console.log("Error saving data to cache:", err)
       );
     }

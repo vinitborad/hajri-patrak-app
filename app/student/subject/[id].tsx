@@ -6,6 +6,7 @@ import { Calendar } from 'react-native-calendars';
 import moment from 'moment-timezone';
 import { FontAwesome5 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STUDENT_SUBJECT_INFO } from '@/constants/async-store-keys';
 
 const SubjectDetail = () => {
   const { id } = useLocalSearchParams();
@@ -19,7 +20,7 @@ const SubjectDetail = () => {
   useEffect(() => {
     const fetchOfflineData = async () => {
       try {
-        const cachedData = await AsyncStorage.getItem(`subject-info-${subjectId}`);
+        const cachedData = await AsyncStorage.getItem(STUDENT_SUBJECT_INFO(subjectId));
         if (cachedData) {
           setOfflineData(JSON.parse(cachedData));
         }
@@ -36,7 +37,7 @@ const SubjectDetail = () => {
   // When we receive API data, update the offline data with the new data
   useEffect(() => {
     if (subjectInfo && !error) {
-      AsyncStorage.setItem(`subject-info-${subjectId}`, JSON.stringify(subjectInfo)).catch(err =>
+      AsyncStorage.setItem(STUDENT_SUBJECT_INFO(subjectId), JSON.stringify(subjectInfo)).catch(err =>
         console.log("Error saving data to AsyncStorage:", err)
       );
     }

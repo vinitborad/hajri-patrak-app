@@ -6,6 +6,7 @@ import * as SecureStore from 'expo-secure-store';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import defaultImage from '@/assets/images/default-profile.png';
+import { FACULTY_PROFILE } from '@/constants/async-store-keys';
 
 const FacultyProfile = () => {
 
@@ -17,7 +18,7 @@ const FacultyProfile = () => {
   useEffect(() => {
     const fetchLocalProfile = async () => {
       try {
-        const storedProfile = await AsyncStorage.getItem('facultyProfile');
+        const storedProfile = await AsyncStorage.getItem(FACULTY_PROFILE);
         console.log('Stored Profile:', storedProfile);
         if (storedProfile) {
           setLocalProfile(JSON.parse(storedProfile));

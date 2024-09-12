@@ -5,6 +5,7 @@ import { Stack } from 'expo-router';
 import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import defaultImage from '@/assets/images/default-profile.png';
+import { STUDENT_PROFILE } from '@/constants/async-store-keys';
 
 const ProfileInfoScreen = () => {
   const [profileData, setProfileData] = useState<any>(null);
@@ -12,7 +13,7 @@ const ProfileInfoScreen = () => {
 
   useEffect(() => {
     const loadProfileData = async () => {
-      const storedProfile = await AsyncStorage.getItem('studentProfile');
+      const storedProfile = await AsyncStorage.getItem(STUDENT_PROFILE);
       if (storedProfile) {
         setProfileData(JSON.parse(storedProfile));
       }

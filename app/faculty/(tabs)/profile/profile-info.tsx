@@ -5,13 +5,14 @@ import { Entypo, MaterialIcons } from '@expo/vector-icons';
 import defaultImage from '@/assets/images/default-profile.png';
 import { Stack } from 'expo-router';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { FACULTY_PROFILE } from '@/constants/async-store-keys';
 
 const FacultyProfileInfoScreen = () => {
   const [facultyProfile, setFacultyProfile] = useState<any>(null);
 
   useEffect(() => {
     const loadFacultyProfile = async () => {
-      const profile = await AsyncStorage.getItem('facultyProfile');
+      const profile = await AsyncStorage.getItem(FACULTY_PROFILE);
       if (profile) {
         setFacultyProfile(JSON.parse(profile));
       }

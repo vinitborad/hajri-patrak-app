@@ -3,8 +3,7 @@ import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useGetSubjectsStructure } from '@/api/faculty';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const STORAGE_KEY = 'subjects-structure';
+import { SUBJECT_STRUCTURE } from '@/constants/async-store-keys';
 
 const Department = () => {
   const { department } = useLocalSearchParams();
@@ -19,7 +18,7 @@ const Department = () => {
   useEffect(() => {
     const fetchOfflineData = async () => {
       try {
-        const cachedData = await AsyncStorage.getItem(STORAGE_KEY);
+        const cachedData = await AsyncStorage.getItem(SUBJECT_STRUCTURE);
         if (cachedData) {
           setOfflineData(JSON.parse(cachedData)); // Set offline data
         }

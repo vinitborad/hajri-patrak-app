@@ -4,8 +4,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { useGetAnalyseAttendance } from '@/api/faculty/attendances';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const STORAGE_KEY = 'attendance-analysis';
+import { ANALYSIS } from '@/constants/async-store-keys';
 
 const AnalyseAttendanceScreen = () => {
   const { subjectId } = useLocalSearchParams();
@@ -20,7 +19,7 @@ const AnalyseAttendanceScreen = () => {
   useEffect(() => {
     const fetchOfflineData = async () => {
       try {
-        const cachedData = await AsyncStorage.getItem(`${STORAGE_KEY}-${subjectId}`);
+        const cachedData = await AsyncStorage.getItem(ANALYSIS(subjectId as string));
         if (cachedData) {
           setOfflineData(JSON.parse(cachedData)); // Load offline data
         }
@@ -36,7 +35,7 @@ const AnalyseAttendanceScreen = () => {
   // Store fresh API data offline
   useEffect(() => {
     if (data) {
-      AsyncStorage.setItem(`${STORAGE_KEY}-${subjectId}`, JSON.stringify(data));
+      AsyncStorage.setItem(ANALYSIS(subjectId as string), JSON.stringify(data));
     }
   }, [data]);
 
