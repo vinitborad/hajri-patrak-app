@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, TextInput, Alert, Keyboard } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import { FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LIVE_ATTENDANCE, DIVISION_STUDENTS_LIST } from '@/constants/async-store-keys';
-import { addAttendanceToQueue } from '@/utils/attendance-queue';
+import { isConnected } from '@/utils/network';
+import { callCreateAttendance, closeAttendance } from '@/utils/attendances/helper-functions';
+import axios from 'axios';
+import { facultyEndpoints } from '@/constants/ApiEndpoints';
+import * as SecureStore from 'expo-secure-store';
 
 const LiveAttendanceScreen = () => {
   const { subjectId, department, branch } = useLocalSearchParams();
@@ -12,6 +16,7 @@ const LiveAttendanceScreen = () => {
 
   const [liveAttendance, setLiveAttendance] = useState<any>(null); // Live attendance data from AsyncStorage
   const [students, setStudents] = useState<any[]>([]); // List of students from all divisions
+  const [qrStudents, setQrStudents] = useState<any[]>([]);
   const [message, setMessage] = useState('');
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false); // To track keyboard visibility
 
@@ -29,6 +34,23 @@ const LiveAttendanceScreen = () => {
       keyboardDidShowListener.remove();
     };
   }, []);
+
+  const createCallHandling = async () => {
+    try {
+      const networkStatus = await isConnected();
+      if (networkStatus) {
+        const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(subjectId as string));
+        if (liveData) {
+          const parsedLiveData = JSON.parse(liveData);
+          if (!parsedLiveData._id) {
+            await callCreateAttendance(subjectId as string);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error creating call handling:', error);
+    }
+  }
 
   // Fetch live attendance data and students list from AsyncStorage
   const fetchData = async () => {
@@ -53,6 +75,32 @@ const LiveAttendanceScreen = () => {
         allStudents.sort((a, b) => a.username.localeCompare(b.username));
         setStudents(allStudents);
       }
+
+      // If possible fetch data from server also
+      const networkStatus = await isConnected();
+      if (networkStatus) {
+        createCallHandling();
+        const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(subjectId as string));
+        if (liveData) {
+          const parsedLiveData = JSON.parse(liveData);
+          if (parsedLiveData && parsedLiveData._id) {
+            const token = await SecureStore.getItemAsync("token");
+            const response = await axios.get(facultyEndpoints.GET_LIVE_ATTENDANCE_INFO,
+              {
+                params: { attendanceId: parsedLiveData._id },
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+            if (response.data.success && response.data.data) {
+              const data = response.data.data.presentStudentLists;
+              setQrStudents(data);
+            }
+          }
+        }
+
+      }
     } catch (error) {
       console.error('Error fetching live attendance or students:', error);
     }
@@ -68,27 +116,31 @@ const LiveAttendanceScreen = () => {
     return liveAttendance?.presentStudentsList?.some((student: string) => student === studentId);
   };
 
+  const isQrPresent = (studentId: string) => {
+    return qrStudents.some((student: any) => student === studentId);
+  }
+
   const handleCloseAttendance = () => {
     try {
       Alert.alert(
-        'Confirm Closing ?', 
+        'Confirm Closing ?',
         'Are you sure you want to close the attendance?',
         [
           { text: 'Cancel', style: 'cancel' },
           {
             text: 'Yes',
             onPress: async () => {
-              liveAttendance.message = message;
-              const {success, data} = await addAttendanceToQueue(subjectId as string, liveAttendance);
-
-              if(success) {
-                console.log('Attendance added to queue:', data);
-
-                await AsyncStorage.removeItem(LIVE_ATTENDANCE(subjectId as string));
-                router.back();
-              } else {
-                console.error('Error adding attendance to queue');
-              } 
+              try {
+                const { success, message: comingMessage } = await closeAttendance(subjectId as string, message);
+                if (success) {
+                  Alert.alert('Success', comingMessage);
+                  router.back();
+                } else {
+                  Alert.alert('Error', comingMessage);
+                }
+              } catch (error) {
+                Alert.alert('Error', 'Failed to close attendance');
+              }
             },
           },
         ]
@@ -98,11 +150,41 @@ const LiveAttendanceScreen = () => {
     }
   };
 
+  const handleQRClick = async () => {
+    try {
+      const networkStatus = await isConnected();
+      if (networkStatus) {
+        createCallHandling();
+        const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(subjectId as string));
+        if (liveData) {
+          const parsedLiveData = JSON.parse(liveData);
+          if (parsedLiveData && parsedLiveData._id) {
+            const token = await SecureStore.getItemAsync("token");
+            const response = await axios.post(facultyEndpoints.GET_QR_CODE,
+              { attendanceId: parsedLiveData._id },
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                }
+              }
+            );
+            if (response.data.success && response.data.passCode) {
+              Alert.alert('Secret Passcode !', response.data.passCode);
+            }
+          }
+        }
+      } else {
+        Alert.alert('Network issue', 'Please check your internet connection.');
+      }
+    } catch (error) {
+      console.log('Error handling QR code:', error);
+    }
+  }
+
   //TODO: add some toast or show to attendace has been refreshed
   const handleRefresh = () => {
     // Refresh attendance logic here
     fetchData();
-    console.log('Attendance refreshed!');
   };
 
   if (!liveAttendance) return <Text className="text-center text-[#F6F5F5] mt-4">Loading...</Text>;
@@ -115,8 +197,9 @@ const LiveAttendanceScreen = () => {
       <View className="flex-row justify-between p-4">
         <TouchableOpacity
           className="flex-1 bg-[#9DBDFF] p-4 rounded-lg mr-2 flex-row justify-center items-center"
-          onPress={() => Alert.alert('QR Code', 'Coming soon! 🔥')}
+          onPress={() => handleQRClick()}
         >
+          {/* Alert.alert('QR Code', 'Coming soon! 🔥')  */}
           <FontAwesome name="qrcode" size={24} color="#1E1E1E" />
           <Text className="text-center text-[#1E1E1E] text-lg ml-2 -mt-1">QR</Text>
         </TouchableOpacity>
@@ -145,10 +228,11 @@ const LiveAttendanceScreen = () => {
         data={students}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
-          const isPresent = isStudentPresent(item.id);
+          const isQr = isQrPresent(item.id);
+          const isPresent = isStudentPresent(item.id) || isQr;
           return (
             <View
-              className={`p-2 pl-4 rounded-lg mb-2 mx-4 flex-row justify-between items-center ${isPresent ? 'bg-[#2D6A4F]' : 'bg-[#c33f43]'
+              className={`p-2 pl-4 pr-5 rounded-lg mb-2 mx-4 flex-row justify-between items-center ${isPresent ? 'bg-[#2D6A4F]' : 'bg-[#c33f43]'
                 } border border-[#1B4332]`}
             >
               <View>
@@ -159,6 +243,11 @@ const LiveAttendanceScreen = () => {
                   <FontAwesome name="user" size={18} color="#F6F5F5" /> Name: {item.firstName} {item.lastName}
                 </Text>
               </View>
+              {isQr && (
+                <View>
+                  <MaterialCommunityIcons name="qrcode-scan" size={35} color="#9DBDFF" />
+                </View>
+              )}
             </View>
           );
         }}

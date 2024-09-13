@@ -9,8 +9,8 @@ import { AntDesign, FontAwesome, Foundation, Ionicons, MaterialIcons } from '@ex
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from '@tanstack/react-query';
 import { DIVISION_STUDENTS_LIST, DIVISION_STUDENTS_LIST_KEY, LIVE_ATTENDANCE, PREV_ATTENDANCES } from '@/constants/async-store-keys';
-import { getQueuedAttendances } from '@/utils/attendance-queue';
-
+import { isConnected } from '@/utils/network';
+import { callCreateAttendance } from '@/utils/attendances/helper-functions';
 
 const SubjectDetailScreen = () => {
   const { department, branch, subjectId } = useLocalSearchParams();
@@ -26,7 +26,6 @@ const SubjectDetailScreen = () => {
   const [isOfflineLoading, setIsOfflineLoading] = useState(true);
   //TODO: very later : declare type structure for liveAttendance
   const [liveAttendance, setLiveAttendance] = useState<any>(null); // New State for live attendance
-  const [queuedAttendances, setQueuedAttendances] = useState<any[]>([]); // State for queued attendances
   const queryClient = useQueryClient(); // Use query client for fetching division students data
 
   // Fetch offline data on mount
@@ -44,11 +43,6 @@ const SubjectDetailScreen = () => {
         if (liveData) {
           setLiveAttendance(JSON.parse(liveData));
         }
-
-        // Fetch queued attendances from AsyncStorage
-        const queued = await getQueuedAttendances(subjectId as string);
-        setQueuedAttendances(queued?.data || []);
-
       } catch (error) {
         console.log('Error fetching offline data:', error);
       } finally {
@@ -126,14 +120,22 @@ const SubjectDetailScreen = () => {
       }
       const attendanceData: any = {
         subjectId: subjectId,
+        subjectName: subjectDetails.subjectName,
         value: parseInt(value),
         interDivisions: selectedInterDivisions,
         presentStudentsList: [],
         message: '',
-        retry: false,
+        retry: 0,
+        close: false,
       }
       await AsyncStorage.setItem(LIVE_ATTENDANCE(subjectId as string), JSON.stringify(attendanceData));
       setLiveAttendance(attendanceData); // Set live attendance state
+      
+      const networkStatus = await isConnected();
+      if(networkStatus) {
+        await callCreateAttendance(subjectId as string);
+      }
+
       setModalVisible(false);
     } catch (error) {
       console.log('Error creating attendance:', error);
@@ -259,46 +261,6 @@ const SubjectDetailScreen = () => {
               </TouchableOpacity>
             )}
 
-            {queuedAttendances.length > 0 && (
-              <View className="mb-2 flex-row justify-start items-center pl-2 gap-2">
-                <Ionicons name="timer" size={24} color="#e5eb95" />
-                <Text className="text-[#e5eb95] text-xl font-NunitoExtraBold">Pending Attendances</Text>
-              </View>
-            )}
-
-            {/* Show queued attendances */}
-            {queuedAttendances.length > 0 && (
-              queuedAttendances.map((item, index) => (
-                <View key={index} className="bg-[#3b3e44] p-2 rounded-lg mb-2 border border-[#e5eb95]">
-                  {/* Message Input */}
-                  <View className="bg-[#1E1E1E] p-2 pl-3 rounded-lg mb-2">
-                    <Text className="text-[#e5eb95]">{item.message || 'No Message'}</Text>
-                  </View>
-
-                  {/* Hours and Divisions */}
-                  <View className="flex-row justify-between items-center mb-2 px-2">
-                    <View className="flex-row items-center">
-                      <AntDesign name="clockcircle" size={20} color="#9DBDFF" />
-                      <Text className="text-[#c5d4f3] ml-2 font-NunitoLight"> {item.value} Hour</Text>
-                    </View>
-
-                    <View className="flex-row items-center">
-                      <MaterialIcons name="people-alt" size={22} color="#9DBDFF" />
-                      <Text className="text-[#c5d4f3] ml-2 font-NunitoMedium">{item.interDivisions.map((div: any) => div.interDivision).join(', ')}</Text>
-                    </View>
-                  </View>
-
-                  {/* Present Students */}
-                  <View className="flex-row items-center justify-start gap-2 px-2">
-                    <Foundation name="list-number" size={24} color="#c5d4f3" />
-                    <Text className="text-[#9DBDFF] text-base font-NunitoExtraBold">
-                      Present Count : {item.presentStudentsList.length}
-                    </Text>
-                  </View>
-
-                </View>
-              ))
-            )}
 
             <View className="mb-2 pt-3 flex-row justify-start items-center pl-2 gap-2">
               <FontAwesome name="history" size={24} color="#9DBDFF" />

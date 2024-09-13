@@ -30,6 +30,7 @@ export const facultyEndpoints = {
   CLOSE_ATTENDANCE: `${BASE_URL}/attendance/close-live`,
   GET_DIVISION_STUDENTS_LIST: `${BASE_URL}/data/division-students-list`,
   CHANGE_PASSWORD: `${BASE_URL}/auth/faculty/change-password`,
+  GET_QR_CODE: `${BASE_URL}/code-pairs/create`,
 }
 
 export const generalEndpoints = {

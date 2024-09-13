@@ -1,7 +1,7 @@
 
 // offline atttendance
 export const LIVE_ATTENDANCE = (subjectId: string) => `live-attendance-${subjectId}`;
-export const QUEUED_ATTENDANCES = (subjectId: string) => `queued-attendances-${subjectId}`;
+export const QUEUED_ATTENDANCES = 'queued-attendances';
 export const archivedAttendancesKey = (subjectId: string) => `archived-attendances-${subjectId}`;
 
 // defualt data structures

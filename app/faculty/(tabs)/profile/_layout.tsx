@@ -21,6 +21,12 @@ export default function FacultyProfileLayout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="queued-attendances"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   )
 }

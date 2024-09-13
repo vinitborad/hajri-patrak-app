@@ -48,7 +48,7 @@ const ResetPasswordScreen = () => {
 
   return (
     <View className="flex-1 bg-[#1E1E1E] p-6 pt-11">
-      <Stack.Screen options={{ headerShown: false }} />
+      <Stack.Screen options={{ headerShown: false  }} />
 
       <Text className="text-white text-2xl font-NunitoLight mb-6 text-center bg-[#879ecb] p-2 rounded-lg">CHANGE PASSWORD</Text>
 
