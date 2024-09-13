@@ -9,13 +9,13 @@ import { isConnected } from '@/utils/network';
 const QueuedAttendancesScreen = () => {
   const [queuedAttendances, setQueuedAttendances] = useState<any[]>([]); // State for queued attendances
   const [isOfflineLoading, setIsOfflineLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     const fetchOfflineData = async () => {
       try {
         // Fetch queued attendances from AsyncStorage
         const queued = await getQueuedAttendances();
-        console.log('Queued attendances: ', queued?.data);
         setQueuedAttendances(queued?.data || []);
       } catch (error) {
         console.log('Error fetching queued attendances.', error);
@@ -29,9 +29,9 @@ const QueuedAttendancesScreen = () => {
 
   const renderQueuedAttendanceItem = ({ item, index }: any) => (
     <View key={index} className="bg-[#3b3e44] p-2 rounded-lg mb-2 border border-[#e5eb95] flex w-full">
-      <View className=' pl-1 mb-1'>
+      <View className=' pl-1 pr-2 mb-1 flex-row justify-between items-center'>
         <Text className="text-[#e5eb95] text-lg font-NunitoExtraBold">{item?.subjectName ? item?.subjectName.toUpperCase() : "N / A"}</Text>
-        <Text>{item?.retry}</Text>
+        <Text className='text-[#a2a393]'>{item?.retry}</Text>
       </View>
 
       {/* Message Input */}
@@ -82,17 +82,26 @@ const QueuedAttendancesScreen = () => {
       {
         text: 'Sync',
         onPress: async () => {
-          if (await isConnected()) {
-            // Your sync logic here
-            const {success, message} = await processQueuedAttendances();
-            console.log('Process queued attendances response: ', success, message);
-            if (success) {
-              Alert.alert('Synced', 'All queued attendances processed successfully.');
+          try {
+            setIsSyncing(true);
+            if (await isConnected()) {
+              if (queuedAttendances.length === 0) {
+                Alert.alert('No Queued Attendances', 'There are no queued attendances to sync.');
+                return;
+              }
+              // Your sync logic here
+              const { success, message } = await processQueuedAttendances();
+              console.log('Process queued attendances response: ', success, message);
+              if (success) {
+                Alert.alert('Synced', 'All queued attendances processed successfully.');
+              } else {
+                Alert.alert('Error', message);
+              }
             } else {
-              Alert.alert('Error', message);
+              Alert.alert('No Internet', 'Please check your internet connection and try again.');
             }
-          } else {
-            Alert.alert('No Internet', 'Please check your internet connection and try again.');
+          } finally {
+            setIsSyncing(false);
           }
         },
       },
@@ -104,7 +113,7 @@ const QueuedAttendancesScreen = () => {
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* FlatList or no-data message */}
-      {isOfflineLoading ? (
+      {(isOfflineLoading || isSyncing) ? (
         <View className='flex h-full items-center justify-center -mt-10'>
           <ActivityIndicator size="large" color="#f6ff90" />
         </View>
@@ -125,6 +134,7 @@ const QueuedAttendancesScreen = () => {
         <TouchableOpacity
           className="bg-[#FF6B6B] rounded-t-3xl flex-row justify-center items-center px-4 py-1"
           onPress={() => onSyncPress()}
+          disabled={isSyncing}
         >
           <MaterialIcons name="sync" size={24} color="#1E1E1E" />
           <Text className="text-[#ffffff] text-lg font-NunitoExtraBold ml-2">SYNC</Text>

@@ -7,7 +7,6 @@ import { isConnected } from "../network";
 export const processQueuedAttendances = async () => {
   try {
     if (await isConnected()) {
-      console.log("Processing queued attendances");
       // get token from secure store
       const token = await SecureStore.getItemAsync("token");
 
@@ -19,7 +18,6 @@ export const processQueuedAttendances = async () => {
       }
 
       const getQueuedAttendancesList = await getQueuedAttendances();
-      console.log("Queued attendances list: ", getQueuedAttendancesList);
 
       if (!getQueuedAttendancesList.success) {
         return {
@@ -31,7 +29,12 @@ export const processQueuedAttendances = async () => {
       // Process the queued attendances
       const queuedAttendances = getQueuedAttendancesList.data;
 
-      console.log("Processing queued attendances: ", queuedAttendances);
+      if (!queuedAttendances.length) {
+        return {
+          success: true,
+          message: "No queued attendances found.",
+        }
+      }
 
       // Use for...of loop to await each asynchronous operation
       for (const attendanceData of queuedAttendances) {
@@ -45,8 +48,6 @@ export const processQueuedAttendances = async () => {
           };
         }
       }
-
-      console.log("checking time")
 
       return {
         success: true,
@@ -70,10 +71,7 @@ export const processQueuedAttendances = async () => {
 
 const processAttendanceDataHelper = async (attendanceData: any, token: string) => {
   try {
-    console.log("Processing attendance data : ", attendanceData);
-    // check for _id, if it is then dont call create
     if (!attendanceData._id) {
-      console.log("Creating id", attendanceData);
       // call create api, and store _id back to the attendanceData
       const createResponse = await axios.post(facultyEndpoints.CREATE_ATTENDANCE,
         {
@@ -87,17 +85,15 @@ const processAttendanceDataHelper = async (attendanceData: any, token: string) =
           },
         }
       );
-      
-      console.log("Created attendance resonse: ", createResponse.data);
 
       if (createResponse.data.success) {
         attendanceData._id = createResponse.data.data.attendanceId;
+        await updateAttendanceInQueue(attendanceData.uniqueId, attendanceData);
       }
     }
 
-    console.log("Marking attendance: ", attendanceData._id);
     // call for manual mark
-    const markResponse = await axios.post(facultyEndpoints.MANUAL_MARK_ATTENDANCE,
+    await axios.post(facultyEndpoints.MANUAL_MARK_ATTENDANCE,
       {
         attendanceId: attendanceData._id,
         studentIdLists: attendanceData.presentStudentsList,
@@ -109,12 +105,9 @@ const processAttendanceDataHelper = async (attendanceData: any, token: string) =
       }
     );
 
-    console.log("Marked attendance: ", attendanceData._id, markResponse.data);
-
     if (!attendanceData.close) {
       // call for close attendance
-      console.log("Closing attendance: ", attendanceData._id);
-      const closeResponse = await axios.post(facultyEndpoints.CLOSE_ATTENDANCE,
+      await axios.post(facultyEndpoints.CLOSE_ATTENDANCE,
         {
           attendanceId: attendanceData._id,
           message: attendanceData.message,
@@ -125,12 +118,9 @@ const processAttendanceDataHelper = async (attendanceData: any, token: string) =
           },
         }
       );
-
-      console.log("Closed attendance: ", attendanceData._id, closeResponse.data);
+      attendanceData.close = true;
+      await updateAttendanceInQueue(attendanceData.uniqueId, attendanceData);
     }
-
-    attendanceData.close = true;
-    await updateAttendanceInQueue(attendanceData.uniqueId, attendanceData);
 
     // delete the attendance from queue
     const { success } = await deleteAttendanceFromQueue(attendanceData.uniqueId);
@@ -141,7 +131,7 @@ const processAttendanceDataHelper = async (attendanceData: any, token: string) =
         return;
       } else {
         attendanceData.retry += 1;
-        updateAttendanceInQueue(attendanceData.uniqueId, attendanceData);
+        await updateAttendanceInQueue(attendanceData.uniqueId, attendanceData);
         return;
       }
     }
