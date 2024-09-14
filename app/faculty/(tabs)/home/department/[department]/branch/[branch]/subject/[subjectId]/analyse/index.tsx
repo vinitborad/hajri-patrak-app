@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, TextInput, Animated } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useGetAnalyseAttendance } from '@/api/faculty/attendances';
-import { Ionicons } from '@expo/vector-icons';
+import { FontAwesome, FontAwesome5, Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ANALYSIS } from '@/constants/async-store-keys';
 
@@ -10,10 +10,14 @@ const AnalyseAttendanceScreen = () => {
   const { subjectId } = useLocalSearchParams();
   const { data, isLoading, error } = useGetAnalyseAttendance(subjectId as string);
 
-  const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [filter, setFilter] = useState(''); // Filter state
+  const [filter, setFilter] = useState(''); // Filter state (asc, desc)
   const [offlineData, setOfflineData] = useState(null); // State for offline data
   const [isOfflineLoading, setIsOfflineLoading] = useState(true); // To manage offline data loading state
+  const [isSearchActive, setIsSearchActive] = useState(false); // Track if search is active
+  const [searchText, setSearchText] = useState(''); // For search input
+
+  const searchWidth = new Animated.Value(40); // Initial width for search button
+  const [animatedWidth, setAnimatedWidth] = useState(searchWidth); // Control the width
 
   // Fetch offline data when the component mounts
   useEffect(() => {
@@ -44,7 +48,7 @@ const AnalyseAttendanceScreen = () => {
     return <Text className="text-center text-white mt-4">Loading...</Text>;
   }
   if (error && !offlineData) {
-    return <Text className="text-center text-red-500 mt-4">No Data Available !</Text>;
+    return <Text className="text-center text-red-500 mt-4">No Data Available!</Text>;
   }
 
   const dataToShow = data || offlineData; // Choose data from API or offline storage
@@ -57,92 +61,149 @@ const AnalyseAttendanceScreen = () => {
   // Calculate attendance percentage for each student
   const calculatePercentage = (attendedLecs: number, totalLecs: number) => {
     if (totalLecs === 0) return '0%';
-    return `${((attendedLecs / totalLecs) * 100).toFixed(2)}%`;
+    return `${((attendedLecs / totalLecs) * 100).toFixed(0)}`;
   };
 
-  // Handle filtering logic based on percentage ranges
+  // Handle sorting and search logic
   const filteredData = dataToShow
     //@ts-ignore
     .filter((item) => {
-      const percentage = parseFloat(calculatePercentage(item.attendedLecs, item.totalLecs));
-      if (filter === 'below25') return percentage < 25;
-      if (filter === 'below50') return percentage >= 25 && percentage < 50;
-      if (filter === 'below75') return percentage >= 50 && percentage < 75;
-      if (filter === 'below100') return percentage >= 75 && percentage < 100;
+      // Concatenate first and last name
+      const fullName = `${item.student.personalInfo.firstName.toLowerCase()} ${item.student.personalInfo.lastName.toLowerCase()}`;
+
+      if (isSearchActive) {
+        return (
+          item.student.username.includes(searchText) ||
+          fullName.includes(searchText.toLowerCase()) // Search by full name (first + last name)
+        );
+      }
       return true; // No filter
     })
     //@ts-ignore
-    .sort((a, b) => a.student.username.localeCompare(b.student.username)); // Sort by username (roll number)
+    .sort((a, b) => {
+      if (filter === 'asc') {
+        return calculatePercentage(a.attendedLecs, a.totalLecs).localeCompare(calculatePercentage(b.attendedLecs, b.totalLecs));
+      } else if (filter === 'desc') {
+        return calculatePercentage(b.attendedLecs, b.totalLecs).localeCompare(calculatePercentage(a.attendedLecs, a.totalLecs));
+      } else {
+        return a.student.username.localeCompare(b.student.username); // Default sort by username
+      }
+    });
+
+  // Toggle Sorting
+  const toggleSorting = (mode: 'asc' | 'desc') => {
+    if (filter === mode) {
+      setFilter(''); // Remove sorting if already selected
+    } else {
+      setFilter(mode); // Apply sorting
+    }
+  };
+
+  // Animate Search bar expansion and collapse
+  const toggleSearch = () => {
+    if (isSearchActive) {
+      // Close search
+      Animated.timing(animatedWidth, {
+        toValue: 40, // Back to icon size
+        duration: 300,
+        useNativeDriver: false,
+      }).start(() => {
+        setIsSearchActive(false); // Turn off search mode
+        setSearchText(''); // Reset search text
+      });
+    } else {
+      // Open search
+      setIsSearchActive(true); // Activate search mode
+      Animated.timing(animatedWidth, {
+        toValue: 250, // Full width of search bar
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+    }
+  };
 
   return (
-    <View className="flex flex-1 bg-[#1E1E1E] p-4">
+    <View className="flex flex-1 bg-[#1E1E1E]">
       <Stack.Screen options={{ headerShown: false }} />
 
-      {/* Filter Options */}
-      <TouchableOpacity
-        className="bg-[#3b3e44] p-4 rounded-lg mb-4 flex-row items-center justify-between border border-[#9DBDFF]"
-        onPress={() => setFilterModalVisible(true)}
-      >
-        <Text className="text-white text-lg">Filter Options</Text>
-        <Ionicons name="options-outline" size={24} color="#9DBDFF" />
-      </TouchableOpacity>
+      {/* Sorting Buttons and Search Bar */}
+      <View className='p-4 flex-row justify-between items-center'>
+        {!isSearchActive ? (
+          <View className='flex-row gap-3'>
+            {/* ASC Button */}
+            <TouchableOpacity
+              className={`bg-[#3b3e44] p-2 rounded-lg ${filter === 'asc' ? 'border border-[#9DBDFF]' : ''}`}
+              onPress={() => toggleSorting('asc')}
+            >
+              <Text className="text-white">ASC</Text>
+            </TouchableOpacity>
+
+            {/* DESC Button */}
+            <TouchableOpacity
+              className={`bg-[#3b3e44] p-2 rounded-lg ${filter === 'desc' ? 'border border-[#9DBDFF]' : ''}`}
+              onPress={() => toggleSorting('desc')}
+            >
+              <Text className="text-white">DESC</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <Animated.View style={{ width: animatedWidth }}>
+            <TextInput
+              className="bg-[#3b3e44] p-2 rounded-lg text-white"
+              placeholder="Search ..."
+              placeholderTextColor="#9DBDFF"
+              value={searchText}
+              onChangeText={setSearchText}
+            />
+          </Animated.View>
+        )}
+
+        {/* Search Button or Close Button */}
+        <TouchableOpacity className="bg-[#3b3e44] p-2 rounded-full" onPress={toggleSearch}>
+          {isSearchActive ? (
+            <Ionicons name="close" size={24} color="#9DBDFF" />
+          ) : (
+            <Ionicons name="search" size={24} color="#9DBDFF" />
+          )}
+        </TouchableOpacity>
+      </View>
 
       {/* List of Students */}
       <FlatList
         data={filteredData}
         keyExtractor={(item) => item.student.username}
         renderItem={({ item }) => (
-          <View key={item.student.username} className="bg-[#3b3e44] p-4 rounded-lg mb-4 flex-row justify-between items-center border border-[#9DBDFF]">
-            <View>
-              <Text className="text-[#F6F5F5] font-NunitoExtraBold text-lg">
-                {item.student.personalInfo.firstName} {item.student.personalInfo.lastName}
+          <View
+            className={`p-2 pl-4 pr-3 rounded-lg mb-2 mx-4 flex-row justify-between items-center bg-[#2D6A4F] border border-[#1B4332]`}
+          >
+            <View className=' flex-col items-start'>
+              <View className='flex-row items-center justify-center gap-1'>
+                <Text className="text-[#F6F5F5] font-NunitoExtraBold text-lg">
+                  <FontAwesome5 name="id-badge" size={18} color="#F6F5F5" /> {item.student.username}
+                </Text>
+                <View className='bg-white border border-[#9DBDFF] rounded-full p-1 flex items-center justify-center aspect-square'>
+                  <Text className="text-[black] -mt-2">
+                    {item.interDivision}
+                  </Text>
+                </View>
+              </View>
+              <Text className="text-[#F6F5F5]">
+                <FontAwesome name="user" size={18} color="#F6F5F5" /> Name: {item.student.personalInfo.firstName} {item.student.personalInfo.lastName}
               </Text>
-              <Text className="text-[#9DBDFF] text-sm">Roll No: {item.student.username}</Text>
-              <Text className="text-[#9DBDFF] text-sm">Inter-Division: {item.interDivision}</Text>
             </View>
-            <View className="flex-row items-center">
-              <Text className="text-[#9DBDFF] font-bold text-lg mr-2">
-                {item.attendedLecs} / {item.totalLecs}
-              </Text>
-              <Text className="text-[#F6F5F5] font-bold text-lg">{calculatePercentage(item.attendedLecs, item.totalLecs)}</Text>
+            <View className=' flex-row items-center justify-between gap-2'>
+              <View>
+                <Text className=' text-white font-NunitoMedium'>{item.attendedLecs}/{item.totalLecs}</Text>
+              </View>
+              <View className=' bg-white p-2 rounded-full'>
+                <Text className=' font-NunitoExtraBold text-base'>{calculatePercentage(item.attendedLecs, item.totalLecs)}</Text>
+              </View>
             </View>
           </View>
         )}
-        contentContainerStyle={{ paddingBottom: 16 }}
+        contentContainerStyle={{ paddingBottom: 250 }}
       />
-
-      {/* Filter Modal */}
-      <Modal
-        transparent={true}
-        visible={filterModalVisible}
-        animationType="slide"
-        onRequestClose={() => setFilterModalVisible(false)}
-      >
-        <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-          <View className="bg-[#3b3e44] p-6 rounded-lg w-80">
-            <Text className="text-white text-lg font-bold mb-4">Sort by Attendance Percentage</Text>
-            <TouchableOpacity className="p-2 mb-2 rounded-lg bg-[#1E1E1E]" onPress={() => setFilter('')}>
-              <Text className="text-white">Clear Filters</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="p-2 mb-2 rounded-lg bg-[#1E1E1E]" onPress={() => setFilter('below25')}>
-              <Text className="text-white">Below 25%</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="p-2 mb-2 rounded-lg bg-[#1E1E1E]" onPress={() => setFilter('below50')}>
-              <Text className="text-white">Below 50%</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="p-2 mb-2 rounded-lg bg-[#1E1E1E]" onPress={() => setFilter('below75')}>
-              <Text className="text-white">Below 75%</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="p-2 mb-2 rounded-lg bg-[#1E1E1E]" onPress={() => setFilter('below100')}>
-              <Text className="text-white">Below 100%</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="bg-red-500 p-2 rounded-lg mt-4" onPress={() => setFilterModalVisible(false)}>
-              <Text className="text-white text-center">Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal >
-    </View >
+    </View>
   );
 };
 

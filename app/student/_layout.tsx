@@ -1,5 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Stack } from 'expo-router/stack';
+import { TouchableOpacity } from 'react-native';
 
 export default function Layout() {
 
@@ -26,6 +28,15 @@ export default function Layout() {
             fontSize: 20, // Font size consistent with other screens
           },
           headerTintColor: '#9DBDFF', // Back button color
+          headerBackTitleVisible: false, // Hide back button text
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{ paddingLeft: 8 }}
+              onPress={() => router.back()}
+            >
+              <Ionicons name="arrow-back" size={24} color="#9DBDFF" />
+            </TouchableOpacity>
+          ),
         }}
       />
       <Stack.Screen
@@ -41,6 +52,15 @@ export default function Layout() {
             fontSize: 20, // Font size consistent with other screens
           },
           headerTintColor: '#9DBDFF', // Back button color
+          headerBackTitleVisible: false, // Hide back button text
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{ paddingLeft: 8 }}
+              onPress={() => router.back()}
+            >
+              <Ionicons name="arrow-back" size={24} color="#9DBDFF" />
+            </TouchableOpacity>
+          ),
         }}
       />
       <Stack.Screen

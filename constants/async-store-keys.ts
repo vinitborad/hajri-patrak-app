@@ -9,6 +9,8 @@ export const SUBJECT_STRUCTURE = 'subjects-structure';
 export const SUBJECT_STRUCTURE_KEY = 'subjects-structure-contentKey';
 export const DIVISION_STUDENTS_LIST = (divisionId: string) => `division-students-list-data-${divisionId}`;
 export const DIVISION_STUDENTS_LIST_KEY = (divisionId: string) => `division-students-list-contentKey-${divisionId}`;
+export const PINNED_BRANCHES = 'pinned-branches';
+export const PINNED_SEM_DIV = 'pinned-sem-div';
 
 // faculty data
 export const PREV_ATTENDANCES = (subjectId: string) => `subject-attendance-${subjectId}`;

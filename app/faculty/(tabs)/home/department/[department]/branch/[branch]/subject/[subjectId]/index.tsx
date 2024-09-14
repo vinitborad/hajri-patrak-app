@@ -227,16 +227,16 @@ const SubjectDetailScreen = () => {
 
             {/* Student Analyser Button */}
             <TouchableOpacity
-              className="bg-[#686D76] bg-opacity-70 p-4 rounded-lg mb-4 border border-[#9DBDFF] flex flex-row items-center justify-center"
+              className="bg-opacity-70 p-4 rounded-lg mb-4 border border-[#9DBDFF] flex flex-row items-center justify-center bg-transparent"
               onPress={() => router.push(`/faculty/(tabs)/home/department/${department}/branch/${branch}/subject/${subjectId}/analyse`)}
             >
               <Ionicons name="analytics-outline" size={20} color="#F6F5F5" />
-              <Text className="text-center text-[#F6F5F5] text-lg ml-2">Student Analyser</Text>
+              <Text className="text-center text-[#9DBDFF] text-lg ml-2">Student Analyser</Text>
             </TouchableOpacity>
 
             {/* Show live attendance from AsyncStorage if it exists */}
             {liveAttendance ? (
-              <View className="bg-[#2D6A4F] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
+              <View className="bg-[#2D6A4F] p-4 rounded-lg mb-1 border border-[#9DBDFF]">
                 <Text className="text-[#F6F5F5] font-NunitoExtraBold text-lg">Live Attendance</Text>
                 <Text className="text-[#F6F5F5] mt-2">Value: {liveAttendance.value}</Text>
                 <Text className="text-[#F6F5F5] mt-2">
@@ -253,7 +253,7 @@ const SubjectDetailScreen = () => {
             ) : (
               // Show create attendance button only if there's no live attendance
               <TouchableOpacity
-                className="bg-[#686D76] bg-opacity-70 p-4 rounded-lg mb-4 border border-[#9DBDFF] flex flex-row items-center justify-center"
+                className="bg-[#686D76] bg-opacity-70 p-4 rounded-lg mb-2 border border-[#9DBDFF] flex flex-row items-center justify-center"
                 onPress={() => setModalVisible(true)}
               >
                 <Ionicons name="create-outline" size={20} color="#F6F5F5" />
@@ -263,8 +263,8 @@ const SubjectDetailScreen = () => {
 
 
             <View className="mb-2 pt-3 flex-row justify-start items-center pl-2 gap-2">
-              <FontAwesome name="history" size={24} color="#9DBDFF" />
-              <Text className="text-[#9DBDFF] text-xl font-NunitoExtraBold">Previous Attendances</Text>
+              <FontAwesome name="history" size={24} color="#ffab62" />
+              <Text className="text-[#ffab62] text-xl font-NunitoExtraBold">Previous Attendances</Text>
             </View>
 
           </View>

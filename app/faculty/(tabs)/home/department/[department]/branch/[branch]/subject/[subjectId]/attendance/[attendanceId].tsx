@@ -2,7 +2,7 @@ import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useGetAttendanceInfo } from '@/api/faculty/attendances';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome, FontAwesome5, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ATTENDANCE_INFO, DIVISION_STUDENTS_LIST } from '@/constants/async-store-keys';
 
@@ -151,16 +151,20 @@ const ViewAttendanceScreen = () => {
           const isPresent = isStudentPresent(item.id);
           return (
             <View
-              className={`p-4 rounded-lg mb-4 mx-4 flex-row justify-between items-center ${isPresent ? 'bg-[#2D6A4F] border-[#BEDC74]' : 'bg-[#9D0208] border-[#FF6B6B]'
-                } border`}
+              className={`p-2 pl-4 pr-5 rounded-lg mb-2 mx-4 flex-row justify-between items-center ${isPresent ? 'bg-[#2D6A4F]' : 'bg-[#c33f43]'
+                } border border-[#1B4332]`}
             >
               <View>
-                <Text className="text-[#F6F5F5] font-NunitoExtraBold text-lg">Name: {item.firstName} {item.lastName}</Text>
-                <Text className="text-[#F6F5F5]">Enrollment: {item.username}</Text>
+                <Text className="text-[#F6F5F5] font-NunitoExtraBold text-lg">
+                  <FontAwesome5 name="id-badge" size={18} color="#F6F5F5" /> Enroll: {item?.username}
+                </Text>
+                <Text className="text-[#F6F5F5]">
+                  <FontAwesome name="user" size={18} color="#F6F5F5" /> Name: {item?.firstName} {item?.lastName}
+                </Text>
               </View>
               <TouchableOpacity className="bg-[#1E1E1E] p-2 rounded-lg flex flex-row items-center">
                 <MaterialIcons name="edit" size={20} color="#9DBDFF" />
-                <Text className="ml-2 text-[#9DBDFF]">Change</Text>
+                <Text className="ml-2 text-[#9DBDFF]">EDIT</Text>
               </TouchableOpacity>
             </View>
           );
