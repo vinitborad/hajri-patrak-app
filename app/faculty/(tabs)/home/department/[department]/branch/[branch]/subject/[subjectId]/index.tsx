@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Modal, ScrollView } from 'react-native';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { View, Text, FlatList, TouchableOpacity, Modal, ScrollView, ActivityIndicator } from 'react-native';
+import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useGetPreviousAttendances } from '@/api/faculty/attendances';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { facultyEndpoints } from '@/constants/ApiEndpoints';
-import { AntDesign, FontAwesome, Foundation, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from '@tanstack/react-query';
 import { DIVISION_STUDENTS_LIST, DIVISION_STUDENTS_LIST_KEY, LIVE_ATTENDANCE, PREV_ATTENDANCES } from '@/constants/async-store-keys';
@@ -27,21 +27,16 @@ const SubjectDetailScreen = () => {
   //TODO: very later : declare type structure for liveAttendance
   const [liveAttendance, setLiveAttendance] = useState<any>(null); // New State for live attendance
   const queryClient = useQueryClient(); // Use query client for fetching division students data
+  const [screenKey, setScreenKey] = useState(Math.random()); // This will force re-render when key changes
 
   // Fetch offline data on mount
   useEffect(() => {
-    const fetchOfflineData = async () => {
+    const fetchPreviousData = async () => {
       try {
         // Fetch previous attendances from AsyncStorage
         const cachedData = await AsyncStorage.getItem(PREV_ATTENDANCES(subjectId as string));
         if (cachedData) {
           setOfflineData(JSON.parse(cachedData));
-        }
-
-        // Fetch live attendance from AsyncStorage
-        const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(subjectId as string));
-        if (liveData) {
-          setLiveAttendance(JSON.parse(liveData));
         }
       } catch (error) {
         console.log('Error fetching offline data:', error);
@@ -50,8 +45,26 @@ const SubjectDetailScreen = () => {
       }
     };
 
-    fetchOfflineData();
+    fetchPreviousData();
   }, [subjectId]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchLiveAttendance = async () => {
+        try {
+          const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(subjectId as string));
+          if (liveData) {
+            setLiveAttendance(JSON.parse(liveData));
+          }
+          // Force re-render after fetching the data
+          setScreenKey(Math.random());
+        } catch (error) {
+          console.log('Error fetching live attendance:', error);
+        }
+      };
+      fetchLiveAttendance();
+    }, [subjectId])
+  );
 
   // Validation function to check API response
   const isValidApiResponse = (data: any): boolean => {
@@ -101,8 +114,23 @@ const SubjectDetailScreen = () => {
     }
   }, [data, subjectId]);
 
-  if (isLoading && isOfflineLoading) return <Text className="text-center text-[#F6F5F5] mt-4">Loading...</Text>;
-  if (error && !offlineData) return <Text className="text-center text-[#FF6B6B] mt-4">Error loading data</Text>;
+  if (isOfflineLoading || isLoading) {
+    return (
+      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Stack.Screen options={{ headerShown: false }} />
+        <ActivityIndicator size="large" color="#9DBDFF" />
+      </View>
+    )
+  }
+
+  if (error && !offlineData) {
+    return (
+      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Stack.Screen options={{ headerShown: false }} />
+        <Text className="text-[#FF6B6B]">N / A</Text>
+      </View>
+    )
+  }
 
   const dataToShow = data || offlineData;
   // Extract subject details and attendances from the response data
@@ -130,9 +158,9 @@ const SubjectDetailScreen = () => {
       }
       await AsyncStorage.setItem(LIVE_ATTENDANCE(subjectId as string), JSON.stringify(attendanceData));
       setLiveAttendance(attendanceData); // Set live attendance state
-      
+
       const networkStatus = await isConnected();
-      if(networkStatus) {
+      if (networkStatus) {
         await callCreateAttendance(subjectId as string);
       }
 

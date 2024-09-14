@@ -31,7 +31,7 @@ export default function Layout() {
           headerBackTitleVisible: false, // Hide back button text
           headerLeft: () => (
             <TouchableOpacity
-              style={{ paddingLeft: 8 }}
+              style={{ paddingLeft: 8, paddingRight: 16 }}
               onPress={() => router.back()}
             >
               <Ionicons name="arrow-back" size={24} color="#9DBDFF" />
@@ -44,7 +44,7 @@ export default function Layout() {
         options={{
           title: 'Subject Detail',
           headerStyle: {
-            backgroundColor: '#3b3e44', // Consistent dark background
+            backgroundColor: '#3b3e4', // Consistent dark background
           },
           headerTitleStyle: {
             color: '#9DBDFF', // Light blue text color
@@ -55,7 +55,7 @@ export default function Layout() {
           headerBackTitleVisible: false, // Hide back button text
           headerLeft: () => (
             <TouchableOpacity
-              style={{ paddingLeft: 8 }}
+              style={{ paddingLeft: 8, paddingRight: 16 }}
               onPress={() => router.back()}
             >
               <Ionicons name="arrow-back" size={24} color="#9DBDFF" />

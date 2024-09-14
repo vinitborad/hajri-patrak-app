@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, TextInput, Animated } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, TextInput, Animated, ActivityIndicator } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useGetAnalyseAttendance } from '@/api/faculty/attendances';
 import { FontAwesome, FontAwesome5, Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ANALYSIS } from '@/constants/async-store-keys';
+import { calculateAttendanceLevel } from '@/utils/attendances/helper-functions';
 
 const AnalyseAttendanceScreen = () => {
   const { subjectId } = useLocalSearchParams();
@@ -44,18 +45,34 @@ const AnalyseAttendanceScreen = () => {
   }, [data]);
 
   // Handling loading and error states
-  if (isLoading && isOfflineLoading) {
-    return <Text className="text-center text-white mt-4">Loading...</Text>;
+  if (isOfflineLoading || isLoading) {
+    return (
+      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Stack.Screen options={{ headerShown: false }} />
+        <ActivityIndicator size="large" color="#9DBDFF" />
+      </View>
+    )
   }
+
   if (error && !offlineData) {
-    return <Text className="text-center text-red-500 mt-4">No Data Available!</Text>;
+    return (
+      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Stack.Screen options={{ headerShown: false }} />
+        <Text className="text-[#FF6B6B]">N / A</Text>
+      </View>
+    )
   }
 
   const dataToShow = data || offlineData; // Choose data from API or offline storage
 
   // Check if there's no data to show
   if (!dataToShow || dataToShow.length === 0) {
-    return <Text className="text-center text-red-500 mt-4">No analysis data available</Text>;
+    return (
+      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-20">
+        <Stack.Screen options={{ headerShown: false }} />
+        < Text className="text-center text-red-500 mt-4" > No analysis data available</Text >
+      </View>
+    )
   }
 
   // Calculate attendance percentage for each student
@@ -174,7 +191,7 @@ const AnalyseAttendanceScreen = () => {
         keyExtractor={(item) => item.student.username}
         renderItem={({ item }) => (
           <View
-            className={`p-2 pl-4 pr-3 rounded-lg mb-2 mx-4 flex-row justify-between items-center bg-[#2D6A4F] border border-[#1B4332]`}
+            className={`p-2 pl-4 pr-3 rounded-lg mb-2 mx-4 flex-row justify-between items-center bg-[#2D6A4F] border border-[#1B4332] ${calculateAttendanceLevel(calculatePercentage(item.attendedLecs, item.totalLecs)) === 'Good' ? "bg-[#2D6A4F]" : calculateAttendanceLevel(calculatePercentage(item.attendedLecs, item.totalLecs)) === 'Medium' ? "bg-[#8b9e36]" : "bg-[#c33f43]"}`}
           >
             <View className=' flex-col items-start'>
               <View className='flex-row items-center justify-center gap-1'>

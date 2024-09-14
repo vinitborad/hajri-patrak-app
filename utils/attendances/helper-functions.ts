@@ -5,6 +5,7 @@ import axios from "axios";
 import * as SecureStore from 'expo-secure-store';
 import { isConnected } from "../network";
 import { addAttendanceToQueue } from "./attendance-queue";
+import { GOOD_ATTENDANCE_CUTOFF, MEDIUM_ATTENDANCE_CUTOFF } from "@/constants/config";
 
 export const callCreateAttendance = async (subjectId: string) => {
   try {
@@ -127,4 +128,13 @@ export const closeAttendance = async (subjectId: string, message: string) => {
       message: "Internal error",
     }
   }
+}
+
+export const calculateAttendanceLevel = (percentage: string) => {
+  if (percentage >= GOOD_ATTENDANCE_CUTOFF) {
+    return 'Good';
+  } else if (percentage >= MEDIUM_ATTENDANCE_CUTOFF) {
+    return 'Medium';
+  }
+  return 'Low';
 }

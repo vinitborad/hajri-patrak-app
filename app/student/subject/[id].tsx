@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, FlatList } from 'react-native';
+import { View, Text, ScrollView, FlatList, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useGetStudentSubjectInfo } from '@/api/student';
@@ -7,6 +7,7 @@ import moment from 'moment-timezone';
 import { FontAwesome5 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STUDENT_SUBJECT_INFO } from '@/constants/async-store-keys';
+import { calculateAttendanceLevel } from '@/utils/attendances/helper-functions';
 
 const SubjectDetail = () => {
   const { id } = useLocalSearchParams();
@@ -14,7 +15,7 @@ const SubjectDetail = () => {
 
   const [offlineData, setOfflineData] = useState(null);  // To hold the offline data
   const [isOfflineLoading, setIsOfflineLoading] = useState(true); // Loading state for offline data
-  const { data: subjectInfo, error } = useGetStudentSubjectInfo({ subjectId });
+  const { data: subjectInfo, isLoading, error } = useGetStudentSubjectInfo({ subjectId });
 
   // Fetch offline data immediately when component mounts
   useEffect(() => {
@@ -46,18 +47,32 @@ const SubjectDetail = () => {
   // Show offline data while loading
   const dataToShow = subjectInfo || offlineData;
 
-  if (isOfflineLoading && !dataToShow) {
+  if (isOfflineLoading && isLoading) {
     return (
-      <View className="flex-1 justify-center items-center bg-[#1E1E1E]">
-        <Text className="text-[#F6F5F5]">Loading data...</Text>
+      <View className="flex-1 justify-center items-center bg-[#1E1E1E] pb-12">
+        <Stack.Screen
+          options={{
+            title: `LOADING...`,
+            headerStyle: { backgroundColor: '#3b3e44' },
+            headerTitleStyle: { color: '#9DBDFF', fontFamily: 'NunitoExtraBold' },
+          }}
+        />
+        <ActivityIndicator size="large" color="#9DBDFF" />
       </View>
     );
   }
 
   if (error && !offlineData) {
     return (
-      <View className="flex-1 justify-center items-center bg-[#1E1E1E]">
-        <Text className="text-[#FF6B6B]">No Data Available</Text>
+      <View className="flex-1 justify-center items-center bg-[#1E1E1E] pb-12">
+        <Stack.Screen
+          options={{
+            title: `N / A`,
+            headerStyle: { backgroundColor: '#3b3e44' },
+            headerTitleStyle: { color: '#9DBDFF', fontFamily: 'NunitoExtraBold' },
+          }}
+        />
+        <Text className="text-[#FF6B6B]">N / A</Text>
       </View>
     );
   }
@@ -86,7 +101,7 @@ const SubjectDetail = () => {
     };
   });
 
-  const attendancePercentage = totalLecsCount > 0 ? ((attendedLecsCount / totalLecsCount) * 100).toFixed(0) : '0.00';
+  const attendancePercentage = totalLecsCount > 0 ? ((attendedLecsCount / totalLecsCount) * 100).toFixed(0) : '0';
 
   //@ts-ignore
   const renderAttendanceItem = ({ item }) => {
@@ -114,8 +129,7 @@ const SubjectDetail = () => {
       <View className="p-5">
         <Stack.Screen
           options={{
-            title: `${subjectName}`,
-            headerShown: true,
+            title: `${subjectName.toUpperCase()}`,
             headerStyle: { backgroundColor: '#3b3e44' },
             headerTitleStyle: { color: '#9DBDFF', fontFamily: 'NunitoExtraBold' },
           }}
@@ -149,21 +163,21 @@ const SubjectDetail = () => {
         />
 
         {/* Attendance Summary Section */}
-        <View className="bg-[#2D2D2D] rounded-2xl p-4 mt-4 border border-[#FF8800] shadow-lg flex-row justify-between items-center">
+        <View className={`bg-[#2D2D2D] rounded-2xl p-4 mt-4 border shadow-lg flex-row justify-between items-center ${calculateAttendanceLevel(attendancePercentage) === 'Good' ? "bg-[#2D6A4F]" : calculateAttendanceLevel(attendancePercentage) === 'Medium' ? "bg-[#8b9e36]" : "bg-[#c33f43]"}`}>
           {/* Text Information */}
           <View>
-            <Text className="text-lg font-NunitoExtraBold text-[#FF8800]">
+            <Text className="text-lg font-NunitoExtraBold text-white">
               Total Lecs : <Text className="font-NunitoBold">{totalLecsCount}</Text>
             </Text>
-            <Text className="text-lg font-NunitoExtraBold text-[#FF8800]">
+            <Text className="text-lg font-NunitoExtraBold text-white">
               Attended : <Text className="font-NunitoBold">{attendedLecsCount}</Text>
             </Text>
           </View>
 
           {/* Circle for Percentage */}
-          <View className="flex items-center justify-center w-16 h-16 border-2 border-[#FF8800] rounded-full">
-            <Text className="text-lg font-NunitoExtraBold text-[#FF8800]">
-              {attendancePercentage}
+          <View className="flex items-center justify-center w-16 h-16 border-2 border-white rounded-full">
+            <Text className="text-lg font-NunitoExtraBold text-white">
+              {attendancePercentage}%
             </Text>
           </View>
         </View>

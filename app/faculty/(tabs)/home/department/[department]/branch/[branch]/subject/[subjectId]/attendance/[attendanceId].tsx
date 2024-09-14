@@ -1,4 +1,4 @@
-import { View, Text, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useGetAttendanceInfo } from '@/api/faculty/attendances';
@@ -21,7 +21,6 @@ const ViewAttendanceScreen = () => {
     const fetchOfflineData = async () => {
       try {
         const cachedData = await AsyncStorage.getItem(ATTENDANCE_INFO(attendanceId as string));
-        console.log('cachedData:', cachedData);
         if (cachedData) {
           setOfflineData(JSON.parse(cachedData));
         }
@@ -56,7 +55,7 @@ const ViewAttendanceScreen = () => {
 
   // Function to fetch students from each division stored in AsyncStorage
   const fetchStudentsFromDivisions = async (divisionIds: string[]) => {
-    let combinedStudents = [];
+    let combinedStudents: any = [];
     for (const divisionId of divisionIds) {
       try {
         const storedDivisionData = await AsyncStorage.getItem(DIVISION_STUDENTS_LIST(divisionId));
@@ -84,14 +83,30 @@ const ViewAttendanceScreen = () => {
   const isStudentPresent = (studentId: string) => presentStudents.includes(studentId);
 
   // Sort students by enrollment number (username)
+  // @ts-ignore
   const sortedStudents = allStudents.sort((a, b) => parseInt(a.username) - parseInt(b.username));
 
   // Calculate present/total counts
   const presentCount = presentStudents.length;
   const totalCount = sortedStudents.length;
 
-  if (isLoading && isOfflineLoading) return <Text className="text-center text-[#F6F5F5] mt-4">Loading...</Text>;
-  if (error && !offlineData) return <Text className="text-center text-[#FF6B6B] mt-4">Error loading data</Text>;
+  if (isOfflineLoading || isLoading) {
+    return (
+      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Stack.Screen options={{ headerShown: false }} />
+        <ActivityIndicator size="large" color="#9DBDFF" />
+      </View>
+    )
+  }
+
+  if (error && !offlineData) {
+    return (
+      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Stack.Screen options={{ headerShown: false }} />
+        <Text className="text-[#FF6B6B]">N / A</Text>
+      </View>
+    )
+  }
 
   return (
     <View className="flex flex-1 bg-[#1E1E1E]">
@@ -146,7 +161,7 @@ const ViewAttendanceScreen = () => {
 
       <FlatList
         data={sortedStudents}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: any) => item.id}
         renderItem={({ item }) => {
           const isPresent = isStudentPresent(item.id);
           return (

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { useGetSubjectsStructure } from '@/api/faculty';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -54,21 +54,31 @@ const SubjectsList: React.FC = () => {
   // Extract subjects from the data based on department, branch, graduationLevel, sem, and division
   const subjects: Subject[] = dataToShow?.ldce?.[department]?.[branch]?.[graduationLevel]?.[sem]?.[division] || [];
 
-  // Conditional rendering to avoid hooks violation
   if (isOfflineLoading || isLoading) {
-    return <Text className="text-center text-[#F6F5F5] mt-4">Loading...</Text>;
+    return (
+      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Stack.Screen options={{ headerShown: false }} />
+        <ActivityIndicator size="large" color="#9DBDFF" />
+      </View>
+    )
   }
 
   if (error && !offlineData) {
-    return <Text className="text-center text-[#FF6B6B] mt-4">Error loading data</Text>;
+    return (
+      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Stack.Screen options={{ headerShown: false }} />
+        <Text className="text-[#FF6B6B]">N / A</Text>
+      </View>
+    )
   }
 
   if (subjects.length === 0) {
     return (
-      <Text className="bg-[#3b3e44] p-4 rounded-lg shadow-md mt-7 mx-4 text-center text-lg font-NunitoBold text-[#F6F5F5]">
-        No subjects available.
-      </Text>
-    );
+      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-20">
+        <Stack.Screen options={{ headerShown: false }} />
+        <Text className="bg-[#3b3e44] p-4 rounded-lg shadow-md mt-7 mx-4 text-center text-lg font-NunitoBold text-[#F6F5F5]">No subjects available</Text>
+      </View>
+    )
   }
 
   const renderSubjectItem = ({ item }: { item: Subject }) => (

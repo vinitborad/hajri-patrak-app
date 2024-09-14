@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { View, Text, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { useGetSubjectsStructure } from '@/api/faculty';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -73,15 +73,30 @@ const Branch = () => {
   const dataToShow = apiResponse?.data || offlineData;
 
   if (isOfflineLoading || isLoading) {
-    return <Text className="text-center text-[#F6F5F5] mt-4">Loading...</Text>;
+    return (
+      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Stack.Screen options={{ headerShown: false }} />
+        <ActivityIndicator size="large" color="#9DBDFF" />
+      </View>
+    )
   }
 
   if (error && !offlineData) {
-    return <Text className="text-center text-[#FF6B6B] mt-4">No Data Available !</Text>;
+    return (
+      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Stack.Screen options={{ headerShown: false }} />
+        <Text className="text-[#FF6B6B]">N / A</Text>
+      </View>
+    )
   }
 
   if (!dataToShow) {
-    return <Text className="text-center text-[#FF6B6B] mt-4">No Data Available !</Text>;
+    return (
+      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Stack.Screen options={{ headerShown: false }} />
+        <Text className="text-[#FF6B6B]">N / A</Text>
+      </View>
+    )
   }
 
   // Extract degrees under the selected department and branch

@@ -1,6 +1,6 @@
-import { View, Text, FlatList, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useGetStudentSubjects } from '@/api/student';
@@ -45,22 +45,23 @@ const Index = () => {
 
   if (isOfflineLoading && !dataToShow) {
     return (
-      <View className='flex-1 items-center justify-center bg-[#1E1E1E]'>
-        <Text className='text-[#F6F5F5]'>Loading data...</Text>
+      <View className='flex-1 items-center justify-center bg-[#1E1E1E] pb-16'>
+        <ActivityIndicator size='large' color='#9DBDFF' />
       </View>
     );
   }
 
   if (error && !offlineData) {
     return (
-      <View className="flex-1 justify-center items-center bg-[#1E1E1E]">
-        <Text className="text-[#FF6B6B]">No Data Available</Text>
+      <View className="flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Text className="text-classicRed">N / A</Text>
       </View>
     );
   }
 
   return (
     <View className='flex-1 items-center bg-[#1E1E1E] p-6'>
+
       <TouchableOpacity
         onPress={() => router.push('/student/qr')}
         className="mt-6 bg-[#686D76] w-full h-32 rounded-lg flex items-center justify-center border border-[#9DBDFF]"

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Alert, Button } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Alert, Button, ActivityIndicator } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LIVE_ATTENDANCE, DIVISION_STUDENTS_LIST } from '@/constants/async-store-keys';
@@ -21,7 +21,6 @@ const ManualMarkScreen = () => {
         const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(subjectId as string));
         if (liveData) {
           const parsedLiveData = JSON.parse(liveData);
-          setLiveAttendance(parsedLiveData);
 
           // Fetch students from each division
           let allStudents: any[] = [];
@@ -39,6 +38,7 @@ const ManualMarkScreen = () => {
 
           // Initialize present students if in "present" mode
           setMarkedPresentStudents(parsedLiveData.presentStudentsList || []);
+          setLiveAttendance(parsedLiveData);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -109,6 +109,15 @@ const ManualMarkScreen = () => {
       console.error('Error submitting attendance:', error);
     }
   };
+
+  if (!liveAttendance) {
+    return (
+      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Stack.Screen options={{ headerShown: false }} />
+        <ActivityIndicator size="large" color="#9DBDFF" />
+      </View>
+    )
+  }
 
   return (
     <View className="flex flex-1 bg-[#1E1E1E]">

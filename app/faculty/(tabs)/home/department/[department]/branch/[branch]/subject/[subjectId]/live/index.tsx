@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, TextInput, Alert, Keyboard } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, TextInput, Alert, Keyboard, ActivityIndicator } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -59,7 +59,6 @@ const LiveAttendanceScreen = () => {
       const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(subjectId as string));
       if (liveData) {
         const parsedLiveData = JSON.parse(liveData);
-        setLiveAttendance(parsedLiveData);
 
         // Fetch students data from all divisions
         let allStudents: any[] = [];
@@ -74,6 +73,7 @@ const LiveAttendanceScreen = () => {
         // Sort students by username
         allStudents.sort((a, b) => a.username.localeCompare(b.username));
         setStudents(allStudents);
+        setLiveAttendance(parsedLiveData);
       }
 
       // If possible fetch data from server also
@@ -187,7 +187,14 @@ const LiveAttendanceScreen = () => {
     fetchData();
   };
 
-  if (!liveAttendance) return <Text className="text-center text-[#F6F5F5] mt-4">Loading...</Text>;
+  if (!liveAttendance) {
+    return (
+      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Stack.Screen options={{ headerShown: false }} />
+        <ActivityIndicator size="large" color="#9DBDFF" />
+      </View>
+    )
+  }
 
   return (
     <View className="flex flex-1 bg-[#1E1E1E]">

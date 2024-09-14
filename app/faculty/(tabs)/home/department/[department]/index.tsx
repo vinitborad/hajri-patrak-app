@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { View, Text, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useGetSubjectsStructure } from '@/api/faculty';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -77,15 +77,30 @@ const Department = () => {
   }, [offlineData, department, pinnedBranches]);
 
   if (isOfflineLoading || isLoading) {
-    return <Text className="text-[#F6F5F5]">Loading...</Text>;
+    return (
+      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Stack.Screen options={{ headerShown: false }} />
+        <ActivityIndicator size="large" color="#9DBDFF" />
+      </View>
+    )
   }
 
   if (error && !offlineData) {
-    return <Text className="text-[#FF6B6B]">No data available</Text>;
+    return (
+      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Stack.Screen options={{ headerShown: false }} />
+        <Text className="text-[#FF6B6B]">N / A</Text>
+      </View>
+    )
   }
 
   if (!sortedBranches.length) {
-    return <Text className="text-[#FF6B6B]">No data available</Text>;
+    return (
+      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Stack.Screen options={{ headerShown: false }} />
+        <Text className="text-[#FF6B6B]">N / A</Text>
+      </View>
+    )
   }
 
   const renderBranchCard = ({ item }: { item: string }) => (

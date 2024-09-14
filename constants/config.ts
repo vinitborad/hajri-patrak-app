@@ -1,0 +1,2 @@
+export const GOOD_ATTENDANCE_CUTOFF = '75';
+export const MEDIUM_ATTENDANCE_CUTOFF = '50';
