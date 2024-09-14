@@ -189,8 +189,10 @@ const SubjectDetailScreen = () => {
   //@ts-ignore
   const renderAttendanceItem = ({ item }) => (
     <View key={item.id} className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
-      <Text className="text-[#F6F5F5] text-lg mb-2">{new Date(item.createdAt).toLocaleString()}</Text>
-      <Text className="text-[#9DBDFF] font-NunitoExtraBold text-xl mb-2">{item.message || 'Attendance Record'}</Text>
+      <Text className="text-[#F6F5F5] text-lg mb-2">
+        {new Date(item.createdAt).toLocaleDateString()} {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+      </Text>
+      <Text className="text-[#9DBDFF] font-NunitoExtraBold text-xl mb-2">{item.message || 'N / A'}</Text>
       <View className="flex flex-row items-center mb-2">
         <Ionicons name="people-outline" size={20} color="#9DBDFF" />
         <Text className="text-[#F6F5F5] ml-2">{item.presentStudentsCount}/{item.totalStudents} Students Present</Text>
@@ -298,7 +300,7 @@ const SubjectDetailScreen = () => {
           </View>
         )}
         renderItem={renderAttendanceItem}
-        contentContainerStyle={{ paddingBottom: 80 }} // Add extra space for the tab bar
+        contentContainerStyle={{ paddingBottom: 150 }} // Add extra space for the tab bar
         showsVerticalScrollIndicator={false} // Hide the vertical scrollbar
       />
 
