@@ -166,7 +166,7 @@ const ViewAttendanceScreen = () => {
           const isPresent = isStudentPresent(item.id);
           return (
             <View
-              className={`p-2 pl-4 pr-5 rounded-lg mb-2 mx-4 flex-row justify-between items-center ${isPresent ? 'bg-[#2D6A4F]' : 'bg-[#c33f43]'
+              className={`p-2 pl-4 pr-5 rounded-lg mb-2 mx-4 flex-row justify-between items-center ${true ? 'bg-[#2D6A4F]' : 'bg-[#c33f43]'
                 } border border-[#1B4332]`}
             >
               <View>

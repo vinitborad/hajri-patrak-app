@@ -2,13 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Modal, ScrollView, ActivityIndicator } from 'react-native';
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useGetPreviousAttendances } from '@/api/faculty/attendances';
-import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
-import { facultyEndpoints } from '@/constants/ApiEndpoints';
 import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useQueryClient } from '@tanstack/react-query';
-import { DIVISION_STUDENTS_LIST, DIVISION_STUDENTS_LIST_KEY, LIVE_ATTENDANCE, PREV_ATTENDANCES } from '@/constants/async-store-keys';
+import { LIVE_ATTENDANCE, PREV_ATTENDANCES } from '@/constants/async-store-keys';
 import { isConnected } from '@/utils/network';
 import { callCreateAttendance } from '@/utils/attendances/helper-functions';
 
@@ -26,8 +22,6 @@ const SubjectDetailScreen = () => {
   const [isOfflineLoading, setIsOfflineLoading] = useState(true);
   //TODO: very later : declare type structure for liveAttendance
   const [liveAttendance, setLiveAttendance] = useState<any>(null); // New State for live attendance
-  const queryClient = useQueryClient(); // Use query client for fetching division students data
-  const [screenKey, setScreenKey] = useState(Math.random()); // This will force re-render when key changes
 
   // Fetch offline data on mount
   useEffect(() => {
@@ -57,7 +51,6 @@ const SubjectDetailScreen = () => {
             setLiveAttendance(JSON.parse(liveData));
           }
           // Force re-render after fetching the data
-          setScreenKey(Math.random());
         } catch (error) {
           console.log('Error fetching live attendance:', error);
         }
@@ -78,39 +71,6 @@ const SubjectDetailScreen = () => {
   useEffect(() => {
     if (data && isValidApiResponse(data)) {
       AsyncStorage.setItem(PREV_ATTENDANCES(subjectId as string), JSON.stringify(data));
-
-      // Fetch division students list for each interDivision
-      if (data.subject.interDivisions && data.subject.interDivisions.length > 0) {
-        data.subject.interDivisions.forEach(async (div: any) => {
-          try {
-            //TODO: check for this, exactly kai key avshe, and is it needed even or not ?
-            const queryKey = ['previous-attendances', subjectId];
-            // Check if data is already in the cache
-            const cachedData = queryClient.getQueryData(queryKey);
-
-            if (!cachedData) {
-              // Manually fetch the division student list and cache it
-              const token = await SecureStore.getItemAsync('token');
-              const contentKey = await AsyncStorage.getItem(DIVISION_STUDENTS_LIST_KEY(div._id));
-
-              const response = await axios.get(facultyEndpoints.GET_DIVISION_STUDENTS_LIST, {
-                headers: { Authorization: `Bearer ${token}` },
-                params: { divisionId: div._id, contentKey },
-              });
-
-              const { data: divisionData, success, isUpdated, contentKey: newContentKey } = response.data;
-
-              if (isUpdated && divisionData && newContentKey && success) {
-                // Cache the new data
-                await AsyncStorage.setItem(DIVISION_STUDENTS_LIST_KEY(div._id), newContentKey);
-                await AsyncStorage.setItem(DIVISION_STUDENTS_LIST(div._id), JSON.stringify(divisionData));
-              }
-            }
-          } catch (error) {
-            console.log('Error fetching division students list:', error);
-          }
-        });
-      }
     }
   }, [data, subjectId]);
 

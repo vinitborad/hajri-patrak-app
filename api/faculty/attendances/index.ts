@@ -1,4 +1,6 @@
 import { facultyEndpoints } from "@/constants/ApiEndpoints";
+import { DIVISION_STUDENTS_LIST, DIVISION_STUDENTS_LIST_KEY } from "@/constants/async-store-keys";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation, useQuery } from "@tanstack/react-query"
 import axios from "axios";
 import * as SecureStore from 'expo-secure-store';
@@ -20,10 +22,46 @@ export const useGetPreviousAttendances = (subjectId: string) => {
           },
         }
       );
+      const data = response.data.data;
+
+      // cached students data
+      // Fetch division students list for each interDivision
+      if (data.subject.interDivisions && data.subject.interDivisions.length > 0) {
+        data.subject.interDivisions.forEach(async (div: any) => {
+          try {
+            console.log('Fetching division students list for:', div._id);
+            // Manually fetch the division student list and cache it
+            const token = await SecureStore.getItemAsync('token');
+            const contentKey = await AsyncStorage.getItem(DIVISION_STUDENTS_LIST_KEY(div._id));
+            console.log('Content key:', contentKey);
+            console.log('Token:', token);
+
+            const response = await axios.get(facultyEndpoints.GET_DIVISION_STUDENTS_LIST, {
+              headers: { Authorization: `Bearer ${token}` },
+              params: { divisionId: div._id, contentKey },
+            });
+
+            console.log('Division students list response:', response.data);
+
+            const { data: divisionData, success, isUpdated, contentKey: newContentKey } = response.data;
+            console.log('Division data:', divisionData);
+
+            if (isUpdated && divisionData && newContentKey && success) {
+              // Cache the new data
+              await AsyncStorage.setItem(DIVISION_STUDENTS_LIST_KEY(div._id), newContentKey);
+              await AsyncStorage.setItem(DIVISION_STUDENTS_LIST(div._id), JSON.stringify(divisionData));
+            }
+          } catch (error) {
+            console.log('Error fetching division students list:', error);
+          }
+        });
+      }
+
       return response.data.data;
     },
-    //TODO: later add proper timings for caching here rather than fetching at every focus
-    refetchOnWindowFocus: true,
+    staleTime: 300000, // 5 minutes (300000 ms)
+    refetchOnWindowFocus: false, // Prevent refetching on window focus
+    refetchOnMount: false, // Prevent refetching when the component mounts
   });
 }
 
@@ -45,7 +83,7 @@ export const useGetAttendanceInfo = (attendanceId: string) => {
       return response.data.data;
     },
     //TODO: later add proper timings for caching here rather than fetching at every focus
-    // refetchOnWindowFocus: true,
+    refetchOnWindowFocus: true,
   });
 }
 
