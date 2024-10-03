@@ -129,7 +129,7 @@ const SubjectDetail = () => {
       <View className="p-5">
         <Stack.Screen
           options={{
-            title: `${subjectName.toUpperCase()}`,
+            title: `${subjectName.toUpperCase() || "N / A"}`,
             headerStyle: { backgroundColor: '#3b3e44' },
             headerTitleStyle: { color: '#9DBDFF', fontFamily: 'NunitoExtraBold' },
           }}
