@@ -1,4 +1,4 @@
-import { studentEndpoints } from "@/constants/ApiEndpoints";
+import { studentEndpoints } from "@/constants/api-endpoints";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery } from "@tanstack/react-query"
 import axios from "axios";

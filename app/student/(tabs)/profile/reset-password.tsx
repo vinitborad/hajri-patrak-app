@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { Stack } from 'expo-router';
 import axios from 'axios';
-import { studentEndpoints } from '@/constants/ApiEndpoints';
+import { studentEndpoints } from '@/constants/api-endpoints';
 import * as SecureStore from 'expo-secure-store';
 
 const ResetPasswordScreen = () => {

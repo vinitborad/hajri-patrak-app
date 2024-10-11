@@ -1,6 +1,6 @@
 import axios from "axios";
 import { deleteAttendanceFromQueue, getQueuedAttendances, updateAttendanceInQueue } from "./attendance-queue";
-import { facultyEndpoints } from "@/constants/ApiEndpoints";
+import { facultyEndpoints } from "@/constants/api-endpoints";
 import * as SecureStore from 'expo-secure-store';
 import { isConnected } from "../network";
 

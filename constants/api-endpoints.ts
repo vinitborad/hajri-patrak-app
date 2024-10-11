@@ -33,6 +33,14 @@ export const facultyEndpoints = {
   GET_QR_CODE: `${BASE_URL}/code-pairs/create`,
 }
 
+export const adminEndpoints = {
+  SIGN_IN: `${BASE_URL}/admin/auth/signin`,
+
+  // atom student endpoints
+  GET_ATOM_STUDENT_PROFILE: `${BASE_URL}/admin/student/get-profile`,
+  UPDATE_ATOM_STUDENT_PROFILE: `${BASE_URL}/admin/student/update-profile`,
+}
+
 export const generalEndpoints = {
   GET_SYNC_TIME: `${BASE_URL}/time`,
 }

@@ -2,7 +2,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useState, useEffect } from 'react';
 import { Alert, Text, TouchableOpacity, View, Animated } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-import { generalEndpoints, studentEndpoints } from '@/constants/ApiEndpoints';
+import { generalEndpoints, studentEndpoints } from '@/constants/api-endpoints';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 

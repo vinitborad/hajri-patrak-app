@@ -1,10 +1,9 @@
-import { profileENdpoints } from "@/constants/ApiEndpoints";
+import { profileENdpoints } from "@/constants/api-endpoints";
 import { FACULTY_PROFILE, STUDENT_PROFILE } from "@/constants/async-store-keys";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery } from "@tanstack/react-query"
 import axios from "axios";
 import * as SecureStore from 'expo-secure-store';
-
 
 export const useGetStudentProfile = () => {
   return useQuery({

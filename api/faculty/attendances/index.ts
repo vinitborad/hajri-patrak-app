@@ -1,4 +1,4 @@
-import { facultyEndpoints } from "@/constants/ApiEndpoints";
+import { facultyEndpoints } from "@/constants/api-endpoints";
 import { DIVISION_STUDENTS_LIST, DIVISION_STUDENTS_LIST_KEY } from "@/constants/async-store-keys";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation, useQuery } from "@tanstack/react-query"

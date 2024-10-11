@@ -7,7 +7,7 @@ import { LIVE_ATTENDANCE, DIVISION_STUDENTS_LIST } from '@/constants/async-store
 import { isConnected } from '@/utils/network';
 import { callCreateAttendance, closeAttendance } from '@/utils/attendances/helper-functions';
 import axios from 'axios';
-import { facultyEndpoints } from '@/constants/ApiEndpoints';
+import { facultyEndpoints } from '@/constants/api-endpoints';
 import * as SecureStore from 'expo-secure-store';
 
 const LiveAttendanceScreen = () => {

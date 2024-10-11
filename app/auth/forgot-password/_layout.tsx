@@ -1,12 +1,12 @@
 import { Stack } from "expo-router";
 
 
-export default function AuthLayout(): JSX.Element {
+export default function ForgotPasswordLayout(): JSX.Element {
 
   return (
     <Stack>
       <Stack.Screen
-        name="sign-in"
+        name="index"
         options={{ headerShown: false }}
       />
     </Stack>

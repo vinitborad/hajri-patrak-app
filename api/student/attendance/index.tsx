@@ -1,4 +1,4 @@
-import { studentEndpoints } from "@/constants/ApiEndpoints";
+import { studentEndpoints } from "@/constants/api-endpoints";
 import { useMutation } from "@tanstack/react-query"
 import axios from "axios";
 import * as SecureStore from 'expo-secure-store';

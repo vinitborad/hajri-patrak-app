@@ -1,4 +1,4 @@
-import { facultyEndpoints } from "@/constants/ApiEndpoints";
+import { facultyEndpoints } from "@/constants/api-endpoints";
 import { LIVE_ATTENDANCE } from "@/constants/async-store-keys";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";

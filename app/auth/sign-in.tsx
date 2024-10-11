@@ -1,17 +1,33 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Image, Alert, Keyboard, Dimensions } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { useRouter } from 'expo-router';
-import Icon from '@/assets/images/icon.png'
+import Icon from '@/assets/images/icon.png';
 import { EvilIcons } from '@expo/vector-icons';
 
-const SignIn = () => {
+const SignInScreen = () => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [role, setRole] = useState<'faculty' | 'student'>('student');
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
   const router = useRouter();
+
+  // Monitor keyboard visibility
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      keyboardDidHideListener.remove();
+      keyboardDidShowListener.remove();
+    };
+  }, []);
 
   const onClick = async () => {
     try {
@@ -29,7 +45,6 @@ const SignIn = () => {
 
   return (
     <View className="bg-[#1E1E1E] flex items-center justify-start h-full w-full pt-24">
-
       <View className='flex items-center justify-center w-full gap-y-14'>
         <View className=' flex-col items-center justify-center w-full'>
           <Image
@@ -87,32 +102,35 @@ const SignIn = () => {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity className='flex items-center justify-center pt-3'>
+          <TouchableOpacity
+            className='flex items-center justify-center pt-3'
+            onPress={() => router.push('/auth/forgot-password')}
+          >
             <Text className="text-[#9DBDFF] font-NunitoLight text-sm">
               Forgot Password ?
             </Text>
           </TouchableOpacity>
         </View>
-
       </View>
 
-      <View className='absolute bottom-8 flex-col items-center gap-2'>
-        <TouchableOpacity 
-          className=' flex-row items-center justify-center'
-          onPress={() => Alert.alert('Admin panel is under construction !')}
-        >
-          <EvilIcons name="external-link" size={24} color="#9DBDFF" />
-          <Text className="text-[#9DBDFF] font-NunitoLight text-sm">ADMIN</Text>
-        </TouchableOpacity>
-        <View className='flex items-center justify-center'>
-          <Text className="text-[#64748B] font-NunitoLight text-xs">
-            © 2024 LDCE. All Rights Reserved
-          </Text>
+      {!isKeyboardVisible && ( // Only render this when the keyboard is hidden
+        <View className='absolute bottom-8 flex-col items-center gap-2'>
+          <TouchableOpacity
+            className='flex-row'
+            onPress={() => router.replace('/auth/admin')}
+          >
+            <EvilIcons name="external-link" size={24} color="#9DBDFF" />
+            <Text className="text-[#9DBDFF] font-NunitoLight text-sm">ADMIN</Text>
+          </TouchableOpacity>
+          <View className='flex items-center justify-center'>
+            <Text className="text-[#64748B] font-NunitoLight text-xs">
+              © 2024 LDCE. All Rights Reserved
+            </Text>
+          </View>
         </View>
-      </View>
-
+      )}
     </View>
   );
 };
 
-export default SignIn;
+export default SignInScreen;

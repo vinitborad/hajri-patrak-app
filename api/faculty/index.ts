@@ -1,4 +1,4 @@
-import { facultyEndpoints } from "@/constants/ApiEndpoints";
+import { facultyEndpoints } from "@/constants/api-endpoints";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import * as SecureStore from 'expo-secure-store';

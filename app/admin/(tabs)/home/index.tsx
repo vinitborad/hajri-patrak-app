@@ -1,0 +1,31 @@
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native'
+import React from 'react'
+import { Ionicons } from '@expo/vector-icons'
+import { useRouter } from 'expo-router'
+
+const HomeScreen = () => {
+
+  const router = useRouter();
+
+  return (
+    <View className='flex-1 bg-[#1E1E1E]'>
+
+      <ScrollView className='w-full'>
+        <View className='flex items-center w-full p-6'>
+
+          <TouchableOpacity
+            className='flex-row justify-center items-center border border-[#54a178] py-4 rounded-lg bg-[#3b3e44] gap-x-2 w-full'
+            onPress={ () => router.push('/admin/(tabs)/home/atom-student') }
+          >
+            <Ionicons name="person" size={24} color="#54a178" />
+            <Text className="text-[#54a178] text-lg ml-4 font-NunitoBold">Student Information</Text>
+          </TouchableOpacity>
+
+        </View>
+      </ScrollView>
+
+    </View>
+  )
+}
+
+export default HomeScreen
