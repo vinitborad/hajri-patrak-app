@@ -39,6 +39,10 @@ export const adminEndpoints = {
   // atom student endpoints
   GET_ATOM_STUDENT_PROFILE: `${BASE_URL}/admin/student/get-profile`,
   UPDATE_ATOM_STUDENT_PROFILE: `${BASE_URL}/admin/student/update-profile`,
+
+  // atom faculty endpoints
+  GET_ATOM_FACULTY_PROFILE: `${BASE_URL}/admin/faculty/get-profile`,
+  UPDATE_ATOM_FACULTY_PROFILE: `${BASE_URL}/admin/faculty/update-profile`,
 }
 
 export const generalEndpoints = {

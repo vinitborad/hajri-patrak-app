@@ -47,19 +47,33 @@ const AtomStudentScreen = () => {
     setUsername(''); // Clear input field
   };
 
-  // Function to compare original and modified student info
-  const isModified = () => {
-    return (
-      studentInfo?.email !== originalStudentInfo?.email ||
-      studentInfo?.firstName !== originalStudentInfo?.firstName ||
-      studentInfo?.lastName !== originalStudentInfo?.lastName ||
-      studentInfo?.phone !== originalStudentInfo?.phone ||
-      studentInfo?.address !== originalStudentInfo?.address
-    );
+  // Function to compare original and modified student info and return only modified fields
+  const getModifiedFields = () => {
+    const updatedFields: any = {};
+
+    if (studentInfo?.email !== originalStudentInfo?.email) {
+      updatedFields.email = studentInfo.email;
+    }
+    if (studentInfo?.firstName !== originalStudentInfo?.firstName) {
+      updatedFields.firstName = studentInfo.firstName;
+    }
+    if (studentInfo?.lastName !== originalStudentInfo?.lastName) {
+      updatedFields.lastName = studentInfo.lastName;
+    }
+    if (studentInfo?.phone !== originalStudentInfo?.phone) {
+      updatedFields.phone = studentInfo.phone;
+    }
+    if (studentInfo?.address !== originalStudentInfo?.address) {
+      updatedFields.address = studentInfo.address;
+    }
+
+    return updatedFields;
   };
 
   const handleUpdate = async () => {
-    if (!isModified()) {
+    const updatedFields = getModifiedFields();
+
+    if (Object.keys(updatedFields).length === 0) {
       Alert.alert('No Changes', 'No fields have been changed.');
       return;
     }
@@ -70,11 +84,7 @@ const AtomStudentScreen = () => {
       const token = await SecureStore.getItemAsync('token');
       const updateData = {
         username: studentInfo.username,
-        email: studentInfo.email,
-        firstName: studentInfo.firstName,
-        lastName: studentInfo.lastName,
-        phone: studentInfo.phone,
-        address: studentInfo.address,
+        ...updatedFields, // Send only modified fields
       };
 
       const response = await axios.post(adminEndpoints.UPDATE_ATOM_STUDENT_PROFILE, updateData, {

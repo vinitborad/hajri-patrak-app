@@ -15,6 +15,12 @@ export default function Layout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="atom-faculty"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   )
 }
