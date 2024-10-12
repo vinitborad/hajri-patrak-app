@@ -42,6 +42,7 @@ expo-env.d.ts
 
 myNotes.txt
 
+# temp folder and all inside
 temp/
 
 .vscode

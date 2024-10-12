@@ -1,8 +1,8 @@
-import { facultyEndpoints } from "@/constants/api-endpoints";
-import { DIVISION_STUDENTS_LIST, DIVISION_STUDENTS_LIST_KEY } from "@/constants/async-store-keys";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useMutation, useQuery } from "@tanstack/react-query"
-import axios from "axios";
+import { facultyEndpoints } from '@/constants/api-endpoints';
+import { DIVISION_STUDENTS_LIST, DIVISION_STUDENTS_LIST_KEY } from '@/constants/async-store-keys';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
 //TODO: later use useMutation for all post, delete types requestss

@@ -1,18 +1,18 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useGetSubjectsStructure } from '@/api/faculty';
+import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SUBJECT_STRUCTURE, PINNED_BRANCHES } from '@/constants/async-store-keys';
 import { AntDesign } from '@expo/vector-icons';
+import { useGetSubjectsStructure } from '@/api/faculty/data/structure';
+import { ACTIVE_SUBJECTS_STRUCTURE, PINNED_BRANCHES } from '@/constants/async-store-keys';
 
-const Department = () => {
-  const { department } = useLocalSearchParams();
+const BranchesScreen = () => {
+  const { college, department } = useLocalSearchParams(); // Extract the college and department parameters
   const router = useRouter();
 
   const [offlineData, setOfflineData] = useState<any>(null); // To hold offline data
   const [isOfflineLoading, setIsOfflineLoading] = useState(true); // To manage loading state for offline data
-  const [pinnedBranches, setPinnedBranches] = useState<string[]>([]); // Array for pinned branches
+  const [pinnedBranches, setPinnedBranches] = useState<string[]>([]); // Array for pinned branches in this department
 
   const { data: apiResponse, isLoading, error } = useGetSubjectsStructure();
 
@@ -20,14 +20,15 @@ const Department = () => {
   useEffect(() => {
     const fetchOfflineData = async () => {
       try {
-        const cachedData = await AsyncStorage.getItem(SUBJECT_STRUCTURE);
+        const cachedData = await AsyncStorage.getItem(ACTIVE_SUBJECTS_STRUCTURE);
         if (cachedData) {
           setOfflineData(JSON.parse(cachedData)); // Set offline data
         }
 
-        const cachedPinnedBranches = await AsyncStorage.getItem(PINNED_BRANCHES);
+        //@ts-ignore
+        const cachedPinnedBranches = await AsyncStorage.getItem(PINNED_BRANCHES(college, department));
         if (cachedPinnedBranches) {
-          setPinnedBranches(JSON.parse(cachedPinnedBranches)); // Load pinned branches from AsyncStorage
+          setPinnedBranches(JSON.parse(cachedPinnedBranches)); // Load pinned branches for this department
         }
       } catch (error) {
         console.log('Error fetching offline data or pinned branches:', error);
@@ -37,7 +38,7 @@ const Department = () => {
     };
 
     fetchOfflineData();
-  }, []);
+  }, [college, department]);
 
   // If we have API data that is updated, refresh the UI
   useEffect(() => {
@@ -49,32 +50,43 @@ const Department = () => {
   // Persist pinned branches in AsyncStorage whenever updated
   const savePinnedBranches = async (newPinnedBranches: string[]) => {
     try {
-      await AsyncStorage.setItem(PINNED_BRANCHES, JSON.stringify(newPinnedBranches));
+      //@ts-ignore
+      await AsyncStorage.setItem(PINNED_BRANCHES(college, department), JSON.stringify(newPinnedBranches));
     } catch (error) {
       console.log('Error saving pinned branches:', error);
     }
   };
 
-  // Handle pinning and unpinning
+  // Handle pinning and unpinning of branches
   const togglePinBranch = (branch: string) => {
     setPinnedBranches((prevPinnedBranches) => {
       const newPinnedBranches = prevPinnedBranches.includes(branch)
         ? prevPinnedBranches.filter((b) => b !== branch) // Unpin
         : [...prevPinnedBranches, branch]; // Pin
 
-      savePinnedBranches(newPinnedBranches); // Save updated pinned branches
+      savePinnedBranches(newPinnedBranches); // Save updated pinned branches for this department
       return newPinnedBranches;
     });
   };
 
   // Memoized sorting for performance optimization
   const sortedBranches = useMemo(() => {
-    if (!offlineData || !department) return [];
-    const branches = Object.keys(offlineData.ldce[department as keyof typeof offlineData.ldce]);
+    //@ts-ignore
+    if (!offlineData || !offlineData[college] || !offlineData[college][department]) return [];
+    //@ts-ignore
+    const branches = Object.keys(offlineData[college][department]); // Extract branch keys for the current department
     const pinned = branches.filter((branch) => pinnedBranches.includes(branch));
     const unpinned = branches.filter((branch) => !pinnedBranches.includes(branch));
     return [...pinned, ...unpinned];
-  }, [offlineData, department, pinnedBranches]);
+  }, [offlineData, college, department, pinnedBranches]);
+
+  // Redirect if only one branch exists
+  useEffect(() => {
+    if (sortedBranches.length === 1) {
+      const branch = sortedBranches[0];
+      router.push(`/faculty/(tabs)/home/college/${college}/department/${department}/branch/${branch}`);
+    }
+  }, [sortedBranches]);
 
   if (isOfflineLoading || isLoading) {
     return (
@@ -82,7 +94,7 @@ const Department = () => {
         <Stack.Screen options={{ headerShown: false }} />
         <ActivityIndicator size="large" color="#9DBDFF" />
       </View>
-    )
+    );
   }
 
   if (error && !offlineData) {
@@ -91,7 +103,7 @@ const Department = () => {
         <Stack.Screen options={{ headerShown: false }} />
         <Text className="text-[#FF6B6B]">N / A</Text>
       </View>
-    )
+    );
   }
 
   if (!sortedBranches.length) {
@@ -100,13 +112,13 @@ const Department = () => {
         <Stack.Screen options={{ headerShown: false }} />
         <Text className="text-[#FF6B6B]">N / A</Text>
       </View>
-    )
+    );
   }
 
   const renderBranchCard = ({ item }: { item: string }) => (
     <TouchableOpacity
       className="flex-row justify-between items-center bg-[#3b3e44] p-4 pr-5 rounded-lg shadow-md m-2 border border-[#9DBDFF]"
-      onPress={() => router.push(`/faculty/home/department/${department}/branch/${item}`)}
+      onPress={() => router.push(`/faculty/(tabs)/home/college/${college}/department/${department}/branch/${item}`)}
     >
       <View>
         <Text className="text-lg font-NunitoBold text-[#9DBDFF] capitalize">{item}</Text>
@@ -125,7 +137,6 @@ const Department = () => {
   return (
     <View className="flex flex-1 justify-center items-center bg-[#1E1E1E]">
       <Stack.Screen options={{ headerShown: false }} />
-
       <FlatList
         data={sortedBranches}
         keyExtractor={(item) => item}
@@ -137,4 +148,4 @@ const Department = () => {
   );
 };
 
-export default Department;
+export default BranchesScreen;

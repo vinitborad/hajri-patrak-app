@@ -11,7 +11,7 @@ import { facultyEndpoints } from '@/constants/api-endpoints';
 import * as SecureStore from 'expo-secure-store';
 
 const LiveAttendanceScreen = () => {
-  const { subjectId, department, branch } = useLocalSearchParams();
+  const { id } = useLocalSearchParams();
   const router = useRouter();
 
   const [liveAttendance, setLiveAttendance] = useState<any>(null); // Live attendance data from AsyncStorage
@@ -39,11 +39,11 @@ const LiveAttendanceScreen = () => {
     try {
       const networkStatus = await isConnected();
       if (networkStatus) {
-        const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(subjectId as string));
+        const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(id as string));
         if (liveData) {
           const parsedLiveData = JSON.parse(liveData);
           if (!parsedLiveData._id) {
-            await callCreateAttendance(subjectId as string);
+            await callCreateAttendance(id as string);
           }
         }
       }
@@ -56,7 +56,7 @@ const LiveAttendanceScreen = () => {
   const fetchData = async () => {
     try {
       // Fetch live attendance data from AsyncStorage
-      const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(subjectId as string));
+      const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(id as string));
       if (liveData) {
         const parsedLiveData = JSON.parse(liveData);
 
@@ -80,7 +80,7 @@ const LiveAttendanceScreen = () => {
       const networkStatus = await isConnected();
       if (networkStatus) {
         createCallHandling();
-        const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(subjectId as string));
+        const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(id as string));
         if (liveData) {
           const parsedLiveData = JSON.parse(liveData);
           if (parsedLiveData && parsedLiveData._id) {
@@ -131,7 +131,7 @@ const LiveAttendanceScreen = () => {
             text: 'Yes',
             onPress: async () => {
               try {
-                const { success, message: comingMessage } = await closeAttendance(subjectId as string, message);
+                const { success, message: comingMessage } = await closeAttendance(id as string, message);
                 if (success) {
                   Alert.alert('Success', comingMessage);
                   router.back();
@@ -155,7 +155,7 @@ const LiveAttendanceScreen = () => {
       const networkStatus = await isConnected();
       if (networkStatus) {
         createCallHandling();
-        const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(subjectId as string));
+        const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(id as string));
         if (liveData) {
           const parsedLiveData = JSON.parse(liveData);
           if (parsedLiveData && parsedLiveData._id) {
@@ -212,7 +212,7 @@ const LiveAttendanceScreen = () => {
         </TouchableOpacity>
         <TouchableOpacity
           className="flex-1 bg-[#9DBDFF] p-4 rounded-lg ml-2 flex-row justify-center items-center"
-          onPress={() => router.push(`/faculty/(tabs)/home/department/${department}/branch/${branch}/subject/${subjectId}/live/manual/`)}
+          onPress={() => router.push(`/faculty/(tabs)/home/subject/${id}/live/manual`)}
         >
           <FontAwesome name="pencil" size={24} color="#1E1E1E" />
           <Text className="text-center text-[#1E1E1E] text-lg ml-2">Manual</Text>

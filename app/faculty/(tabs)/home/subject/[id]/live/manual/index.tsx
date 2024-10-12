@@ -8,7 +8,7 @@ import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 const ManualMarkScreen = () => {
   const router = useRouter();
 
-  const { subjectId } = useLocalSearchParams();
+  const { id } = useLocalSearchParams();
   const [students, setStudents] = useState<any[]>([]); // List of all students
   const [liveAttendance, setLiveAttendance] = useState<any>(null); // Live attendance data
   const [markedPresentStudents, setMarkedPresentStudents] = useState<string[]>([]); // List of marked present students
@@ -18,7 +18,7 @@ const ManualMarkScreen = () => {
     const fetchData = async () => {
       try {
         // Fetch live attendance from AsyncStorage
-        const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(subjectId as string));
+        const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(id as string));
         if (liveData) {
           const parsedLiveData = JSON.parse(liveData);
 
@@ -46,7 +46,7 @@ const ManualMarkScreen = () => {
     };
 
     fetchData();
-  }, [subjectId]);
+  }, [id]);
 
   const handleModeChange = (newMode: 'present' | 'absent') => {
     Alert.alert(
@@ -97,7 +97,7 @@ const ManualMarkScreen = () => {
               };
 
               // Save updated live attendance back to AsyncStorage
-              await AsyncStorage.setItem(LIVE_ATTENDANCE(subjectId as string), JSON.stringify(updatedLiveAttendance));
+              await AsyncStorage.setItem(LIVE_ATTENDANCE(id as string), JSON.stringify(updatedLiveAttendance));
 
               // Navigate back one screen
               router.back();

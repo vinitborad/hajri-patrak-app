@@ -7,7 +7,6 @@ import {
   Image,
   Alert,
   Keyboard,
-  Dimensions,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Platform,

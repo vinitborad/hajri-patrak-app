@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
-import { useGetSubjectsStructure } from '@/api/faculty';
+import { useGetSubjectsStructure } from '@/api/faculty/data/structure';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SUBJECT_STRUCTURE } from '@/constants/async-store-keys';
+import { ACTIVE_SUBJECTS_STRUCTURE } from '@/constants/async-store-keys';
 
 interface Subject {
   subjectId: string;
@@ -12,11 +12,11 @@ interface Subject {
   subjectType: string;
 }
 
-const SubjectsList: React.FC = () => {
-  const { department, branch, graduationLevel, sem, division } = useLocalSearchParams();
+const SubjectsScreen: React.FC = () => {
+  const { college, department, branch, graduationLevel, sem, division, passoutYear } = useLocalSearchParams(); // Extract params from URL
   const router = useRouter();
 
-  const [offlineData, setOfflineData] = useState(null); // To hold offline data
+  const [offlineData, setOfflineData] = useState<any>(null); // To hold offline data
   const [isOfflineLoading, setIsOfflineLoading] = useState(true); // Manage offline data loading
 
   // Fetching data using the custom hook
@@ -26,7 +26,7 @@ const SubjectsList: React.FC = () => {
   useEffect(() => {
     const fetchOfflineData = async () => {
       try {
-        const cachedData = await AsyncStorage.getItem(SUBJECT_STRUCTURE);
+        const cachedData = await AsyncStorage.getItem(ACTIVE_SUBJECTS_STRUCTURE);
         if (cachedData) {
           setOfflineData(JSON.parse(cachedData)); // Set offline data
         }
@@ -50,9 +50,10 @@ const SubjectsList: React.FC = () => {
   // Determine the data to show (either from API or offline)
   const dataToShow = apiResponse?.data || offlineData;
 
-  //@ts-ignore
-  // Extract subjects from the data based on department, branch, graduationLevel, sem, and division
-  const subjects: Subject[] = dataToShow?.ldce?.[department]?.[branch]?.[graduationLevel]?.[sem]?.[division] || [];
+  // Extract subjects from the data based on college, department, branch, graduationLevel, sem, division, and passoutYear
+  const subjects: Subject[] =
+    //@ts-ignore
+    dataToShow?.[college]?.[department]?.[branch]?.[graduationLevel]?.[passoutYear]?.[sem]?.[division].subjects || [];
 
   if (isOfflineLoading || isLoading) {
     return (
@@ -60,7 +61,7 @@ const SubjectsList: React.FC = () => {
         <Stack.Screen options={{ headerShown: false }} />
         <ActivityIndicator size="large" color="#9DBDFF" />
       </View>
-    )
+    );
   }
 
   if (error && !offlineData) {
@@ -69,16 +70,18 @@ const SubjectsList: React.FC = () => {
         <Stack.Screen options={{ headerShown: false }} />
         <Text className="text-[#FF6B6B]">N / A</Text>
       </View>
-    )
+    );
   }
 
   if (subjects.length === 0) {
     return (
       <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-20">
         <Stack.Screen options={{ headerShown: false }} />
-        <Text className="bg-[#3b3e44] p-4 rounded-lg shadow-md mt-7 mx-4 text-center text-lg font-NunitoBold text-[#F6F5F5]">No subjects available</Text>
+        <Text className="bg-[#3b3e44] p-4 rounded-lg shadow-md mt-7 mx-4 text-center text-lg font-NunitoBold text-[#F6F5F5]">
+          No subjects available
+        </Text>
       </View>
-    )
+    );
   }
 
   const renderSubjectItem = ({ item }: { item: Subject }) => (
@@ -90,7 +93,9 @@ const SubjectsList: React.FC = () => {
         <Text className="text-[#F6F5F5] text-base font-NunitoBold">{item.subjectType}</Text>
         <TouchableOpacity
           onPress={() =>
-            router.push(`/faculty/(tabs)/home/department/${department}/branch/${branch}/subject/${item.subjectId}`)
+            router.push(
+              `/faculty/(tabs)/home/subject/${item.subjectId}`
+            )
           }
         >
           <Text className="text-[#9DBDFF] border-b border-[#9DBDFF]">View Details</Text>
@@ -114,4 +119,4 @@ const SubjectsList: React.FC = () => {
   );
 };
 
-export default SubjectsList;
+export default SubjectsScreen;

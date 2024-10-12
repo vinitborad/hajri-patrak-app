@@ -13,7 +13,7 @@ const index = () => {
   // remove all items from secure store and async store
   // SecureStore.deleteItemAsync('token');
   // SecureStore.deleteItemAsync('role');
-  AsyncStorage.clear();
+  // AsyncStorage.clear();
 
   useEffect(() => {
     const fetchToken = async () => {

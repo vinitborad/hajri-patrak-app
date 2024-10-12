@@ -7,34 +7,40 @@ export const authEndpoints = {
   FACULTY_SIGNIN: `${BASE_URL}/auth/faculty-signin`,
 };
 
-export const profileENdpoints = {
-  FACULTY_PROFILE: `${BASE_URL}/profile/faculty`,
-};
-
 export const studentEndpoints = {
   // data endpoints
   STUDENT_ACTIVE_SUBJECTS: `${BASE_URL}/student/data/get-active-subjects`,
   STUDENT_SUBJECT_INFO: `${BASE_URL}/student/data/subject-info`,
   STUDENT_SUBJECTS_LIST: `${BASE_URL}/subject/student-subjects`,
   QR_MARK_ATTENDANCE: `${BASE_URL}/code-pairs/mark-attendance`,
-  CHANGE_PASSWORD: `${BASE_URL}/auth/student/change-password`,
-
+  
   // profile endpoints
   GET_PROFILE: `${BASE_URL}/student/data/profile`,
+  CHANGE_PASSWORD: `${BASE_URL}/student/auth/change-password`,
 };
 
 export const facultyEndpoints = {
-  GET_SUBJECTS_STRUCTURE: `${BASE_URL}/data/faculty/subjects-structure`,
-  GET_PREVIOUS_ATTENDANCES: `${BASE_URL}/attendance/get-previous-attendances`,
-  GET_ANALYSE_ATTENDANCE: `${BASE_URL}/attendance/analyse`,
-  CREATE_ATTENDANCE: `${BASE_URL}/attendance/create`,
-  GET_ATTENDANCE_INFO: `${BASE_URL}/attendance/get-detailed-attendance-info`,
-  GET_LIVE_ATTENDANCE_INFO: `${BASE_URL}/attendance/live-info`,
-  MANUAL_MARK_ATTENDANCE: `${BASE_URL}/attendance/manual-mark`,
-  CLOSE_ATTENDANCE: `${BASE_URL}/attendance/close-live`,
+  // data endpoints
+  // structure enpoints
+  GET_ACTIVE_SUBJECTS_STRUCTURE: `${BASE_URL}/faculty/data/get-active-structure`,
+  // subject view page endpoints
+  GET_ANALYSE_ATTENDANCE: `${BASE_URL}/faculty/attendance/analyse`,
   GET_DIVISION_STUDENTS_LIST: `${BASE_URL}/data/division-students-list`,
-  CHANGE_PASSWORD: `${BASE_URL}/auth/faculty/change-password`,
+
+  // attendance endpoints
+  GET_PREVIOUS_ATTENDANCES: `${BASE_URL}/faculty/attendance/previous-attendances`,
+  GET_ATTENDANCE_INFO: `${BASE_URL}/faculty/attendance/detailed-info`,
+  // attendance handling endpoints
+  CREATE_ATTENDANCE: `${BASE_URL}/faculty/attendance/create`,
+  GET_LIVE_ATTENDANCE_INFO: `${BASE_URL}/faculty/attendance/live-info`,
+  MANUAL_MARK_ATTENDANCE: `${BASE_URL}/faculty/attendance/manual-mark`,
+  CLOSE_ATTENDANCE: `${BASE_URL}/faculty/attendance/close-live`,
+  // qr code endpoints
   GET_QR_CODE: `${BASE_URL}/code-pairs/create`,
+
+  // profile endpoints
+  GET_PROFILE: `${BASE_URL}/faculty/data/profile`,
+  CHANGE_PASSWORD: `${BASE_URL}/faculty/auth/change-password`,
 }
 
 export const adminEndpoints = {

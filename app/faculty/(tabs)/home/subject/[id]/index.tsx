@@ -9,10 +9,11 @@ import { isConnected } from '@/utils/network';
 import { callCreateAttendance } from '@/utils/attendances/helper-functions';
 
 const SubjectDetailScreen = () => {
-  const { department, branch, subjectId } = useLocalSearchParams();
+  const { id } = useLocalSearchParams();
+  console.log('subjectId:', id);
   const router = useRouter();
 
-  const { data, isLoading, error } = useGetPreviousAttendances(subjectId as string);
+  const { data, isLoading, error } = useGetPreviousAttendances(id as string);
 
   // State for modal visibility and form input
   const [isModalVisible, setModalVisible] = useState(false);
@@ -28,7 +29,7 @@ const SubjectDetailScreen = () => {
     const fetchPreviousData = async () => {
       try {
         // Fetch previous attendances from AsyncStorage
-        const cachedData = await AsyncStorage.getItem(PREV_ATTENDANCES(subjectId as string));
+        const cachedData = await AsyncStorage.getItem(PREV_ATTENDANCES(id as string));
         if (cachedData) {
           setOfflineData(JSON.parse(cachedData));
         }
@@ -40,13 +41,13 @@ const SubjectDetailScreen = () => {
     };
 
     fetchPreviousData();
-  }, [subjectId]);
+  }, [id]);
 
   useFocusEffect(
     React.useCallback(() => {
       const fetchLiveAttendance = async () => {
         try {
-          const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(subjectId as string));
+          const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(id as string));
           if (liveData) {
             setLiveAttendance(JSON.parse(liveData));
           }
@@ -56,7 +57,7 @@ const SubjectDetailScreen = () => {
         }
       };
       fetchLiveAttendance();
-    }, [subjectId])
+    }, [id])
   );
 
   // Validation function to check API response
@@ -70,9 +71,9 @@ const SubjectDetailScreen = () => {
   // Save fetched API data to offline storage only if valid
   useEffect(() => {
     if (data && isValidApiResponse(data)) {
-      AsyncStorage.setItem(PREV_ATTENDANCES(subjectId as string), JSON.stringify(data));
+      AsyncStorage.setItem(PREV_ATTENDANCES(id as string), JSON.stringify(data));
     }
-  }, [data, subjectId]);
+  }, [data, id]);
 
   if (isOfflineLoading || isLoading) {
     return (
@@ -107,7 +108,7 @@ const SubjectDetailScreen = () => {
         return;
       }
       const attendanceData: any = {
-        subjectId: subjectId,
+        subjectId: id,
         subjectName: subjectDetails.subjectName,
         value: parseInt(value),
         interDivisions: selectedInterDivisions,
@@ -116,12 +117,12 @@ const SubjectDetailScreen = () => {
         retry: 0,
         close: false,
       }
-      await AsyncStorage.setItem(LIVE_ATTENDANCE(subjectId as string), JSON.stringify(attendanceData));
+      await AsyncStorage.setItem(LIVE_ATTENDANCE(id as string), JSON.stringify(attendanceData));
       setLiveAttendance(attendanceData); // Set live attendance state
 
       const networkStatus = await isConnected();
       if (networkStatus) {
-        await callCreateAttendance(subjectId as string);
+        await callCreateAttendance(id as string);
       }
 
       setModalVisible(false);
@@ -168,7 +169,7 @@ const SubjectDetailScreen = () => {
         </TouchableOpacity>
         <TouchableOpacity
           className="bg-green-500 p-2 rounded-lg flex flex-row items-center"
-          onPress={() => router.push(`/faculty/(tabs)/home/department/${department}/branch/${branch}/subject/${subjectId}/attendance/${item.id}`)}
+          onPress={() => router.push(`/faculty/(tabs)/home/subject/${id}/attendance/${item.id}`)}
         >
           <MaterialIcons name="visibility" size={20} color="white" />
           <Text className="text-white ml-2">View</Text>
@@ -218,7 +219,7 @@ const SubjectDetailScreen = () => {
             {/* Student Analyser Button */}
             <TouchableOpacity
               className="bg-opacity-70 p-4 rounded-lg mb-4 border border-[#9DBDFF] flex flex-row items-center justify-center bg-transparent"
-              onPress={() => router.push(`/faculty/(tabs)/home/department/${department}/branch/${branch}/subject/${subjectId}/analyse`)}
+              onPress={() => router.push(`/faculty/(tabs)/home/subject/${id}/analyse`)}
             >
               <Ionicons name="analytics-outline" size={20} color="#F6F5F5" />
               <Text className="text-center text-[#9DBDFF] text-lg ml-2">Student Analyser</Text>
@@ -234,7 +235,7 @@ const SubjectDetailScreen = () => {
                 </Text>
                 <TouchableOpacity
                   className="bg-[#1B4332] p-2 mt-4 rounded-lg flex flex-row items-center justify-center"
-                  onPress={() => router.push(`/faculty/(tabs)/home/department/${department}/branch/${branch}/subject/${subjectId}/live/`)}
+                  onPress={() => router.push(`/faculty/(tabs)/home/subject/${id}/live`)}
                 >
                   <Ionicons name="eye-outline" size={20} color="#9DBDFF" />
                   <Text className="ml-2 text-[#F6F5F5]">View Live Attendance</Text>

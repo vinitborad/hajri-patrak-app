@@ -1,16 +1,16 @@
-import { profileENdpoints } from "@/constants/api-endpoints";
-import { FACULTY_PROFILE } from "@/constants/async-store-keys";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useQuery } from "@tanstack/react-query"
-import axios from "axios";
+import { facultyEndpoints } from '@/constants/api-endpoints';
+import { FACULTY_PROFILE } from '@/constants/async-store-keys';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
 export const useGetFacultyProfile = () => {
   return useQuery({
-    queryKey: ["profile", "faculty"],
+    queryKey: ['profile', 'faculty'],
     queryFn: async () => {
       const token = await SecureStore.getItemAsync('token');
-      const response = await axios.get(profileENdpoints.FACULTY_PROFILE, {
+      const response = await axios.get(facultyEndpoints.GET_PROFILE, {
         headers: {
           Authorization: `Bearer ${token}`
         }

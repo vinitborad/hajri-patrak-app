@@ -3,17 +3,17 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DIVISION_STUDENTS_LIST, DIVISION_STUDENTS_LIST_KEY, SUBJECT_STRUCTURE, SUBJECT_STRUCTURE_KEY } from "@/constants/async-store-keys";
+import { ACTIVE_SUBJECTS_STRUCTURE, ACTIVE_SUBJECTS_STRUCTURE_KEY, DIVISION_STUDENTS_LIST, DIVISION_STUDENTS_LIST_KEY } from "@/constants/async-store-keys";
 
 
 export const useGetSubjectsStructure = () => {
   return useQuery({
-    queryKey: ['subjects-structure'],
+    queryKey: ['active-subjects-structure'],
     queryFn: async () => {
       const token = await SecureStore.getItemAsync('token');
-      const contentKey = await AsyncStorage.getItem(SUBJECT_STRUCTURE_KEY); // Fetch contentKey from AsyncStorage
+      const contentKey = await AsyncStorage.getItem(ACTIVE_SUBJECTS_STRUCTURE_KEY); // Fetch contentKey from AsyncStorage
 
-      const response = await axios.get(facultyEndpoints.GET_SUBJECTS_STRUCTURE, {
+      const response = await axios.get(facultyEndpoints.GET_ACTIVE_SUBJECTS_STRUCTURE, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -24,8 +24,8 @@ export const useGetSubjectsStructure = () => {
 
       if (isUpdated && data && newContentKey && success) {
         // Store the new data and contentKey in AsyncStorage
-        await AsyncStorage.setItem(SUBJECT_STRUCTURE, JSON.stringify(data));
-        await AsyncStorage.setItem(SUBJECT_STRUCTURE_KEY, newContentKey);
+        await AsyncStorage.setItem(ACTIVE_SUBJECTS_STRUCTURE, JSON.stringify(data));
+        await AsyncStorage.setItem(ACTIVE_SUBJECTS_STRUCTURE_KEY, newContentKey);
       }
 
       return { data, isUpdated };

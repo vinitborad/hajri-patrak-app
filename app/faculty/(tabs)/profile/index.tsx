@@ -1,12 +1,12 @@
 import { View, Text, Image, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { useGetFacultyProfile } from '@/api/profile';
 import { Octicons, Ionicons, MaterialIcons, Entypo } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import defaultImage from '@/assets/images/default-profile.png';
 import { FACULTY_PROFILE } from '@/constants/async-store-keys';
+import { useGetFacultyProfile } from '@/api/faculty/profile';
 
 const FacultyProfile = () => {
 
@@ -87,7 +87,7 @@ const FacultyProfile = () => {
           onPress={() => router.push('/faculty/(tabs)/profile/reset-password')}
         >
           <Ionicons name="key" size={24} color="#FF6B6B" />
-          <Text className="text-[#FF6B6B] text-lg ml-4 font-NunitoBold">Reset Password</Text>
+          <Text className="text-[#FF6B6B] text-lg ml-4 font-NunitoBold">Change Password</Text>
         </TouchableOpacity>
         <TouchableOpacity className="flex-row items-center mb-4 p-4 bg-[#3b3e44] rounded-lg border border-[#9DBDFF]">
           <Ionicons name="document-text" size={24} color="#9DBDFF" />

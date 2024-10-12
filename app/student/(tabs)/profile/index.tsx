@@ -80,6 +80,14 @@ const Profile = () => {
           <Text className="text-[#f6ff90] text-lg ml-4 font-NunitoBold">Previous Subjects</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity
+          className="flex-row items-center mb-4 p-4 bg-[#3b3e44] rounded-lg border border-[#FF6B6B]"
+          onPress={() => router.push('/student/(tabs)/profile/reset-password')}
+        >
+          <Ionicons name="key" size={24} color="#FF6B6B" />
+          <Text className="text-[#FF6B6B] text-lg ml-4 font-NunitoBold">Change Password</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity className="flex-row items-center mb-4 p-4 bg-[#3b3e44] rounded-lg border border-[#9DBDFF]">
           <Ionicons name="document-text" size={24} color="#9DBDFF" />
           <Text className="text-[#F6F5F5] text-lg ml-4 font-NunitoBold">Form</Text>
