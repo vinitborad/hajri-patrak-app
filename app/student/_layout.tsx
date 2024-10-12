@@ -40,30 +40,6 @@ export default function Layout() {
         }}
       />
       <Stack.Screen
-        name="subject/[id]"
-        options={{
-          title: 'Subject Detail',
-          headerStyle: {
-            backgroundColor: '#3b3e4', // Consistent dark background
-          },
-          headerTitleStyle: {
-            color: '#9DBDFF', // Light blue text color
-            fontFamily: 'NunitoExtraBold', // Custom font
-            fontSize: 20, // Font size consistent with other screens
-          },
-          headerTintColor: '#9DBDFF', // Back button color
-          headerBackTitleVisible: false, // Hide back button text
-          headerLeft: () => (
-            <TouchableOpacity
-              style={{ paddingLeft: 8, paddingRight: 16 }}
-              onPress={() => router.back()}
-            >
-              <Ionicons name="arrow-back" size={24} color="#9DBDFF" />
-            </TouchableOpacity>
-          ),
-        }}
-      />
-      <Stack.Screen
         name="qr"
         options={{
           headerShown: false,

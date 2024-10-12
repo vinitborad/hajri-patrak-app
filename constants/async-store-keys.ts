@@ -20,5 +20,8 @@ export const FACULTY_PROFILE = 'faculty-profile';
 
 // student 
 export const STUDENT_SUBJECTS_LIST = 'student-subjects-list';
-export const STUDENT_PROFILE = 'student-profile';
 export const STUDENT_SUBJECT_INFO = (subjectId: string) => `student-subject-info-${subjectId}`;
+export const STUDENT_ACTIVE_SUBJECTS = 'student-active-subjects';
+export const STUDENT_ACTIVE_SUBJECTS_KEY = 'student-active-subjects-contentKey';
+// student profile
+export const STUDENT_PROFILE = 'student-profile';

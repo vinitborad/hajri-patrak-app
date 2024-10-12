@@ -1,5 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
@@ -32,8 +44,17 @@ const AtomStudentScreen = () => {
         },
       });
 
-      setStudentInfo(response.data.data); // Set fetched data
-      setOriginalStudentInfo(response.data.data); // Set original data to compare later
+      const data = response.data.data;
+      setStudentInfo({
+        ...data,
+        email: data?.email || '', // No 'null', use empty string if no data
+        firstName: data?.firstName || '',
+        lastName: data?.lastName || '',
+        phone: data?.phone || '',
+        address: data?.address || '',
+      });
+
+      setOriginalStudentInfo(data); // Set original data to compare later
     } catch (error) {
       Alert.alert('Error', 'Failed to fetch student information.');
     } finally {
@@ -109,119 +130,125 @@ const AtomStudentScreen = () => {
   };
 
   return (
-    <View className="flex-1 bg-[#1E1E1E] p-4">
-      <ScrollView contentContainerStyle={{ paddingBottom: 50 }} showsVerticalScrollIndicator={false}>
-        {/* Header and Search Bar */}
-        <View className="flex-row items-center mb-4">
-          <TextInput
-            placeholder="Enter Username"
-            placeholderTextColor="#A0A0A0"
-            value={username}
-            editable={!isLoading && !studentInfo} // Disable input when loading or data is shown
-            onChangeText={setUsername}
-            className="flex-1 border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5] font-NunitoLight"
-          />
-          {studentInfo && (
-            <TouchableOpacity onPress={handleClear} className="ml-2">
-              <Ionicons name="pencil" size={24} color="#9DBDFF" />
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: '#1E1E1E' }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined} // Adjust for iOS
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0} // Push content up to avoid keyboard overlap
+    >
+      <View className="flex-1 bg-[#1E1E1E] p-4">
+        <ScrollView contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+          {/* Header and Search Bar */}
+          <View className="flex-row items-center mb-4">
+            <TextInput
+              placeholder="Enter Username"
+              placeholderTextColor="#A0A0A0"
+              value={username}
+              editable={!isLoading && !studentInfo} // Disable input when loading or data is shown
+              onChangeText={setUsername}
+              className="flex-1 border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5] font-NunitoLight"
+            />
+            {studentInfo && (
+              <TouchableOpacity onPress={handleClear} className="ml-2">
+                <Ionicons name="pencil" size={24} color="#9DBDFF" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Search button */}
+          {!studentInfo && (
+            <TouchableOpacity
+              className="bg-[#9DBDFF] py-2 px-4 rounded-lg mb-6"
+              onPress={handleSearch}
+              disabled={!username || isLoading} // Disable if username is empty or loading
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#1E1E1E" /> // Show loader while fetching data
+              ) : (
+                <Text className="text-center text-[#1E1E1E] text-lg font-NunitoBold">Search</Text>
+              )}
             </TouchableOpacity>
           )}
-        </View>
 
-        {/* Search button */}
-        {!studentInfo && (
-          <TouchableOpacity
-            className="bg-[#9DBDFF] py-2 px-4 rounded-lg mb-6"
-            onPress={handleSearch}
-            disabled={!username || isLoading} // Disable if username is empty or loading
-          >
-            {isLoading ? (
-              <ActivityIndicator size="small" color="#1E1E1E" /> // Show loader while fetching data
-            ) : (
-              <Text className="text-center text-[#1E1E1E] text-lg font-NunitoBold">Search</Text>
-            )}
-          </TouchableOpacity>
-        )}
+          {/* Student Info Section (Editable fields) */}
+          {studentInfo && (
+            <>
+              <View className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
+                <Text className="text-[#9DBDFF] mb-2">EDUCATIONAL INFO</Text>
+                <Text className="text-[#F6F5F5]">College: {studentInfo.educationMeta?.college || ''}</Text>
+                <Text className="text-[#F6F5F5]">Department: {studentInfo.educationMeta?.department || ''}</Text>
+                <Text className="text-[#F6F5F5]">Graduation Level: {studentInfo.educationMeta?.graduationLevel || ''}</Text>
+                <Text className="text-[#F6F5F5]">Branch: {studentInfo.educationMeta?.branch || ''}</Text>
+                <Text className="text-[#F6F5F5]">Passout Year: {studentInfo.educationMeta?.passoutYear || ''}</Text>
+                <Text className="text-[#F6F5F5]">Current Semester: {studentInfo.educationMeta?.currentSemester || ''}</Text>
+              </View>
 
-        {/* Student Info Section (Editable fields) */}
-        {studentInfo && (
-          <>
-            <View className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
-              <Text className="text-[#9DBDFF] mb-2">EDUCATIONAL INFO</Text>
-              <Text className="text-[#F6F5F5]">College: {studentInfo.educationMeta?.college || 'null'}</Text>
-              <Text className="text-[#F6F5F5]">Department: {studentInfo.educationMeta?.department || 'null'}</Text>
-              <Text className="text-[#F6F5F5]">Graduation Level: {studentInfo.educationMeta?.graduationLevel || 'null'}</Text>
-              <Text className="text-[#F6F5F5]">Branch: {studentInfo.educationMeta?.branch || 'null'}</Text>
-              <Text className="text-[#F6F5F5]">Passout Year: {studentInfo.educationMeta?.passoutYear || 'null'}</Text>
-              <Text className="text-[#F6F5F5]">Current Semester: {studentInfo.educationMeta?.currentSemester || 'null'}</Text>
-            </View>
+              {/* Editable Fields */}
+              <Text className="text-[#9DBDFF] mb-2">Email</Text>
+              <TextInput
+                value={studentInfo.email || ''}
+                onChangeText={(text) => setStudentInfo({ ...studentInfo, email: text })}
+                className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
+              />
 
-            {/* Editable Fields */}
-            <Text className="text-[#9DBDFF] mb-2">Email</Text>
-            <TextInput
-              value={studentInfo.email || 'null'}
-              onChangeText={(text) => setStudentInfo({ ...studentInfo, email: text })}
-              className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
-            />
+              <Text className="text-[#9DBDFF] mb-2 mt-4">First Name</Text>
+              <TextInput
+                value={studentInfo.firstName || ''}
+                onChangeText={(text) => setStudentInfo({ ...studentInfo, firstName: text })}
+                className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
+              />
 
-            <Text className="text-[#9DBDFF] mb-2 mt-4">First Name</Text>
-            <TextInput
-              value={studentInfo.firstName || 'null'}
-              onChangeText={(text) => setStudentInfo({ ...studentInfo, firstName: text })}
-              className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
-            />
+              <Text className="text-[#9DBDFF] mb-2 mt-4">Last Name</Text>
+              <TextInput
+                value={studentInfo.lastName || ''}
+                onChangeText={(text) => setStudentInfo({ ...studentInfo, lastName: text })}
+                className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
+              />
 
-            <Text className="text-[#9DBDFF] mb-2 mt-4">Last Name</Text>
-            <TextInput
-              value={studentInfo.lastName || 'null'}
-              onChangeText={(text) => setStudentInfo({ ...studentInfo, lastName: text })}
-              className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
-            />
+              <Text className="text-[#9DBDFF] mb-2 mt-4">Phone</Text>
+              <TextInput
+                value={studentInfo.phone || ''}
+                onChangeText={(text) => setStudentInfo({ ...studentInfo, phone: text })}
+                className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
+              />
 
-            <Text className="text-[#9DBDFF] mb-2 mt-4">Phone</Text>
-            <TextInput
-              value={studentInfo.phone || 'null'}
-              onChangeText={(text) => setStudentInfo({ ...studentInfo, phone: text })}
-              className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
-            />
+              <Text className="text-[#9DBDFF] mb-2 mt-4">Address</Text>
+              <TextInput
+                value={studentInfo.address || ''}
+                onChangeText={(text) => setStudentInfo({ ...studentInfo, address: text })}
+                className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
+              />
 
-            <Text className="text-[#9DBDFF] mb-2 mt-4">Address</Text>
-            <TextInput
-              value={studentInfo.address || 'null'}
-              onChangeText={(text) => setStudentInfo({ ...studentInfo, address: text })}
-              className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
-            />
+              {/* Action Buttons */}
+              <View className="mt-6">
+                <TouchableOpacity
+                  className="bg-green-600 py-2 px-4 rounded-lg mb-2"
+                  onPress={handleUpdate}
+                  disabled={isUpdating} // Disable button while updating
+                >
+                  {isUpdating ? (
+                    <ActivityIndicator size="small" color="#FFF" />
+                  ) : (
+                    <Text className="text-center text-white">UPDATE</Text>
+                  )}
+                </TouchableOpacity>
 
-            {/* Action Buttons */}
-            <View className="mt-6">
-              <TouchableOpacity
-                className="bg-green-600 py-2 px-4 rounded-lg mb-2"
-                onPress={handleUpdate}
-                disabled={isUpdating} // Disable button while updating
-              >
-                {isUpdating ? (
-                  <ActivityIndicator size="small" color="#FFF" />
-                ) : (
-                  <Text className="text-center text-white">UPDATE</Text>
-                )}
-              </TouchableOpacity>
+                <TouchableOpacity className="bg-[#3b3e44] py-2 px-4 rounded-lg mb-2 border border-[#9DBDFF]">
+                  <Text className="text-center text-[#9DBDFF]">UNHOOK DEVICE</Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity className="bg-[#3b3e44] py-2 px-4 rounded-lg mb-2 border border-[#9DBDFF]">
-                <Text className="text-center text-[#9DBDFF]">UNHOOK DEVICE</Text>
-              </TouchableOpacity>
+                <TouchableOpacity className="bg-[#3b3e44] py-2 px-4 rounded-lg mb-2 border border-[#9DBDFF]">
+                  <Text className="text-center text-[#9DBDFF]">DIVISIONS LIST</Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity className="bg-[#3b3e44] py-2 px-4 rounded-lg mb-2 border border-[#9DBDFF]">
-                <Text className="text-center text-[#9DBDFF]">DIVISIONS LIST</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity className="bg-red-600 py-2 px-4 rounded-lg mb-10">
-                <Text className="text-center text-white">DELETE STUDENT</Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        )}
-      </ScrollView>
-    </View>
+                <TouchableOpacity className="bg-red-600 py-2 px-4 rounded-lg mb-10">
+                  <Text className="text-center text-white">DELETE STUDENT</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
+        </ScrollView>
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 

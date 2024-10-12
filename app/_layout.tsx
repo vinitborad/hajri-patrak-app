@@ -71,6 +71,7 @@ function RootLayoutNav() {
           <Stack.Screen name='student' options={{ headerShown: false }} />
           <Stack.Screen name='faculty' options={{ headerShown: false }} />
           <Stack.Screen name='admin' options={{ headerShown: false }} />
+          <Stack.Screen name='common' options={{ headerShown: false }} />
         </Stack>
       </QueryProvider>
     </ThemeProvider>

@@ -35,7 +35,7 @@ const FacultyProfile = () => {
   const onSignOut = () => {
     SecureStore.deleteItemAsync('token');
     SecureStore.deleteItemAsync('role');
-    router.replace('/(auth)/sign-in');
+    router.replace('/');
   }
 
   // Render placeholder if no profile data (first-time load)

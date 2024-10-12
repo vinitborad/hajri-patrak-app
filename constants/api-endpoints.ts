@@ -8,15 +8,19 @@ export const authEndpoints = {
 };
 
 export const profileENdpoints = {
-  STUDENT_PROFILE: `${BASE_URL}/profile/student`,
   FACULTY_PROFILE: `${BASE_URL}/profile/faculty`,
 };
 
 export const studentEndpoints = {
+  // data endpoints
+  STUDENT_ACTIVE_SUBJECTS: `${BASE_URL}/student/data/get-active-subjects`,
+  STUDENT_SUBJECT_INFO: `${BASE_URL}/student/data/subject-info`,
   STUDENT_SUBJECTS_LIST: `${BASE_URL}/subject/student-subjects`,
-  STUDENT_SUBJECT_DETAILS: `${BASE_URL}/subject/student-subject-details`,
   QR_MARK_ATTENDANCE: `${BASE_URL}/code-pairs/mark-attendance`,
   CHANGE_PASSWORD: `${BASE_URL}/auth/student/change-password`,
+
+  // profile endpoints
+  GET_PROFILE: `${BASE_URL}/student/data/profile`,
 };
 
 export const facultyEndpoints = {
@@ -43,6 +47,12 @@ export const adminEndpoints = {
   // atom faculty endpoints
   GET_ATOM_FACULTY_PROFILE: `${BASE_URL}/admin/faculty/get-profile`,
   UPDATE_ATOM_FACULTY_PROFILE: `${BASE_URL}/admin/faculty/update-profile`,
+
+  // creation endpoints
+  CREATE_FACULTY: `${BASE_URL}/admin/create/faculty`,
+  CREATE_DIVISION: `${BASE_URL}/admin/create/division`,
+  CREATE_SUBJECT: `${BASE_URL}/admin/create/subject`,
+  CREATE_STUDENT: `${BASE_URL}/admin/create/student`,
 }
 
 export const generalEndpoints = {

@@ -1,15 +1,16 @@
-import { View, Text, ScrollView, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { Stack, useLocalSearchParams } from 'expo-router';
-import { useGetStudentSubjectInfo } from '@/api/student';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Calendar } from 'react-native-calendars';
 import moment from 'moment-timezone';
-import { FontAwesome5 } from '@expo/vector-icons';
+import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STUDENT_SUBJECT_INFO } from '@/constants/async-store-keys';
 import { calculateAttendanceLevel } from '@/utils/attendances/helper-functions';
+import { useGetStudentSubjectInfo } from '@/api/student/data/subject';
 
 const SubjectDetail = () => {
+  const router = useRouter();
   const { id } = useLocalSearchParams();
   const subjectId = Array.isArray(id) ? id[0] : id;
 
@@ -77,7 +78,11 @@ const SubjectDetail = () => {
     );
   }
 
-  const { subjectName, subjectCode, subjectType, attendanceInfo } = dataToShow || {};
+  // Fallback if data is missing or undefined
+  const subjectName = dataToShow?.subjectName || "Loading ...";
+  const subjectCode = dataToShow?.subjectCode || "Loading ...";
+  const subjectType = dataToShow?.subjectType || "Loading ...";
+  const attendanceInfo = dataToShow?.attendanceInfo || [];
 
   const markedDates = {};
   let totalLecsCount = 0;
@@ -129,9 +134,23 @@ const SubjectDetail = () => {
       <View className="p-5">
         <Stack.Screen
           options={{
-            title: `${subjectName.toUpperCase() || "N / A"}`,
+            title: `${subjectName?.toUpperCase() || "N / A"}`,
             headerStyle: { backgroundColor: '#3b3e44' },
-            headerTitleStyle: { color: '#9DBDFF', fontFamily: 'NunitoExtraBold' },
+            headerTitleStyle: {
+              color: '#9DBDFF', // Light blue text color
+              fontFamily: 'NunitoExtraBold', // Custom font
+              fontSize: 20, // Font size consistent with other screens
+            },
+            headerTintColor: '#9DBDFF', // Back button color
+            headerBackTitleVisible: false, // Hide back button text
+            headerLeft: () => (
+              <TouchableOpacity
+                style={{ paddingLeft: 8, paddingRight: 16 }}
+                onPress={() => router.back()}
+              >
+                <Ionicons name="arrow-back" size={24} color="#9DBDFF" />
+              </TouchableOpacity>
+            ),
           }}
         />
 
@@ -162,35 +181,41 @@ const SubjectDetail = () => {
           }}
         />
 
-        {/* Attendance Summary Section */}
-        <View className={`bg-[#2D2D2D] rounded-2xl p-4 mt-4 border shadow-lg flex-row justify-between items-center ${calculateAttendanceLevel(attendancePercentage) === 'Good' ? "bg-[#2D6A4F]" : calculateAttendanceLevel(attendancePercentage) === 'Medium' ? "bg-[#8b9e36]" : "bg-[#c33f43]"}`}>
-          {/* Text Information */}
-          <View>
-            <Text className="text-lg font-NunitoExtraBold text-white">
-              Total Lecs : <Text className="font-NunitoBold">{totalLecsCount}</Text>
-            </Text>
-            <Text className="text-lg font-NunitoExtraBold text-white">
-              Attended : <Text className="font-NunitoBold">{attendedLecsCount}</Text>
-            </Text>
-          </View>
+        {/* Conditionally render the attendance summary and list */}
+        {attendanceInfo.length > 0 ? (
+          <>
+            {/* Attendance Summary Section */}
+            <View className={`bg-[#2D2D2D] rounded-2xl p-4 mt-4 border shadow-lg flex-row justify-between items-center ${calculateAttendanceLevel(attendancePercentage) === 'Good' ? "bg-[#2D6A4F]" : calculateAttendanceLevel(attendancePercentage) === 'Medium' ? "bg-[#8b9e36]" : "bg-[#c33f43]"}`}>
+              {/* Text Information */}
+              <View>
+                <Text className="text-lg font-NunitoExtraBold text-white">
+                  Total Lecs : <Text className="font-NunitoBold">{totalLecsCount}</Text>
+                </Text>
+                <Text className="text-lg font-NunitoExtraBold text-white">
+                  Attended : <Text className="font-NunitoBold">{attendedLecsCount}</Text>
+                </Text>
+              </View>
 
-          {/* Circle for Percentage */}
-          <View className="flex items-center justify-center w-16 h-16 border-2 border-white rounded-full">
-            <Text className="text-lg font-NunitoExtraBold text-white">
-              {attendancePercentage}%
-            </Text>
-          </View>
-        </View>
+              {/* Circle for Percentage */}
+              <View className="flex items-center justify-center w-16 h-16 border-2 border-white rounded-full">
+                <Text className="text-lg font-NunitoExtraBold text-white">
+                  {attendancePercentage}%
+                </Text>
+              </View>
+            </View>
 
+            <Text className="text-xl font-NunitoExtraBold text-[#F6F5F5] mt-6 mb-2">Attendance Details</Text>
 
-        <Text className="text-xl font-NunitoExtraBold text-[#F6F5F5] mt-6 mb-2">Attendance Details</Text>
-
-        <FlatList
-          data={attendanceInfo}
-          keyExtractor={(item) => item.date}
-          renderItem={renderAttendanceItem}
-          scrollEnabled={false} // Disable internal scroll, we'll rely on the ScrollView
-        />
+            <FlatList
+              data={attendanceInfo}
+              keyExtractor={(item) => item.date}
+              renderItem={renderAttendanceItem}
+              scrollEnabled={false} // Disable internal scroll, we'll rely on the ScrollView
+            />
+          </>
+        ) : (
+          <Text className="text-lg font-NunitoBold text-[#FF6B6B] mt-4 text-center">No attendance data is available.</Text>
+        )}
       </View>
     </ScrollView>
   );

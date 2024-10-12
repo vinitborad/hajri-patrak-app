@@ -1,5 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
@@ -32,8 +44,17 @@ const AtomFacultyScreen = () => {
         },
       });
 
-      setFacultyInfo(response.data.data); // Set fetched data
-      setOriginalFacultyInfo(response.data.data); // Set original data to compare later
+      const data = response.data.data;
+      setFacultyInfo({
+        ...data,
+        college: data?.college || '', // If null, set it to empty string
+        email: data?.email || '',
+        firstName: data?.firstName || '',
+        lastName: data?.lastName || '',
+        phone: data?.phone || '',
+      }); // Set fetched data
+
+      setOriginalFacultyInfo(data); // Store original data to compare later
     } catch (error) {
       Alert.alert('Error', 'Failed to fetch faculty information.');
     } finally {
@@ -50,7 +71,7 @@ const AtomFacultyScreen = () => {
   // Function to compare original and modified faculty info
   const getModifiedFields = () => {
     const updatedFields: any = {};
-    
+
     if (facultyInfo?.email !== originalFacultyInfo?.email) {
       updatedFields.email = facultyInfo.email;
     }
@@ -96,7 +117,6 @@ const AtomFacultyScreen = () => {
       if (response.data.success) {
         // Update original data with the new values
         setOriginalFacultyInfo({ ...facultyInfo });
-
         Alert.alert('Success', 'Faculty profile updated successfully!');
       } else {
         Alert.alert('Error', 'Failed to update faculty profile.');
@@ -109,110 +129,116 @@ const AtomFacultyScreen = () => {
   };
 
   return (
-    <View className="flex-1 bg-[#1E1E1E] p-4">
-      <ScrollView contentContainerStyle={{ paddingBottom: 50 }} showsVerticalScrollIndicator={false}>
-        {/* Header and Search Bar */}
-        <View className="flex-row items-center mb-4">
-          <TextInput
-            placeholder="Enter Username"
-            placeholderTextColor="#A0A0A0"
-            value={username}
-            editable={!isLoading && !facultyInfo} // Disable input when loading or data is shown
-            onChangeText={setUsername}
-            className="flex-1 border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5] font-NunitoLight"
-          />
-          {facultyInfo && (
-            <TouchableOpacity onPress={handleClear} className="ml-2">
-              <Ionicons name="pencil" size={24} color="#9DBDFF" />
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: '#1E1E1E' }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined} // Adjust for iOS
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0} // Push content up to avoid keyboard overlap
+    >
+      <View className="flex-1 bg-[#1E1E1E] p-4">
+        <ScrollView contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+          {/* Header and Search Bar */}
+          <View className="flex-row items-center mb-4">
+            <TextInput
+              placeholder="Enter Username"
+              placeholderTextColor="#A0A0A0"
+              value={username}
+              editable={!isLoading && !facultyInfo} // Disable input when loading or data is shown
+              onChangeText={setUsername}
+              className="flex-1 border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5] font-NunitoLight"
+            />
+            {facultyInfo && (
+              <TouchableOpacity onPress={handleClear} className="ml-2">
+                <Ionicons name="pencil" size={24} color="#9DBDFF" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Search button */}
+          {!facultyInfo && (
+            <TouchableOpacity
+              className="bg-[#9DBDFF] py-2 px-4 rounded-lg mb-6"
+              onPress={handleSearch}
+              disabled={!username || isLoading} // Disable if username is empty or loading
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#1E1E1E" /> // Show loader while fetching data
+              ) : (
+                <Text className="text-center text-[#1E1E1E] text-lg font-NunitoBold">Search</Text>
+              )}
             </TouchableOpacity>
           )}
-        </View>
 
-        {/* Search button */}
-        {!facultyInfo && (
-          <TouchableOpacity
-            className="bg-[#9DBDFF] py-2 px-4 rounded-lg mb-6"
-            onPress={handleSearch}
-            disabled={!username || isLoading} // Disable if username is empty or loading
-          >
-            {isLoading ? (
-              <ActivityIndicator size="small" color="#1E1E1E" /> // Show loader while fetching data
-            ) : (
-              <Text className="text-center text-[#1E1E1E] text-lg font-NunitoBold">Search</Text>
-            )}
-          </TouchableOpacity>
-        )}
+          {/* Faculty Info Section (Editable fields) */}
+          {facultyInfo && (
+            <>
+              {/* Editable College Info */}
+              <Text className="text-[#9DBDFF] mb-2">College</Text>
+              <TextInput
+                value={facultyInfo.college || ''}
+                onChangeText={(text) => setFacultyInfo({ ...facultyInfo, college: text })}
+                className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
+              />
 
-        {/* Faculty Info Section (Editable fields) */}
-        {facultyInfo && (
-          <>
-            {/* Editable College Info */}
-            <Text className="text-[#9DBDFF] mb-2">College</Text>
-            <TextInput
-              value={facultyInfo.college || 'null'}
-              onChangeText={(text) => setFacultyInfo({ ...facultyInfo, college: text })}
-              className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
-            />
+              {/* Editable Fields */}
+              <Text className="text-[#9DBDFF] mb-2 mt-4">Email</Text>
+              <TextInput
+                value={facultyInfo.email || ''}
+                onChangeText={(text) => setFacultyInfo({ ...facultyInfo, email: text })}
+                className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
+              />
 
-            {/* Editable Fields */}
-            <Text className="text-[#9DBDFF] mb-2 mt-4">Email</Text>
-            <TextInput
-              value={facultyInfo.email || 'null'}
-              onChangeText={(text) => setFacultyInfo({ ...facultyInfo, email: text })}
-              className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
-            />
+              <Text className="text-[#9DBDFF] mb-2 mt-4">First Name</Text>
+              <TextInput
+                value={facultyInfo.firstName || ''}
+                onChangeText={(text) => setFacultyInfo({ ...facultyInfo, firstName: text })}
+                className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
+              />
 
-            <Text className="text-[#9DBDFF] mb-2 mt-4">First Name</Text>
-            <TextInput
-              value={facultyInfo.firstName || 'null'}
-              onChangeText={(text) => setFacultyInfo({ ...facultyInfo, firstName: text })}
-              className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
-            />
+              <Text className="text-[#9DBDFF] mb-2 mt-4">Last Name</Text>
+              <TextInput
+                value={facultyInfo.lastName || ''}
+                onChangeText={(text) => setFacultyInfo({ ...facultyInfo, lastName: text })}
+                className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
+              />
 
-            <Text className="text-[#9DBDFF] mb-2 mt-4">Last Name</Text>
-            <TextInput
-              value={facultyInfo.lastName || 'null'}
-              onChangeText={(text) => setFacultyInfo({ ...facultyInfo, lastName: text })}
-              className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
-            />
+              <Text className="text-[#9DBDFF] mb-2 mt-4">Phone</Text>
+              <TextInput
+                value={facultyInfo.phone || ''}
+                onChangeText={(text) => setFacultyInfo({ ...facultyInfo, phone: text })}
+                className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
+              />
 
-            <Text className="text-[#9DBDFF] mb-2 mt-4">Phone</Text>
-            <TextInput
-              value={facultyInfo.phone || 'null'}
-              onChangeText={(text) => setFacultyInfo({ ...facultyInfo, phone: text })}
-              className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
-            />
+              {/* Action Buttons */}
+              <View className="mt-6">
+                <TouchableOpacity
+                  className="bg-green-600 py-2 px-4 rounded-lg mb-2"
+                  onPress={handleUpdate}
+                  disabled={isUpdating} // Disable button while updating
+                >
+                  {isUpdating ? (
+                    <ActivityIndicator size="small" color="#FFF" />
+                  ) : (
+                    <Text className="text-center text-white">UPDATE</Text>
+                  )}
+                </TouchableOpacity>
 
-            {/* Action Buttons */}
-            <View className="mt-6">
-              <TouchableOpacity
-                className="bg-green-600 py-2 px-4 rounded-lg mb-2"
-                onPress={handleUpdate}
-                disabled={isUpdating} // Disable button while updating
-              >
-                {isUpdating ? (
-                  <ActivityIndicator size="small" color="#FFF" />
-                ) : (
-                  <Text className="text-center text-white">UPDATE</Text>
-                )}
-              </TouchableOpacity>
+                <TouchableOpacity className="bg-[#3b3e44] py-2 px-4 rounded-lg mb-2 border border-[#9DBDFF]">
+                  <Text className="text-center text-[#9DBDFF]">UNHOOK DEVICE</Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity className="bg-[#3b3e44] py-2 px-4 rounded-lg mb-2 border border-[#9DBDFF]">
-                <Text className="text-center text-[#9DBDFF]">UNHOOK DEVICE</Text>
-              </TouchableOpacity>
+                <TouchableOpacity className="bg-[#3b3e44] py-2 px-4 rounded-lg mb-2 border border-[#9DBDFF]">
+                  <Text className="text-center text-[#9DBDFF]">DIVISIONS LIST</Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity className="bg-[#3b3e44] py-2 px-4 rounded-lg mb-2 border border-[#9DBDFF]">
-                <Text className="text-center text-[#9DBDFF]">DIVISIONS LIST</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity className="bg-red-600 py-2 px-4 rounded-lg mb-10">
-                <Text className="text-center text-white">DELETE FACULTY</Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        )}
-      </ScrollView>
-    </View>
+                <TouchableOpacity className="bg-red-600 py-2 px-4 rounded-lg mb-10">
+                  <Text className="text-center text-white">DELETE FACULTY</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
+        </ScrollView>
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 

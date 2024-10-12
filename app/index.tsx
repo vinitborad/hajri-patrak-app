@@ -2,12 +2,18 @@ import { ActivityIndicator, StyleSheet } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Redirect } from 'expo-router'
 import * as SecureStore from 'expo-secure-store'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const index = () => {
 
   const [token, setToken] = useState<string | null>(null);
   const [role, setRole] = useState<'faculty' | 'student' | 'admin'>();
   const [loading, setLoading] = useState(true);
+
+  // remove all items from secure store and async store
+  // SecureStore.deleteItemAsync('token');
+  // SecureStore.deleteItemAsync('role');
+  AsyncStorage.clear();
 
   useEffect(() => {
     const fetchToken = async () => {

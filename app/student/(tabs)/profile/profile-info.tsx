@@ -38,7 +38,7 @@ const ProfileInfoScreen = () => {
     );
   }
 
-  const { username, email, phone, personalInfo, educationInfo } = profileData || {};
+  const { username, email, phone, personalInfo, educationMeta: educationInfo } = profileData || {};
   const profileImage = personalInfo?.photoUrl ? { uri: personalInfo?.photoUrl } : defaultImage;
 
   return (
