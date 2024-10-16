@@ -33,6 +33,12 @@ export default function Layout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen 
+        name="create-students-sheet"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   )
 }

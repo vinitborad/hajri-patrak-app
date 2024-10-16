@@ -59,6 +59,8 @@ export const adminEndpoints = {
   CREATE_DIVISION: `${BASE_URL}/admin/create/division`,
   CREATE_SUBJECT: `${BASE_URL}/admin/create/subject`,
   CREATE_STUDENT: `${BASE_URL}/admin/create/student`,
+  // student sheet creation endpoints
+  GET_STUDENT_SHEET_DATA: `${BASE_URL}/admin/create/student/sheet`,
 }
 
 export const generalEndpoints = {

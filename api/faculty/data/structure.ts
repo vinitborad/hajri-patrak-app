@@ -1,10 +1,9 @@
-import { facultyEndpoints } from "@/constants/api-endpoints";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { facultyEndpoints } from '@/constants/api-endpoints';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ACTIVE_SUBJECTS_STRUCTURE, ACTIVE_SUBJECTS_STRUCTURE_KEY, DIVISION_STUDENTS_LIST, DIVISION_STUDENTS_LIST_KEY } from "@/constants/async-store-keys";
-
+import { ACTIVE_SUBJECTS_STRUCTURE, ACTIVE_SUBJECTS_STRUCTURE_KEY, DIVISION_STUDENTS_LIST, DIVISION_STUDENTS_LIST_KEY } from '@/constants/async-store-keys';
 
 export const useGetSubjectsStructure = () => {
   return useQuery({
@@ -30,7 +29,7 @@ export const useGetSubjectsStructure = () => {
 
       return { data, isUpdated };
     },
-    //TODO: chnage params later accordingly
+    //TODO: change params later accordingly
     // Adjust refetch behaviors
     refetchOnMount: true,
     refetchOnWindowFocus: true,
@@ -65,10 +64,10 @@ export const useGetDivisionStudentsList = (divisionId: string) => {
 
       return { data, isUpdated };
     },
-    //TODO: chnage params later accordingly
+    //TODO: change params later accordingly
     // Adjust refetch behaviors
     refetchOnMount: true,
     refetchOnWindowFocus: true,
-    retry: 1, // Limit retry attemptsF
+    retry: 1, // Limit retry attempts
   });
-}
+};

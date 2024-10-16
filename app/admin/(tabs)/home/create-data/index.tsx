@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native'
 import React from 'react'
-import { Feather } from '@expo/vector-icons'
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router';
 
 const CreateDataScreen = () => {
@@ -43,6 +43,14 @@ const CreateDataScreen = () => {
           >
             <Feather name="plus" size={24} color="#9DBDFF" />
             <Text className="text-[#9DBDFF] text-lg ml-4 font-NunitoBold">Create Student</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className='flex-row justify-center items-center border border-[#9DBDFF] py-4 rounded-lg bg-[#3b3e44] gap-x-2 w-full'
+            onPress={() => router.push('/admin/(tabs)/home/create-data/create-students-sheet')}
+          >
+            <MaterialCommunityIcons name="google-spreadsheet" size={24} color="#9DBDFF" />
+            <Text className="text-[#9DBDFF] text-lg ml-4 font-NunitoBold">Students Sheet</Text>
           </TouchableOpacity>
 
         </View>
