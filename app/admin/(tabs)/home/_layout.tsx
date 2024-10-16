@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { Stack } from 'expo-router';
 
 export default function Layout() {
   return (
@@ -27,6 +27,12 @@ export default function Layout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="view-data"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
-  )
+  );
 }

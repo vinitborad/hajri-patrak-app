@@ -46,6 +46,9 @@ export const facultyEndpoints = {
 export const adminEndpoints = {
   SIGN_IN: `${BASE_URL}/admin/auth/signin`,
 
+  // data endpoints
+  GET_STRUCTURE: `${BASE_URL}/admin/data/get-structure`,
+
   // atom student endpoints
   GET_ATOM_STUDENT_PROFILE: `${BASE_URL}/admin/student/get-profile`,
   UPDATE_ATOM_STUDENT_PROFILE: `${BASE_URL}/admin/student/update-profile`,

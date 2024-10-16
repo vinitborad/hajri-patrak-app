@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native'
 import React from 'react'
-import { Feather, Ionicons } from '@expo/vector-icons'
+import { Feather, FontAwesome, Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 
 const HomeScreen = () => {
@@ -12,6 +12,14 @@ const HomeScreen = () => {
 
       <ScrollView className='w-full'>
         <View className='flex items-center w-full p-6 gap-y-4'>
+
+          <TouchableOpacity
+            className='flex-row justify-center items-center border border-[#ffe37c] py-4 rounded-lg bg-[#3b3e44] gap-x-2 w-full'
+            onPress={() => router.push('/admin/(tabs)/home/view-data')}
+          >
+            <FontAwesome name="database" size={24} color="#ffe37c" />
+            <Text className="text-[#ffe37c] text-lg ml-4 font-NunitoBold">View Data Structure</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             className='flex-row justify-center items-center border border-[#54a178] py-4 rounded-lg bg-[#3b3e44] gap-x-2 w-full'
