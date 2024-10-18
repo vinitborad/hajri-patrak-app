@@ -62,7 +62,6 @@ const DivisionInfoScreen = () => {
   if (error && !offlineData) {
     return (
       <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
-        <Stack.Screen options={{ headerShown: false }} />
         <Text className="text-[#FF6B6B]">N / A</Text>
       </View>
     );
@@ -71,7 +70,6 @@ const DivisionInfoScreen = () => {
   if (!divisionData) {
     return (
       <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
-        <Stack.Screen options={{ headerShown: false }} />
         <Text className="text-[#FF6B6B]">No data available for this division</Text>
       </View>
     );
@@ -80,8 +78,8 @@ const DivisionInfoScreen = () => {
   // Render Subject Card
   const renderSubjectItem = ({ item }: { item: any }) => (
     <TouchableOpacity
+      key={item.subjectCode}  // <-- Add key here (use subjectCode or another unique identifier)
       className="flex-row justify-between items-center bg-[#3b3e44] p-4 pr-5 rounded-lg shadow-md m-2 border border-[#9DBDFF]"
-      onPress={() => router.push(`/admin/data/subject/${item.subjectId}`)}
     >
       <View className='flex-row items-center gap-1'>
         <Text className="text-lg font-NunitoBold text-[#9DBDFF] capitalize">{item.subjectName}</Text>
@@ -93,8 +91,8 @@ const DivisionInfoScreen = () => {
   // Render Inter-Division Card
   const renderInterDivisionItem = ({ item }: { item: any }) => (
     <TouchableOpacity
+      key={item.interDivision}  // <-- Add key here (use interDivision or another unique identifier)
       className="flex-row justify-between items-center bg-[#3b3e44] p-4 pr-5 rounded-lg shadow-md m-2 border border-[#9DBDFF]"
-      onPress={() => router.push(`/admin/data/inter-division/${item.id}`)}
     >
       <View>
         <Text className="text-lg font-NunitoBold text-[#9DBDFF]">Inter Div {item.interDivision}</Text>

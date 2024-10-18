@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STUDENTS_SHEET_DATA } from '@/constants/async-store-keys';
 
 const CreateStudentsViewDataScreen = () => {
   const [students, setStudents] = useState([]);
@@ -8,7 +9,7 @@ const CreateStudentsViewDataScreen = () => {
   useEffect(() => {
     const fetchStoredStudents = async () => {
       try {
-        const data = await AsyncStorage.getItem('fetched_students');
+        const data = await AsyncStorage.getItem(STUDENTS_SHEET_DATA);
         if (data) {
           setStudents(JSON.parse(data));
         }
@@ -19,9 +20,10 @@ const CreateStudentsViewDataScreen = () => {
     fetchStoredStudents();
   }, []);
 
+  // Header for the table
   const renderHeader = () => {
     return (
-      <View style={styles.row}>
+      <View style={[styles.row, styles.headerRow]}>
         {['Username', 'Email', 'Phone', 'FirstName', 'LastName', 'Address', 'ParentPhone'].map((header) => (
           <View style={styles.cell} key={header}>
             <Text style={styles.headerText}>{header}</Text>
@@ -31,8 +33,8 @@ const CreateStudentsViewDataScreen = () => {
     );
   };
 
-  // @ts-ignore
-  const renderRow = (student, index) => {
+  // Individual student row
+  const renderRow = (student: any, index: any) => {
     return (
       <View style={styles.row} key={index}>
         <View style={styles.cell}><Text style={styles.cellText}>{student.username}</Text></View>
@@ -84,11 +86,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#9DBDFF',
   },
+  headerRow: {
+    backgroundColor: '#3b3e44',
+  },
   cell: {
     padding: 10,
     borderWidth: 1,
     borderColor: '#9DBDFF',
-    minWidth: 150,  // You can adjust this to ensure a base minimum width
+    minWidth: 150,  // Set a base minimum width
+    flex: 1,
     justifyContent: 'center',
   },
   headerText: {
@@ -99,5 +105,6 @@ const styles = StyleSheet.create({
   cellText: {
     color: '#F6F5F5',
     textAlign: 'center',
+    flexWrap: 'wrap', // Ensures text wraps to the next line if too long
   },
 });

@@ -48,6 +48,10 @@ export const adminEndpoints = {
 
   // data endpoints
   GET_STRUCTURE: `${BASE_URL}/admin/data/get-structure`,
+  // data updation endpoints
+  GET_DIVISION_ACTIVE_STATUS: `${BASE_URL}/admin/data/division/active-status`,
+  MARK_DIVISION_ACTIVE: `${BASE_URL}/admin/data/update/division/activate`,
+  MARK_DIVISION_INACTIVE: `${BASE_URL}/admin/data/update/division/inactivate`,
 
   // atom student endpoints
   GET_ATOM_STUDENT_PROFILE: `${BASE_URL}/admin/student/get-profile`,
@@ -63,7 +67,8 @@ export const adminEndpoints = {
   CREATE_SUBJECT: `${BASE_URL}/admin/create/subject`,
   CREATE_STUDENT: `${BASE_URL}/admin/create/student`,
   // student sheet creation endpoints
-  GET_STUDENT_SHEET_DATA: `${BASE_URL}/admin/create/student/sheet`,
+  GET_STUDENT_SHEET_DATA: `${BASE_URL}/admin/create/student/sheet-data`,
+  CREATE_STUDENTS_FROM_SHEET: `${BASE_URL}/admin/create/students/sheet`,
 }
 
 export const generalEndpoints = {
