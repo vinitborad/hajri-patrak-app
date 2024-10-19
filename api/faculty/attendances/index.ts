@@ -1,4 +1,4 @@
-import { facultyEndpoints } from '@/constants/api-endpoints';
+import { commonEndpoints, facultyEndpoints } from '@/constants/api-endpoints';
 import { DIVISION_STUDENTS_LIST, DIVISION_STUDENTS_LIST_KEY } from '@/constants/async-store-keys';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -29,22 +29,17 @@ export const useGetPreviousAttendances = (subjectId: string) => {
       if (data.subject.interDivisions && data.subject.interDivisions.length > 0) {
         data.subject.interDivisions.forEach(async (div: any) => {
           try {
-            console.log('Fetching division students list for:', div._id);
             // Manually fetch the division student list and cache it
             const token = await SecureStore.getItemAsync('token');
             const contentKey = await AsyncStorage.getItem(DIVISION_STUDENTS_LIST_KEY(div._id));
-            console.log('Content key:', contentKey);
-            console.log('Token:', token);
 
-            const response = await axios.get(facultyEndpoints.GET_DIVISION_STUDENTS_LIST, {
+            const response = await axios.get(commonEndpoints.GET_DIVISION_STUDENTS_LIST, {
               headers: { Authorization: `Bearer ${token}` },
               params: { divisionId: div._id, contentKey },
             });
 
-            console.log('Division students list response:', response.data);
 
             const { data: divisionData, success, isUpdated, contentKey: newContentKey } = response.data;
-            console.log('Division data:', divisionData);
 
             if (isUpdated && divisionData && newContentKey && success) {
               // Cache the new data
@@ -92,7 +87,7 @@ export const useGetAnalyseAttendance = (subjectId: string) => {
     queryKey: ['analyse-attendance', subjectId],
     queryFn: async () => {
       const token = await SecureStore.getItemAsync('token');
-      const response = await axios.get(facultyEndpoints.GET_ANALYSE_ATTENDANCE,
+      const response = await axios.get(commonEndpoints.GET_ANALYSE_ATTENDANCE,
         {
           headers: {
             Authorization: `Bearer ${token}`,

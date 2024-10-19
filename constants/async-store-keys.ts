@@ -35,10 +35,13 @@ export const STUDENT_PROFILE = 'student-profile';
 
 
 // ADMIN ASYNC STORE KEYS
-// data
+// DATA
 export const ADMIN_DATA_STRUCTURE = 'admin-data-structure';
 export const ADMIN_DATA_STRUCTURE_KEY = 'admin-data-structure-contentkey';
-// pinning keys
+export const ADMIN_DATA_STUDENTS_DATA_STRUCTURE = 'admin-data-students-data-structure';
+export const ADMIN_DATA_STUDENTS_DATA_STRUCTURE_KEY = 'admin-data-students-data-structure-contentkey';
+// PINNING KEYS
+// pinning keys for subject and division structure
 export const PINNED_COLLEGES_ADMIN = 'admin-data-pinned-colleges';
 export const PINNED_DEPARTMENTS_ADMIN = (college: string) => `admin-data-pinned-departments-${college}`;
 export const PINNED_BRANCHES_ADMIN = (college: string, department: string) => `admin-data-pinned-branches-${college}-${department}`;
@@ -46,5 +49,17 @@ export const PINNED_GRADUATION_LEVELS_ADMIN = (college: string, department: stri
 export const PINNED_PASSOUT_YEARS_ADMIN = (college: string, department: string, branch: string, graduationLevel: string) => `admin-data-pinned-passout-years-${college}-${department}-${branch}-${graduationLevel}`;
 export const PINNED_SEMESTERS_ADMIN = (college: string, department: string, branch: string, graduationLevel: string, passoutYear: string) => `admin-data-pinned-semesters-${college}-${department}-${branch}-${graduationLevel}-${passoutYear}`;
 export const PINNED_DIVISIONS_ADMIN = (college: string, department: string, branch: string, graduationLevel: string, passoutYear: string, semester: string) => `admin-data-pinned-divisions-${college}-${department}-${branch}-${graduationLevel}-${passoutYear}-${semester}`;
+// pinning keys for students structure
+export const PINNED_STUDENTS_STRUCTURE_COLLEGES_ADMIN = 'admin-data-pinned-students-structure-colleges';
+export const PINNED_STUDENTS_STRUCTURE_DEPARTMENTS_ADMIN = (college: string) => `admin-data-pinned-students-structure-departments-${college}`;
+export const PINNED_STUDENTS_STRUCTURE_BRANCHES_ADMIN = (college: string, department: string) => `admin-data-pinned-students-structure-branches-${college}-${department}`;
+export const PINNED_STUDENTS_STRUCTURE_GRADUATION_LEVELS_ADMIN = (college: string, department: string, branch: string) => `admin-data-pinned-students-structure-graduation-levels-${college}-${department}-${branch}`;
+export const PINNED_STUDENTS_STRUCTURE_PASSOUT_YEARS_ADMIN = (college: string, department: string, branch: string, graduationLevel: string) => `admin-data-pinned-students-structure-passout-years-${college}-${department}-${branch}-${graduationLevel}`;
+// ATOM FACULTY KEYS
+export const ATOM_FACULTY_ADD_SUBJECT_FORM_DATA = 'atom-faculty-add-subject-form-data';
+// OWN's KEYS
+export const ADMIN_PROFILE = 'admin-profile';
+
+
 // creation keys
 export const STUDENTS_SHEET_DATA = 'students-sheet-data';

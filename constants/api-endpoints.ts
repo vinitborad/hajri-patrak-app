@@ -13,7 +13,7 @@ export const studentEndpoints = {
   STUDENT_SUBJECT_INFO: `${BASE_URL}/student/data/subject-info`,
   STUDENT_SUBJECTS_LIST: `${BASE_URL}/subject/student-subjects`,
   QR_MARK_ATTENDANCE: `${BASE_URL}/code-pairs/mark-attendance`,
-  
+
   // profile endpoints
   GET_PROFILE: `${BASE_URL}/student/data/profile`,
   CHANGE_PASSWORD: `${BASE_URL}/student/auth/change-password`,
@@ -23,10 +23,7 @@ export const facultyEndpoints = {
   // data endpoints
   // structure enpoints
   GET_ACTIVE_SUBJECTS_STRUCTURE: `${BASE_URL}/faculty/data/get-active-structure`,
-  // subject view page endpoints
-  GET_ANALYSE_ATTENDANCE: `${BASE_URL}/faculty/attendance/analyse`,
-  GET_DIVISION_STUDENTS_LIST: `${BASE_URL}/data/division-students-list`,
-
+  
   // attendance endpoints
   GET_PREVIOUS_ATTENDANCES: `${BASE_URL}/faculty/attendance/previous-attendances`,
   GET_ATTENDANCE_INFO: `${BASE_URL}/faculty/attendance/detailed-info`,
@@ -46,8 +43,12 @@ export const facultyEndpoints = {
 export const adminEndpoints = {
   SIGN_IN: `${BASE_URL}/admin/auth/signin`,
 
-  // data endpoints
+  // DATA ENDPOINTS
+  // subjects & divsions structure endpoints
   GET_STRUCTURE: `${BASE_URL}/admin/data/get-structure`,
+  // students structure endpoints
+  GET_STUDENTS_DATA_STRUCTURE: `${BASE_URL}/admin/data/student-structure`,
+  GET_STUDENTS_STRUCTURE_STUDENT_LIST: `${BASE_URL}/admin/data/student-structure/students-list`,
   // data updation endpoints
   GET_DIVISION_ACTIVE_STATUS: `${BASE_URL}/admin/data/division/active-status`,
   MARK_DIVISION_ACTIVE: `${BASE_URL}/admin/data/update/division/activate`,
@@ -56,10 +57,15 @@ export const adminEndpoints = {
   // atom student endpoints
   GET_ATOM_STUDENT_PROFILE: `${BASE_URL}/admin/student/get-profile`,
   UPDATE_ATOM_STUDENT_PROFILE: `${BASE_URL}/admin/student/update-profile`,
+  GET_ATOM_STUDENT_DIVISIONS_LIST: `${BASE_URL}/admin/student/divisions-list`,
+  REMOVE_STUDENT_FROM_DIVISION: `${BASE_URL}/admin/student/remove-division`,
 
   // atom faculty endpoints
   GET_ATOM_FACULTY_PROFILE: `${BASE_URL}/admin/faculty/get-profile`,
   UPDATE_ATOM_FACULTY_PROFILE: `${BASE_URL}/admin/faculty/update-profile`,
+  GET_ATOM_FACULTY_SUBJECT_ACCESS_LIST: `${BASE_URL}/admin/faculty/subject-access-list`,
+  ADD_SUBJECT_TO_FACULTY_ACCESS_LIST: `${BASE_URL}/admin/faculty/subject-access-list/add-subject`,
+  REMOVE_SUBJECT_FROM_FACULTY_ACCESS_LIST: `${BASE_URL}/admin/faculty/subject-access-list/remove-subject`,
 
   // creation endpoints
   CREATE_FACULTY: `${BASE_URL}/admin/create/faculty`,
@@ -69,6 +75,21 @@ export const adminEndpoints = {
   // student sheet creation endpoints
   GET_STUDENT_SHEET_DATA: `${BASE_URL}/admin/create/student/sheet-data`,
   CREATE_STUDENTS_FROM_SHEET: `${BASE_URL}/admin/create/students/sheet`,
+
+  // DELETION or REMOVAL endpoints
+  DELETE_STUDENT: `${BASE_URL}/admin/delete/student`,
+  DELETE_FACULTY: `${BASE_URL}/admin/delete/faculty`,
+
+  // OWN's ENDPOINTS
+  GET_PROFILE: `${BASE_URL}/admin/owns/profile`,
+  CHANGE_PASSWORD: `${BASE_URL}/admin/auth/change-password`,
+}
+
+export const commonEndpoints = {
+  // ATTENDANCE ENDPOINTS
+  // subject info endpoints
+  GET_ANALYSE_ATTENDANCE: `${BASE_URL}/common/data/attendance/analyse`,
+  GET_DIVISION_STUDENTS_LIST: `${BASE_URL}/common/data/division-students-list`,
 }
 
 export const generalEndpoints = {

@@ -147,6 +147,10 @@ const SubjectDetailScreen = () => {
     return selectedInterDivisions.some(item => item.interDivision === interDivision);
   };
 
+  const handleDeleteAttendance = async (attendanceId: string) => {
+    console.log('Delete Attendance:', attendanceId);
+  }
+
   //@ts-ignore
   const renderAttendanceItem = ({ item }) => (
     <View key={item.id} className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
@@ -159,7 +163,10 @@ const SubjectDetailScreen = () => {
         <Text className="text-[#F6F5F5] ml-2">{item.presentStudentsCount}/{item.totalStudents} Students Present</Text>
       </View>
       <View className="flex flex-row justify-between mt-1">
-        <TouchableOpacity className="bg-red-500 p-2 rounded-lg flex flex-row items-center">
+        <TouchableOpacity 
+          className="bg-red-500 p-2 rounded-lg flex flex-row items-center"
+          onPress={() => handleDeleteAttendance(item.id)}
+        >
           <MaterialIcons name="delete-outline" size={20} color="white" />
           <Text className="text-white ml-2">Delete</Text>
         </TouchableOpacity>

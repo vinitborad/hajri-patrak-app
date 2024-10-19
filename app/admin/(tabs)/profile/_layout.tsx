@@ -9,7 +9,7 @@ export default function FacultyProfileLayout() {
           headerShown: false,
         }}
       />
-      {/* <Stack.Screen
+      <Stack.Screen
         name="reset-password"
         options={{
           headerShown: false,
@@ -21,12 +21,6 @@ export default function FacultyProfileLayout() {
           headerShown: false,
         }}
       />
-      <Stack.Screen
-        name="queued-attendances"
-        options={{
-          headerShown: false,
-        }}
-      /> */}
     </Stack>
   )
 }

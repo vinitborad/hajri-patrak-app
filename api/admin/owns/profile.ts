@@ -1,0 +1,27 @@
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
+import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { adminEndpoints } from '@/constants/api-endpoints';
+import { ADMIN_PROFILE } from '@/constants/async-store-keys';
+
+export const useGetAdminProfile = () => {
+  return useQuery({
+    queryKey: ['admin-profile'],
+    queryFn: async () => {
+      const token = await SecureStore.getItemAsync('token');
+      const response = await axios.get(adminEndpoints.GET_PROFILE, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (response.data.success) {
+        await AsyncStorage.setItem(ADMIN_PROFILE, JSON.stringify(response.data.data));
+      }
+      return response.data.data;
+    },
+    //TODO: later fix this parameters properly
+    refetchOnMount: true, // Do not refetch on component mount
+    refetchOnWindowFocus: true, // Do not refetch when window regains focus
+  });
+}

@@ -4,7 +4,7 @@ import { Stack, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AntDesign } from '@expo/vector-icons';
 import { useGetSubjectsStructure } from '@/api/admin/data/structure'; // Admin hook
-import { ADMIN_DATA_STRUCTURE, PINNED_COLLEGES } from '@/constants/async-store-keys';
+import { ADMIN_DATA_STRUCTURE, PINNED_COLLEGES_ADMIN } from '@/constants/async-store-keys';
 
 const CollegesScreen = () => {
   const router = useRouter();
@@ -24,7 +24,7 @@ const CollegesScreen = () => {
           setOfflineData(JSON.parse(cachedData)); // Set offline data
         }
 
-        const cachedPinnedColleges = await AsyncStorage.getItem(PINNED_COLLEGES);
+        const cachedPinnedColleges = await AsyncStorage.getItem(PINNED_COLLEGES_ADMIN);
         if (cachedPinnedColleges) {
           setPinnedColleges(JSON.parse(cachedPinnedColleges)); // Load pinned colleges from AsyncStorage
         }
@@ -49,7 +49,7 @@ const CollegesScreen = () => {
   // Persist pinned colleges in AsyncStorage whenever updated
   const savePinnedColleges = async (newPinnedColleges: string[]) => {
     try {
-      await AsyncStorage.setItem(PINNED_COLLEGES, JSON.stringify(newPinnedColleges));
+      await AsyncStorage.setItem(PINNED_COLLEGES_ADMIN, JSON.stringify(newPinnedColleges));
     } catch (error) {
       console.log('Error saving pinned colleges:', error);
     }

@@ -9,15 +9,16 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  TouchableWithoutFeedback,
-  Keyboard
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import { adminEndpoints } from '@/constants/api-endpoints';
+import { useRouter } from 'expo-router';
 
 const AtomStudentScreen = () => {
+  const router = useRouter();
+
   const [username, setUsername] = useState(''); // Store username input
   const [studentInfo, setStudentInfo] = useState<any>(null); // Store fetched student info
   const [originalStudentInfo, setOriginalStudentInfo] = useState<any>(null); // Store original student info
@@ -47,16 +48,24 @@ const AtomStudentScreen = () => {
       const data = response.data.data;
       setStudentInfo({
         ...data,
-        email: data?.email || '', // No 'null', use empty string if no data
+        email: data?.email || '',
         firstName: data?.firstName || '',
         lastName: data?.lastName || '',
         phone: data?.phone || '',
         address: data?.address || '',
+        parentFirstName: data?.parentFirstName || '',  // New parent field
+        parentLastName: data?.parentLastName || '',    // New parent field
+        parentEmail: data?.parentEmail || '',          // New parent field
+        parentPhone: data?.parentPhone || ''           // New parent field
       });
 
       setOriginalStudentInfo(data); // Set original data to compare later
-    } catch (error) {
-      Alert.alert('Error', 'Failed to fetch student information.');
+    } catch (error: any) {
+      if (error.response) {
+        Alert.alert('Error', error.response.data.message);
+      } else {
+        Alert.alert('Error', 'Failed to add the subject.');
+      }
     } finally {
       setIsLoading(false); // Hide loading
     }
@@ -88,6 +97,20 @@ const AtomStudentScreen = () => {
       updatedFields.address = studentInfo.address;
     }
 
+    // New: Check for parent info changes
+    if (studentInfo?.parentFirstName !== originalStudentInfo?.parentFirstName) {
+      updatedFields.parentFirstName = studentInfo.parentFirstName;
+    }
+    if (studentInfo?.parentLastName !== originalStudentInfo?.parentLastName) {
+      updatedFields.parentLastName = studentInfo.parentLastName;
+    }
+    if (studentInfo?.parentEmail !== originalStudentInfo?.parentEmail) {
+      updatedFields.parentEmail = studentInfo.parentEmail;
+    }
+    if (studentInfo?.parentPhone !== originalStudentInfo?.parentPhone) {
+      updatedFields.parentPhone = studentInfo.parentPhone;
+    }
+
     return updatedFields;
   };
 
@@ -108,7 +131,7 @@ const AtomStudentScreen = () => {
         ...updatedFields, // Send only modified fields
       };
 
-      const response = await axios.post(adminEndpoints.UPDATE_ATOM_STUDENT_PROFILE, updateData, {
+      const response = await axios.patch(adminEndpoints.UPDATE_ATOM_STUDENT_PROFILE, updateData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -122,11 +145,43 @@ const AtomStudentScreen = () => {
       } else {
         Alert.alert('Error', 'Failed to update student profile.');
       }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to update student information.');
+    } catch (error: any) {
+      if (error.response) {
+        Alert.alert('Error', error.response.data.message);
+      } else {
+        Alert.alert('Error', 'Failed to update student profile.');
+      }
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  // Function to delete student
+  const deleteStudent = async (username: string) => {
+    Alert.alert('Confirm Delete', 'Are you sure you want to delete this student ?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Yes',
+        onPress: async () => {
+          const token = await SecureStore.getItemAsync('token');
+          try {
+            await axios.delete(adminEndpoints.DELETE_STUDENT, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+              params: { username },
+            });
+            Alert.alert('Success', 'Student deleted successfully.');
+          } catch (error: any) {
+            if (error.response) {
+              Alert.alert('Error', error.response.data.message);
+            } else {
+              Alert.alert('Error', 'Failed to delete student.');
+            }
+          }
+        },
+      },
+    ]);
   };
 
   return (
@@ -218,6 +273,39 @@ const AtomStudentScreen = () => {
                 className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
               />
 
+              {/* Parent Info Section */}
+              <View className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF] mt-6">
+                <Text className="text-[#9DBDFF] mb-2">PARENT INFO</Text>
+
+                <Text className="text-[#9DBDFF] mb-2 mt-4">Parent First Name</Text>
+                <TextInput
+                  value={studentInfo.parentFirstName || ''}
+                  onChangeText={(text) => setStudentInfo({ ...studentInfo, parentFirstName: text })}
+                  className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
+                />
+
+                <Text className="text-[#9DBDFF] mb-2 mt-4">Parent Last Name</Text>
+                <TextInput
+                  value={studentInfo.parentLastName || ''}
+                  onChangeText={(text) => setStudentInfo({ ...studentInfo, parentLastName: text })}
+                  className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
+                />
+
+                <Text className="text-[#9DBDFF] mb-2 mt-4">Parent Email</Text>
+                <TextInput
+                  value={studentInfo.parentEmail || ''}
+                  onChangeText={(text) => setStudentInfo({ ...studentInfo, parentEmail: text })}
+                  className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
+                />
+
+                <Text className="text-[#9DBDFF] mb-2 mt-4">Parent Phone</Text>
+                <TextInput
+                  value={studentInfo.parentPhone || ''}
+                  onChangeText={(text) => setStudentInfo({ ...studentInfo, parentPhone: text })}
+                  className="w-full border border-[#9DBDFF] bg-[#3b3e44] rounded-lg px-4 py-3 text-[#F6F5F5]"
+                />
+              </View>
+
               {/* Action Buttons */}
               <View className="mt-6">
                 <TouchableOpacity
@@ -236,11 +324,17 @@ const AtomStudentScreen = () => {
                   <Text className="text-center text-[#9DBDFF]">UNHOOK DEVICE</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity className="bg-[#3b3e44] py-2 px-4 rounded-lg mb-2 border border-[#9DBDFF]">
+                <TouchableOpacity
+                  className="bg-[#3b3e44] py-2 px-4 rounded-lg mb-2 border border-[#9DBDFF]"
+                  onPress={() => router.push(`/admin/(tabs)/home/atom-student/divisions-list?username=${studentInfo.username}`)}
+                >
                   <Text className="text-center text-[#9DBDFF]">DIVISIONS LIST</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity className="bg-red-600 py-2 px-4 rounded-lg mb-10">
+                <TouchableOpacity
+                  className="bg-red-600 py-2 px-4 rounded-lg mb-10"
+                  onPress={() => deleteStudent(username)}
+                >
                   <Text className="text-center text-white">DELETE STUDENT</Text>
                 </TouchableOpacity>
               </View>

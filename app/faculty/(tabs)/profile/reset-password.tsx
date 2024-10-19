@@ -21,6 +21,10 @@ const ResetPasswordScreen = () => {
       return Alert.alert('Error', 'New password and repeat password must match.');
     }
 
+    if (currentPassword === newPassword) {
+      return Alert.alert('Error', 'New password cannot be the same as the current password.');
+    }
+
     // Make API request to change password
     try {
       console.log('Changing password...');
@@ -39,7 +43,11 @@ const ResetPasswordScreen = () => {
       if (response.data.success === true) {
         Alert.alert('Success', 'Password changed successfully.');
       } else {
-        Alert.alert('Error', 'OOPS !');
+        if (response.data.message) {
+          Alert.alert('Error', response.data.message);
+        } else {
+          Alert.alert('Error', 'An error occurred. Please try again.');
+        }
       }
     } catch (error: any) {
       Alert.alert('Error', error.response.data.message);
@@ -48,7 +56,7 @@ const ResetPasswordScreen = () => {
 
   return (
     <View className="flex-1 bg-[#1E1E1E] p-6 pt-11">
-      <Stack.Screen options={{ headerShown: false  }} />
+      <Stack.Screen options={{ headerShown: false }} />
 
       <Text className="text-white text-2xl font-NunitoLight mb-6 text-center bg-[#879ecb] p-2 rounded-lg">CHANGE PASSWORD</Text>
 

@@ -23,7 +23,6 @@ const ResetPasswordScreen = () => {
 
     // Make API request to change password
     try {
-      console.log('Changing password...');
       const token = await SecureStore.getItemAsync('token');
       const response = await axios.post(studentEndpoints.CHANGE_PASSWORD, {
         oldPassword: currentPassword,
@@ -34,12 +33,15 @@ const ResetPasswordScreen = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log('response:', response.data);
 
       if (response.data.success === true) {
         Alert.alert('Success', 'Password changed successfully.');
       } else {
-        Alert.alert('Error', 'OOPS !');
+        if (response.data.message) {
+          Alert.alert('Error', response.data.message);
+        } else {
+          Alert.alert('Error', 'An error occurred. Please try again.');
+        }
       }
     } catch (error: any) {
       Alert.alert('Error', error.response.data.message);

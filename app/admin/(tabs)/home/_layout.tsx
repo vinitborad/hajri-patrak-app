@@ -33,6 +33,12 @@ export default function Layout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="view-students-data"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 }

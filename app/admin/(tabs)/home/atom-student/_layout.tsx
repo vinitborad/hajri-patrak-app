@@ -9,6 +9,12 @@ export default function Layout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen 
+        name="divisions-list/index"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   )
 }

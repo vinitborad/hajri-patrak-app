@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import { adminEndpoints } from '@/constants/api-endpoints';
+import { router } from 'expo-router';
 
 const AtomFacultyScreen = () => {
   const [username, setUsername] = useState(''); // Store username input
@@ -55,8 +56,12 @@ const AtomFacultyScreen = () => {
       }); // Set fetched data
 
       setOriginalFacultyInfo(data); // Store original data to compare later
-    } catch (error) {
-      Alert.alert('Error', 'Failed to fetch faculty information.');
+    } catch (error: any) {
+      if (error.response) {
+        Alert.alert('Error', error.response.data.message);
+      } else {
+        Alert.alert('Error', 'Internal Error.');
+      }
     } finally {
       setIsLoading(false); // Hide loading
     }
@@ -128,6 +133,34 @@ const AtomFacultyScreen = () => {
     }
   };
 
+  // Function to delete faculty
+  const deleteFaculty = async (username: string) => {
+    Alert.alert('Confirm Delete', 'Are you sure you want to delete this faculty ?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Yes',
+        onPress: async () => {
+          const token = await SecureStore.getItemAsync('token');
+          try {
+            await axios.delete(adminEndpoints.DELETE_FACULTY, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+              params: { username },
+            });
+            Alert.alert('Success', 'Faculty deleted successfully.');
+          } catch (error: any) {
+            if (error.response) {
+              Alert.alert('Error', error.response.data.message);
+            } else {
+              Alert.alert('Error', 'Failed to delete faculty.');
+            }
+          }
+        },
+      },
+    ], { cancelable: true });
+  };
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: '#1E1E1E' }}
@@ -136,7 +169,9 @@ const AtomFacultyScreen = () => {
     >
       <View className="flex-1 bg-[#1E1E1E] p-4">
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
-          {/* Header and Search Bar */}
+          {/* Header  */}
+          <Text className="text-[#9DBDFF] text-2xl font-NunitoBold mb-4">Faculty Profile</Text>
+          {/* Search Bar */}
           <View className="flex-row items-center mb-4">
             <TextInput
               placeholder="Enter Username"
@@ -222,15 +257,17 @@ const AtomFacultyScreen = () => {
                   )}
                 </TouchableOpacity>
 
-                <TouchableOpacity className="bg-[#3b3e44] py-2 px-4 rounded-lg mb-2 border border-[#9DBDFF]">
-                  <Text className="text-center text-[#9DBDFF]">UNHOOK DEVICE</Text>
+                <TouchableOpacity
+                  className="bg-[#3b3e44] py-2 px-4 rounded-lg mb-2 border border-[#9DBDFF]"
+                  onPress={() => router.push(`/admin/(tabs)/home/atom-faculty/subject-access-list?username=${facultyInfo.username}`)}
+                >
+                  <Text className="text-center text-[#9DBDFF]">SUBJECT ACCESS LIST</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity className="bg-[#3b3e44] py-2 px-4 rounded-lg mb-2 border border-[#9DBDFF]">
-                  <Text className="text-center text-[#9DBDFF]">DIVISIONS LIST</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity className="bg-red-600 py-2 px-4 rounded-lg mb-10">
+                <TouchableOpacity
+                  className="bg-red-600 py-2 px-4 rounded-lg mb-10"
+                  onPress={() => deleteFaculty(facultyInfo.username)}
+                >
                   <Text className="text-center text-white">DELETE FACULTY</Text>
                 </TouchableOpacity>
               </View>

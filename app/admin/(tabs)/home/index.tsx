@@ -23,7 +23,7 @@ const HomeScreen = () => {
 
           <TouchableOpacity
             className='flex-row justify-center items-center border border-[#5871ff] py-4 rounded-lg bg-[#3b3e44] gap-x-2 w-full'
-            onPress={() => router.push('/admin/(tabs)/home/view-data')}
+            onPress={() => router.push('/admin/(tabs)/home/view-students-data')}
           >
             <FontAwesome name="database" size={24} color="#5871ff" />
             <Text className="text-[#5871ff] text-lg ml-4 font-NunitoBold">View Students Data</Text>
