@@ -89,7 +89,6 @@ const CreateDivisionScreen = () => {
               },
             });
             Alert.alert('Success', 'Division created successfully!');
-            router.replace('/admin/home'); // Navigate back to the home screen after success
           } catch (error: any) {
             if (error.response?.data?.message) {
               Alert.alert('Error', error.response.data.message);

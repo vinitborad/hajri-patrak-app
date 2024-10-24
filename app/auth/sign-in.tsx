@@ -18,11 +18,13 @@ import * as SecureStore from 'expo-secure-store';
 import { useRouter } from 'expo-router';
 import Icon from '@/assets/images/icon.png';
 import { EvilIcons, Ionicons } from '@expo/vector-icons';
+import { CustomCheckBox } from '@/components/custom/CheckBox';
 
 const SignInScreen = () => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [role, setRole] = useState<'faculty' | 'student'>('student');
+  const [role, setRole] = useState<'faculty' | 'student' | 'parent'>('student');
+  const [isParentLogin, setIsParentLogin] = useState<boolean>(false); // Track if login as parent is selected
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false); // State for toggling password visibility
   const [loading, setLoading] = useState(false); // State for loading
@@ -52,14 +54,14 @@ const SignInScreen = () => {
         return;
       }
       try {
-        const response = await axios.post(`${process.env.EXPO_PUBLIC_API_ENDPOINT}/${role}/auth/signin`, {
+        const finalRole = isParentLogin ? 'parent' : role; // Determine if login is as a parent
+        const response = await axios.post(`${process.env.EXPO_PUBLIC_API_ENDPOINT}/${finalRole}/auth/signin`, {
           username,
           password,
         });
         if (response.data.success && response.data.token) {
-          // success working
           await SecureStore.setItemAsync('token', response.data.token);
-          await SecureStore.setItemAsync('role', role);
+          await SecureStore.setItemAsync('role', finalRole);
           router.replace('/');
         } else {
           Alert.alert('Invalid Credentials', 'Please enter a valid username and password.');
@@ -118,7 +120,7 @@ const SignInScreen = () => {
                   <View className="flex-row justify-center border-b-4 border-[#6c7382] rounded-xl">
                     <TouchableOpacity
                       className={`px-4 py-2 rounded-tl-lg rounded-bl-lg w-32 flex items-center justify-center ${role === 'student' ? 'bg-[#9DBDFF]' : 'bg-[#3b3e44]'}`}
-                      onPress={() => setRole('student')}
+                      onPress={() => { setRole('student'); setIsParentLogin(false); }} // Reset parent checkbox when switching roles
                     >
                       <Text className={`font-NunitoBold text-lg ${role === 'student' ? 'text-[#1E1E1E]' : 'text-[#F6F5F5]'}`}>Student</Text>
                     </TouchableOpacity>
@@ -161,6 +163,17 @@ const SignInScreen = () => {
                         />
                       </TouchableOpacity>
                     </View>
+
+                    {/* Custom CheckBox for Parent Login (only visible for students) */}
+                    {role === 'student' && (
+                      <View className="flex-row items-center gap-x-2">
+                        <CustomCheckBox
+                          value={isParentLogin}
+                          onValueChange={() => setIsParentLogin(!isParentLogin)}
+                        />
+                        <Text className="text-[#9DBDFF] font-NunitoLight text-xs">Login as parent</Text>
+                      </View>
+                    )}
 
                     {/* Submit Button */}
                     <TouchableOpacity

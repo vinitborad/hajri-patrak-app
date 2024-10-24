@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Modal, TextInput, Alert } from 'react-native';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { useGetSubjectsStructure } from '@/api/admin/data/structure';
 import { ADMIN_DATA_STRUCTURE } from '@/constants/async-store-keys';
+import { Entypo, MaterialIcons } from '@expo/vector-icons';
+import { adminEndpoints } from '@/constants/api-endpoints';
+import * as SecureStore from 'expo-secure-store';
 
 type Params = {
   college: string;
@@ -21,8 +25,11 @@ const DivisionInfoScreen = () => {
 
   const [offlineData, setOfflineData] = useState<any>(null);
   const [isOfflineLoading, setIsOfflineLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false); // Modal visibility state
+  const [selectedSubject, setSelectedSubject] = useState<any>(null); // Track selected subject
+  const [newSubjectName, setNewSubjectName] = useState(''); // Input field state
 
-  const { data: apiResponse, isLoading, error } = useGetSubjectsStructure();
+  const { data: apiResponse, isLoading, error, refetch } = useGetSubjectsStructure();
 
   useEffect(() => {
     const fetchOfflineData = async () => {
@@ -46,6 +53,52 @@ const DivisionInfoScreen = () => {
       setOfflineData(apiResponse.data);
     }
   }, [apiResponse]);
+
+  const handleRenameSubject = async () => {
+    if (!newSubjectName.trim()) {
+      Alert.alert('Error', 'Please enter a valid subject name.');
+      return;
+    }
+
+    Alert.alert(
+      'Confirm Rename',
+      `Are you sure you want to rename ${selectedSubject.subjectName} to ${newSubjectName}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'OK',
+          onPress: async () => {
+            try {
+              const token = await SecureStore.getItemAsync('token');
+              const response = await axios.patch(
+                adminEndpoints.RENAME_SUBJECT,
+                {
+                  subjectId: selectedSubject.subjectId,
+                  subjectName: newSubjectName,
+                },
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              );
+
+              if (response.data.success) {
+                Alert.alert('Success', `Subject renamed to ${newSubjectName}`);
+                setModalVisible(false);
+                setNewSubjectName('');
+                refetch(); // Refetch the data to update the UI
+              } else {
+                Alert.alert('Error', response.data.message || 'Failed to rename subject.');
+              }
+            } catch (error: any) {
+              Alert.alert('Error', error?.response?.data?.message || 'Failed to rename subject.');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   // Get subjects and interDivisions for the specific division
   const divisionData = offlineData?.[college]?.[department]?.[branch]?.[graduationLevel]?.[passoutYear]?.[semester]?.[division];
@@ -78,12 +131,41 @@ const DivisionInfoScreen = () => {
   // Render Subject Card
   const renderSubjectItem = ({ item }: { item: any }) => (
     <TouchableOpacity
-      key={item.subjectCode}  // <-- Add key here (use subjectCode or another unique identifier)
+      key={item.subjectCode}
       className="flex-row justify-between items-center bg-[#3b3e44] p-4 pr-5 rounded-lg shadow-md m-2 border border-[#9DBDFF]"
+      onPress={() =>
+        router.push({
+          pathname: `/admin/(tabs)/home/view-data/subject/${item.subjectId}`,
+          params: {
+            subjectName: item.subjectName,
+            subjectCode: item.subjectCode,
+            subjectType: item.subjectType,
+            college,
+            department,
+            branch,
+            graduationLevel,
+            passoutYear,
+            semester,
+            division,
+          },
+        })
+      }
     >
-      <View className='flex-row items-center gap-1'>
+      <View className="flex-row items-center gap-1">
         <Text className="text-lg font-NunitoBold text-[#9DBDFF] capitalize">{item.subjectName}</Text>
         <Text className="text-sm font-Nunito text-[#F6F5F5]">({item.subjectCode})</Text>
+        <TouchableOpacity
+          onPress={() => {
+            setSelectedSubject(item); // Set selected subject
+            setNewSubjectName(item.subjectName); // Pre-fill with the current subject name
+            setModalVisible(true); // Show the modal
+          }}
+        >
+          <Entypo name="pencil" size={24} color="#e6eeff" />
+        </TouchableOpacity>
+      </View>
+      <View>
+        <MaterialIcons name="delete" size={24} color="#FF6B6B" />
       </View>
     </TouchableOpacity>
   );
@@ -91,8 +173,23 @@ const DivisionInfoScreen = () => {
   // Render Inter-Division Card
   const renderInterDivisionItem = ({ item }: { item: any }) => (
     <TouchableOpacity
-      key={item.interDivision}  // <-- Add key here (use interDivision or another unique identifier)
+      key={item.interDivision}
       className="flex-row justify-between items-center bg-[#3b3e44] p-4 pr-5 rounded-lg shadow-md m-2 border border-[#9DBDFF]"
+      onPress={() => {
+        router.push({
+          pathname: `/admin/(tabs)/home/view-data/inter-division/${item._id}`,
+          params: {
+            college,
+            department,
+            branch,
+            graduationLevel,
+            passoutYear,
+            semester,
+            division,
+            interDivision: item.interDivision,
+          },
+        });
+      }}
     >
       <View>
         <Text className="text-lg font-NunitoBold text-[#9DBDFF]">Inter Div {item.interDivision}</Text>
@@ -104,7 +201,7 @@ const DivisionInfoScreen = () => {
     <View className="flex flex-1 justify-center items-center bg-[#1E1E1E]">
       <Stack.Screen options={{ headerShown: false }} />
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 50, padding: 10 }} className="w-full">
+      <ScrollView contentContainerStyle={{ paddingBottom: 200, padding: 10 }} className="w-full">
         {/* Subjects Section */}
         <Text className="text-[#F6F5F5] text-xl font-NunitoExtraBold px-3 py-2">Subjects</Text>
         {divisionData.subjects.length > 0 ? (
@@ -121,6 +218,28 @@ const DivisionInfoScreen = () => {
           <Text className="text-[#FF6B6B] text-center p-4">No inter-divisions available</Text>
         )}
       </ScrollView>
+
+      {/* Modal for renaming the subject */}
+      {modalVisible && (
+        <Modal animationType="slide" transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
+          <View className="flex-1 justify-center items-center bg-black bg-opacity-70">
+            <View className="bg-[#3b3e44] p-6 rounded-lg border border-[#9DBDFF] w-[85%]">
+              <Text className="text-lg font-NunitoExtraBold text-[#9DBDFF] mb-4 text-center">
+                Rename {selectedSubject?.subjectName} name?
+              </Text>
+              <TextInput
+                className="bg-[#2D2D2D] p-3 rounded-lg text-white"
+                placeholder="New Subject Name"
+                value={newSubjectName}
+                onChangeText={setNewSubjectName}
+              />
+              <TouchableOpacity className="bg-[#9DBDFF] p-3 rounded-lg mt-4" onPress={handleRenameSubject}>
+                <Text className="text-white text-center font-NunitoExtraBold">Rename</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
     </View>
   );
 };

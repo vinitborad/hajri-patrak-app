@@ -40,7 +40,6 @@ export default function App() {
       const timeDifferenceInSeconds = timeDifference / 1000;
       return timeDifferenceInSeconds;
     } catch (error) {
-      console.error('Failed to fetch time offset:', error);
       return 0;
     }
   };
@@ -80,7 +79,6 @@ export default function App() {
       }
     } catch (error: any) {
       Alert.alert('Error', 'Failed to mark attendance');
-      console.log('Error:', error.message);
     }
   }
 

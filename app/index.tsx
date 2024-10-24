@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 const index = () => {
 
   const [token, setToken] = useState<string | null>(null);
-  const [role, setRole] = useState<'faculty' | 'student' | 'admin'>();
+  const [role, setRole] = useState<'faculty' | 'student' | 'admin' | 'parent'>();
   const [loading, setLoading] = useState(true);
 
   // remove all items from secure store and async store
@@ -31,18 +31,20 @@ const index = () => {
   }
 
   if (!token) {
+    // remove role
+    SecureStore.deleteItemAsync('role');
     return <Redirect href='/auth/sign-in' />;
   }
 
   if (role === 'faculty') {
-    return <Redirect href='/faculty/(tabs)/home/' />;
+    return <Redirect href='/faculty/(tabs)/home' />;
   }
 
   if (role === 'admin') {
-    return <Redirect href='/admin' />;
+    return <Redirect href='/admin/(tabs)/home' />;
   }
 
-  if (role === 'student') {
+  if (role === 'student' || role === 'parent' || role === 'admin-student') {
     return <Redirect href='/student/(tabs)' />;
   }
 

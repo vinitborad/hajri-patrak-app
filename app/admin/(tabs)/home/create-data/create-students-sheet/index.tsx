@@ -117,7 +117,11 @@ const CreateStudentsScreen = () => {
         setDataFetched(true); // Toggle the UI to show 'Show Data' button
       }
     } catch (error: any) {
-      Alert.alert('Error', 'Failed to fetch data.');
+      if (error.response?.data?.message) {
+        Alert.alert('Error', error.response.data.message);
+      } else {
+        Alert.alert('Error', 'Failed to fetch student data.');
+      }
     } finally {
       setIsFetching(false);
     }

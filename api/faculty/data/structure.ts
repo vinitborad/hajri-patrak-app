@@ -1,4 +1,4 @@
-import { facultyEndpoints } from '@/constants/api-endpoints';
+import { commonEndpoints, facultyEndpoints } from '@/constants/api-endpoints';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
@@ -43,18 +43,15 @@ export const useGetDivisionStudentsList = (divisionId: string) => {
     queryKey: ['division-students-list', divisionId],
     queryFn: async () => {
       const token = await SecureStore.getItemAsync('token');
-      console.log('divisionId : ', divisionId);
       const contentKey = await AsyncStorage.getItem(DIVISION_STUDENTS_LIST_KEY(divisionId));
-      console.log('contentKey : ', contentKey);
 
-      const response = await axios.get(facultyEndpoints.GET_DIVISION_STUDENTS_LIST, {
+      const response = await axios.get(commonEndpoints.GET_DIVISION_STUDENTS_LIST, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
         params: { divisionId, contentKey }
       });
 
-      console.log('response.data : ', response.data);
       const { data, success, isUpdated, contentKey: newContentKey } = response.data;
 
       if (isUpdated && data && newContentKey && success) {

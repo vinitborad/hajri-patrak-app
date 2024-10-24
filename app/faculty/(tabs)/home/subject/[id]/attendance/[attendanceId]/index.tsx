@@ -1,10 +1,13 @@
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useGetAttendanceInfo } from '@/api/faculty/attendances';
 import { FontAwesome, FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ATTENDANCE_INFO, DIVISION_STUDENTS_LIST } from '@/constants/async-store-keys';
+import axios from 'axios';
+import * as SecureStore from 'expo-secure-store';
+import { facultyEndpoints } from '@/constants/api-endpoints';
 
 const ViewAttendanceScreen = () => {
   const { attendanceId } = useLocalSearchParams();
@@ -12,8 +15,9 @@ const ViewAttendanceScreen = () => {
   const [offlineData, setOfflineData] = useState(null); // Store offline data
   const [isOfflineLoading, setIsOfflineLoading] = useState(true); // Track offline loading state
   const [allStudents, setAllStudents] = useState([]); // Store combined students from divisions
+  const [loadingStudentId, setLoadingStudentId] = useState<string | null>(null); // Track which student is being updated
 
-  const { data, isLoading, error } = useGetAttendanceInfo(attendanceId as string);
+  const { data, isLoading, error, refetch } = useGetAttendanceInfo(attendanceId as string);
 
   // Fetch offline data on mount
   useEffect(() => {
@@ -72,7 +76,7 @@ const ViewAttendanceScreen = () => {
         setAllStudents(students);
       }
     };
-    getAllStudents(); 
+    getAllStudents();
   }, [divisions]);
 
   const isStudentPresent = (studentId: string) => presentStudents.includes(studentId);
@@ -83,9 +87,51 @@ const ViewAttendanceScreen = () => {
   const presentCount = presentStudents.length;
   const totalCount = sortedStudents.length;
 
+  const confirmStudentSwitch = (studentId: string, isPresent: boolean) => {
+    const newStatus = isPresent ? 'absent' : 'present';
+    Alert.alert(
+      'Confirm Update',
+      `Are you sure you want to mark this student as ${newStatus}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'OK',
+          onPress: () => handleStudentSwitch(studentId),
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const handleStudentSwitch = async (studentId: string) => {
+    setLoadingStudentId(studentId);
+    try {
+      const token = await SecureStore.getItemAsync('token');
+      await axios.patch(facultyEndpoints.CHANGE_STUDENT_STATUS, {
+        studentId,
+        attendanceId,
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Refetch the updated attendance data
+      await refetch();
+    } catch (error: any) {
+      if (error.response.data.message) {
+        Alert.alert('Error', error.response.data.message);
+      } else {
+        Alert.alert('Error', 'Something went wrong');
+      }
+    } finally {
+      setLoadingStudentId(null);
+    }
+  };
+
   if (isOfflineLoading || isLoading) {
     return (
-      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+      <View className="flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
         <Stack.Screen options={{ headerShown: false }} />
         <ActivityIndicator size="large" color="#9DBDFF" />
       </View>
@@ -94,7 +140,7 @@ const ViewAttendanceScreen = () => {
 
   if (error && !offlineData) {
     return (
-      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+      <View className="flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
         <Stack.Screen options={{ headerShown: false }} />
         <Text className="text-[#FF6B6B]">N / A</Text>
       </View>
@@ -169,9 +215,16 @@ const ViewAttendanceScreen = () => {
                   <FontAwesome name="user" size={18} color="#F6F5F5" /> Name: {item?.firstName} {item?.lastName}
                 </Text>
               </View>
-              <TouchableOpacity className="bg-[#1E1E1E] p-2 rounded-lg flex flex-row items-center">
-                <MaterialIcons name="edit" size={20} color="#9DBDFF" />
-                <Text className="ml-2 text-[#9DBDFF]">EDIT</Text>
+              <TouchableOpacity
+                className={`p-3 rounded-full ${isPresent ? 'bg-[#A7C957]' : 'bg-[#FF6B6B]'}`}
+                onPress={() => confirmStudentSwitch(item.id, isPresent)}
+                disabled={loadingStudentId === item.id} // Disable button while loading
+              >
+                {loadingStudentId === item.id ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <MaterialIcons name="edit" size={20} color="#fff" />
+                )}
               </TouchableOpacity>
             </View>
           );

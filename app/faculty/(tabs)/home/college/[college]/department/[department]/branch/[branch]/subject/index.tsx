@@ -112,7 +112,7 @@ const SubjectsScreen: React.FC = () => {
         data={subjects}
         keyExtractor={(item) => item.subjectId}
         renderItem={renderSubjectItem}
-        contentContainerStyle={{ paddingBottom: 16 }}
+        contentContainerStyle={{ paddingBottom: 250 }}
         className="w-full mt-4"
       />
     </View>

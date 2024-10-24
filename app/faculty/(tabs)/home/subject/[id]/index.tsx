@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Modal, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Modal, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useGetPreviousAttendances } from '@/api/faculty/attendances';
 import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
@@ -7,28 +7,27 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LIVE_ATTENDANCE, PREV_ATTENDANCES } from '@/constants/async-store-keys';
 import { isConnected } from '@/utils/network';
 import { callCreateAttendance } from '@/utils/attendances/helper-functions';
+import axios from 'axios';
+import { facultyEndpoints } from '@/constants/api-endpoints';
+import * as SecureStore from 'expo-secure-store';
 
 const SubjectDetailScreen = () => {
   const { id } = useLocalSearchParams();
-  console.log('subjectId:', id);
   const router = useRouter();
 
-  const { data, isLoading, error } = useGetPreviousAttendances(id as string);
+  const { data, isLoading, error, refetch } = useGetPreviousAttendances(id as string);
 
-  // State for modal visibility and form input
   const [isModalVisible, setModalVisible] = useState(false);
   const [value, setValue] = useState('');
-  const [selectedInterDivisions, setSelectedInterDivisions] = useState<any[]>([]); // To hold objects with _id and interDivision
-  const [offlineData, setOfflineData] = useState(null); // Store offline data
+  const [selectedInterDivisions, setSelectedInterDivisions] = useState<any[]>([]);
+  const [offlineData, setOfflineData] = useState(null);
   const [isOfflineLoading, setIsOfflineLoading] = useState(true);
-  //TODO: very later : declare type structure for liveAttendance
-  const [liveAttendance, setLiveAttendance] = useState<any>(null); // New State for live attendance
+  const [liveAttendance, setLiveAttendance] = useState<any>(null);
+  const [loadingAttendanceId, setLoadingAttendanceId] = useState<string | null>(null); // For showing loader on delete
 
-  // Fetch offline data on mount
   useEffect(() => {
     const fetchPreviousData = async () => {
       try {
-        // Fetch previous attendances from AsyncStorage
         const cachedData = await AsyncStorage.getItem(PREV_ATTENDANCES(id as string));
         if (cachedData) {
           setOfflineData(JSON.parse(cachedData));
@@ -51,7 +50,6 @@ const SubjectDetailScreen = () => {
           if (liveData) {
             setLiveAttendance(JSON.parse(liveData));
           }
-          // Force re-render after fetching the data
         } catch (error) {
           console.log('Error fetching live attendance:', error);
         }
@@ -60,15 +58,13 @@ const SubjectDetailScreen = () => {
     }, [id])
   );
 
-  // Validation function to check API response
   const isValidApiResponse = (data: any): boolean => {
     if (!data || !data.subject || !Array.isArray(data.attendances)) {
-      return false; // Invalid if subject or attendances are missing
+      return false;
     }
     return true;
   };
 
-  // Save fetched API data to offline storage only if valid
   useEffect(() => {
     if (data && isValidApiResponse(data)) {
       AsyncStorage.setItem(PREV_ATTENDANCES(id as string), JSON.stringify(data));
@@ -94,15 +90,12 @@ const SubjectDetailScreen = () => {
   }
 
   const dataToShow = data || offlineData;
-  // Extract subject details and attendances from the response data
   const subjectDetails = dataToShow?.subject || {};
   const attendances = dataToShow?.attendances || [];
   //@ts-ignore
   const closedAttendances = attendances.filter((attendance) => attendance.type !== 'live');
 
-  // Create Attendance API Call
   const createAttendance = async () => {
-    // create attendance and store into async-storage
     try {
       if (!value || !selectedInterDivisions.length) {
         return;
@@ -118,7 +111,7 @@ const SubjectDetailScreen = () => {
         close: false,
       }
       await AsyncStorage.setItem(LIVE_ATTENDANCE(id as string), JSON.stringify(attendanceData));
-      setLiveAttendance(attendanceData); // Set live attendance state
+      setLiveAttendance(attendanceData);
 
       const networkStatus = await isConnected();
       if (networkStatus) {
@@ -131,7 +124,6 @@ const SubjectDetailScreen = () => {
     }
   };
 
-  // Toggle interDivision selection (multiple select functionality)
   const toggleInterDivision = (div: { _id: string, interDivision: string }) => {
     setSelectedInterDivisions((prev) => {
       const exists = prev.some(item => item._id === div._id);
@@ -147,9 +139,43 @@ const SubjectDetailScreen = () => {
     return selectedInterDivisions.some(item => item.interDivision === interDivision);
   };
 
+  const confirmDeleteAttendance = (attendanceId: string) => {
+    Alert.alert(
+      'Confirm Deletion',
+      'Are you sure you want to delete this attendance?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          onPress: () => handleDeleteAttendance(attendanceId),
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
   const handleDeleteAttendance = async (attendanceId: string) => {
-    console.log('Delete Attendance:', attendanceId);
-  }
+    setLoadingAttendanceId(attendanceId);
+    try {
+      const token = await SecureStore.getItemAsync('token');
+      await axios.delete(`${facultyEndpoints.DELETE_ATTENDANCE}?attendanceId=${attendanceId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Refetch the updated attendances
+      await refetch();
+    } catch (error: any) {
+      if (error.response.data.message) {
+        Alert.alert('Error', error.response.data.message);
+      } else {
+        Alert.alert('Error', 'Something went wrong');
+      }
+    } finally {
+      setLoadingAttendanceId(null);
+    }
+  };
 
   //@ts-ignore
   const renderAttendanceItem = ({ item }) => (
@@ -163,12 +189,19 @@ const SubjectDetailScreen = () => {
         <Text className="text-[#F6F5F5] ml-2">{item.presentStudentsCount}/{item.totalStudents} Students Present</Text>
       </View>
       <View className="flex flex-row justify-between mt-1">
-        <TouchableOpacity 
+        <TouchableOpacity
           className="bg-red-500 p-2 rounded-lg flex flex-row items-center"
-          onPress={() => handleDeleteAttendance(item.id)}
+          onPress={() => confirmDeleteAttendance(item.id)}
+          disabled={loadingAttendanceId === item.id}
         >
-          <MaterialIcons name="delete-outline" size={20} color="white" />
-          <Text className="text-white ml-2">Delete</Text>
+          {loadingAttendanceId === item.id ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <>
+              <MaterialIcons name="delete-outline" size={20} color="white" />
+              <Text className="text-white ml-2">Delete</Text>
+            </>
+          )}
         </TouchableOpacity>
         <TouchableOpacity className="bg-blue-500 p-2 rounded-lg flex flex-row items-center">
           <MaterialIcons name="swap-horizontal-circle" size={20} color="white" />

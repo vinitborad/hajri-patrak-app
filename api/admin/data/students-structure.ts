@@ -28,7 +28,7 @@ export const useGetStudentsStrcutreStudentList = ({
         }
       });
 
-      return response.data;
+      return response.data.data;
     },
     //TODO: change params later accordingly
     // Adjust refetch behaviors

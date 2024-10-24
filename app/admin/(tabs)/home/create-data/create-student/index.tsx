@@ -19,13 +19,15 @@ import * as SecureStore from 'expo-secure-store';
 const CreateStudentScreen = () => {
   const [formData, setFormData] = useState({
     username: '',
-    password: '',
-    confirmPassword: '',
     email: '',
     phone: '',
     firstName: '',
     lastName: '',
     address: '',
+    parentFirstName: '',
+    parentLastName: '',
+    parentPhone: '',
+    parentEmail: '',
     college: '',
     department: '',
     graduationLevel: '',
@@ -39,13 +41,15 @@ const CreateStudentScreen = () => {
 
   const [errors, setErrors] = useState({
     username: false,
-    password: false,
-    confirmPassword: false,
     email: false,
     phone: false,
     firstName: false,
     lastName: false,
     address: false,
+    parentFirstName: false,
+    parentLastName: false,
+    parentPhone: false,
+    parentEmail: false,
     college: false,
     department: false,
     graduationLevel: false,
@@ -73,13 +77,15 @@ const CreateStudentScreen = () => {
   const validateFields = () => {
     const newErrors = {
       username: !formData.username,
-      password: !formData.password,
-      confirmPassword: !formData.confirmPassword,
       email: !formData.email,
       phone: !formData.phone,
       firstName: !formData.firstName,
       lastName: !formData.lastName,
       address: !formData.address,
+      parentFirstName: !formData.parentFirstName,
+      parentLastName: !formData.parentLastName,
+      parentPhone: !formData.parentPhone,
+      parentEmail: !formData.parentEmail,
       college: !formData.college,
       department: !formData.department,
       graduationLevel: !formData.graduationLevel,
@@ -102,11 +108,6 @@ const CreateStudentScreen = () => {
       return;
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      Alert.alert('Error', 'Password and Confirm Password do not match.');
-      return;
-    }
-
     Alert.alert('Confirmation', 'Are you sure you want to create this student?', [
       {
         text: 'Cancel',
@@ -124,7 +125,6 @@ const CreateStudentScreen = () => {
               },
             });
             Alert.alert('Success', 'Student created successfully!');
-            router.replace('/admin/home'); // Navigate back to the home screen after success
           } catch (error: any) {
             if (error.response?.data?.message) {
               Alert.alert('Error', error.response.data.message);

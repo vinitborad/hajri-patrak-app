@@ -34,6 +34,8 @@ const AdminProfileScreen = () => {
   const onSignOut = () => {
     SecureStore.deleteItemAsync('token');
     SecureStore.deleteItemAsync('role');
+    // clear whole async store
+    AsyncStorage.clear();
     router.replace('/');
   };
 

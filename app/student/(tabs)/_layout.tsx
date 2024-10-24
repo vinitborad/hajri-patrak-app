@@ -16,7 +16,7 @@ export default function StudentTabsLayout() {
 
   const role = SecureStore.getItem('role');
 
-  if (role !== 'student') {
+  if (role !== 'student' && role !== 'parent' && role !== 'admin-student') {
     return <Redirect href={"/"} />
   }
 

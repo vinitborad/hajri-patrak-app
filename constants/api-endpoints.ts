@@ -34,6 +34,9 @@ export const facultyEndpoints = {
   CLOSE_ATTENDANCE: `${BASE_URL}/faculty/attendance/close-live`,
   // qr code endpoints
   GET_QR_CODE: `${BASE_URL}/code-pairs/create`,
+  // edit attendance endpoints
+  CHANGE_STUDENT_STATUS: `${BASE_URL}/faculty/attendance/student/change-status`,
+  DELETE_ATTENDANCE: `${BASE_URL}/faculty/attendance`,
 
   // profile endpoints
   GET_PROFILE: `${BASE_URL}/faculty/data/profile`,
@@ -46,19 +49,27 @@ export const adminEndpoints = {
   // DATA ENDPOINTS
   // subjects & divsions structure endpoints
   GET_STRUCTURE: `${BASE_URL}/admin/data/get-structure`,
-  // students structure endpoints
-  GET_STUDENTS_DATA_STRUCTURE: `${BASE_URL}/admin/data/student-structure`,
-  GET_STUDENTS_STRUCTURE_STUDENT_LIST: `${BASE_URL}/admin/data/student-structure/students-list`,
   // data updation endpoints
+  RENAME_SUBJECT: `${BASE_URL}/admin/data/update/subject/rename`,
   GET_DIVISION_ACTIVE_STATUS: `${BASE_URL}/admin/data/division/active-status`,
   MARK_DIVISION_ACTIVE: `${BASE_URL}/admin/data/update/division/activate`,
   MARK_DIVISION_INACTIVE: `${BASE_URL}/admin/data/update/division/inactivate`,
+  // subject screen endpoints
+  GET_ACCESSED_FACULTIES_LIST: `${BASE_URL}/admin/data/subject/faculty-access-list`,
+  GET_SUBJECT_PREVIOUS_ATTENDANCES: `${BASE_URL}/admin/data/subject/previous-attendances`,
+  GET_PREVIOUS_ATTENDANCE_STUDENTS_LIST: `${BASE_URL}/admin/data/subject/previous-attendance/student-list`,
+
+  // STUDENTS STRUCTURE DATA ENDPOINTS
+  GET_STUDENTS_DATA_STRUCTURE: `${BASE_URL}/admin/data/student-structure`,
+  GET_STUDENTS_STRUCTURE_STUDENT_LIST: `${BASE_URL}/admin/data/student-structure/students-list`,
 
   // atom student endpoints
+  STUDENT_SIGNIN : `${BASE_URL}/admin/student/signin`,
   GET_ATOM_STUDENT_PROFILE: `${BASE_URL}/admin/student/get-profile`,
   UPDATE_ATOM_STUDENT_PROFILE: `${BASE_URL}/admin/student/update-profile`,
   GET_ATOM_STUDENT_DIVISIONS_LIST: `${BASE_URL}/admin/student/divisions-list`,
   REMOVE_STUDENT_FROM_DIVISION: `${BASE_URL}/admin/student/remove-division`,
+  ADD_STUDENT_TO_DIVISION: `${BASE_URL}/admin/student/add-division`,
 
   // atom faculty endpoints
   GET_ATOM_FACULTY_PROFILE: `${BASE_URL}/admin/faculty/get-profile`,

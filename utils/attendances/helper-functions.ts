@@ -130,11 +130,12 @@ export const closeAttendance = async (subjectId: string, message: string) => {
   }
 }
 
-export const calculateAttendanceLevel = (percentage: string) => {
-  if (percentage >= GOOD_ATTENDANCE_CUTOFF) {
+export const calculateAttendanceLevel = (percentage: string | number) => {
+  const percentageNum = typeof percentage === 'string' ? parseFloat(percentage) : percentage; // Ensure it's a number
+  if (percentageNum >= GOOD_ATTENDANCE_CUTOFF) {
     return 'Good';
-  } else if (percentage >= MEDIUM_ATTENDANCE_CUTOFF) {
+  } else if (percentageNum >= MEDIUM_ATTENDANCE_CUTOFF) {
     return 'Medium';
   }
   return 'Low';
-}
+};

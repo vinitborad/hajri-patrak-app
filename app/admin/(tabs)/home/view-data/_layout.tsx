@@ -9,6 +9,18 @@ export default function Layout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen 
+        name="subject/[subjectId]"
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen 
+        name="inter-division/[interDivisionId]"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   )
 }
