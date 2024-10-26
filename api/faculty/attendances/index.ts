@@ -54,9 +54,9 @@ export const useGetPreviousAttendances = (subjectId: string) => {
 
       return response.data.data;
     },
-    staleTime: 300000, // 5 minutes (300000 ms)
-    refetchOnWindowFocus: false, // Prevent refetching on window focus
-    refetchOnMount: false, // Prevent refetching when the component mounts
+    // staleTime: 300000, // 5 minutes (300000 ms)
+    // refetchOnWindowFocus: false, // Prevent refetching on window focus
+    // refetchOnMount: false, // Prevent refetching when the component mounts
   });
 }
 

@@ -1,6 +1,6 @@
 import { View, Text, Image, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { Octicons, Ionicons, MaterialIcons, Entypo } from '@expo/vector-icons';
+import { Octicons, Ionicons, MaterialIcons, Entypo, FontAwesome } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -77,6 +77,7 @@ const FacultyProfile = () => {
           <Octicons name="person" size={24} color="#54a178" />
           <Text className="text-[#54a178] text-lg ml-4 font-NunitoBold">Profile</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
           className="flex-row items-center mb-4 p-4 bg-[#3b3e44] rounded-lg border border-[#f6ff90]"
           onPress={() => router.push('/faculty/(tabs)/profile/queued-attendances')}
@@ -84,6 +85,15 @@ const FacultyProfile = () => {
           <Entypo name="time-slot" size={24} color="#f6ff90" />
           <Text className="text-[#f6ff90] text-lg ml-4 font-NunitoBold">Queued Attendances</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          className="flex-row items-center mb-4 p-4 bg-[#3b3e44] rounded-lg border border-[#ff9f19]"
+          onPress={() => router.push('/faculty/(tabs)/profile/previous-structure')}
+        >
+          <FontAwesome name="history" size={24} color="#ff9f19" />
+          <Text className="text-[#ff9f19] text-lg ml-4 font-NunitoBold">Previous Subjects</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity
           className="flex-row items-center mb-4 p-4 bg-[#3b3e44] rounded-lg border border-[#FF6B6B]"
           onPress={() => router.push('/faculty/(tabs)/profile/reset-password')}
@@ -91,6 +101,7 @@ const FacultyProfile = () => {
           <Ionicons name="key" size={24} color="#FF6B6B" />
           <Text className="text-[#FF6B6B] text-lg ml-4 font-NunitoBold">Change Password</Text>
         </TouchableOpacity>
+
         <TouchableOpacity className="flex-row items-center mb-4 p-4 bg-[#3b3e44] rounded-lg border border-[#9DBDFF]">
           <Ionicons name="document-text" size={24} color="#9DBDFF" />
           <Text className="text-[#F6F5F5] text-lg ml-4 font-NunitoBold">Form</Text>

@@ -1,7 +1,5 @@
 import { Stack } from "expo-router";
 
-
-
 export default function StudentProfileLayout() {
   return (
     <Stack>
@@ -19,6 +17,12 @@ export default function StudentProfileLayout() {
       />
       <Stack.Screen
         name="profile-info"
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="previous-divisions"
         options={{
           headerShown: false,
         }}

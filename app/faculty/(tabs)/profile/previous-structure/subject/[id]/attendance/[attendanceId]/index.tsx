@@ -1,0 +1,239 @@
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { Stack, useLocalSearchParams } from 'expo-router';
+import { useGetAttendanceInfo } from '@/api/faculty/attendances';
+import { FontAwesome, FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ATTENDANCE_INFO, DIVISION_STUDENTS_LIST } from '@/constants/async-store-keys';
+import axios from 'axios';
+import * as SecureStore from 'expo-secure-store';
+import { facultyEndpoints } from '@/constants/api-endpoints';
+
+const ViewAttendanceScreen = () => {
+  const { attendanceId } = useLocalSearchParams();
+
+  const [offlineData, setOfflineData] = useState(null); // Store offline data
+  const [isOfflineLoading, setIsOfflineLoading] = useState(true); // Track offline loading state
+  const [allStudents, setAllStudents] = useState([]); // Store combined students from divisions
+  const [loadingStudentId, setLoadingStudentId] = useState<string | null>(null); // Track which student is being updated
+
+  const { data, isLoading, error, refetch } = useGetAttendanceInfo(attendanceId as string);
+
+  // Fetch offline data on mount
+  useEffect(() => {
+    const fetchOfflineData = async () => {
+      try {
+        const cachedData = await AsyncStorage.getItem(ATTENDANCE_INFO(attendanceId as string));
+        if (cachedData) {
+          setOfflineData(JSON.parse(cachedData));
+        }
+      } catch (error) {
+        console.log('Error fetching offline data:', error);
+      } finally {
+        setIsOfflineLoading(false);
+      }
+    };
+
+    fetchOfflineData();
+  }, [attendanceId]);
+
+  // Store the fetched data in AsyncStorage
+  useEffect(() => {
+    if (data) {
+      try {
+        AsyncStorage.setItem(ATTENDANCE_INFO(attendanceId as string), JSON.stringify(data));
+      } catch (error) {
+        console.log('Error saving offline data:', error);
+      }
+    }
+  }, [data, attendanceId]);
+
+  const dataToShow = data || offlineData;
+
+  const attendanceDetails = dataToShow?.attendance || {};
+  const subjectDetails = attendanceDetails?.subject || {};
+  const divisions = dataToShow?.divisions || [];
+  const presentStudents = dataToShow?.presentStudents || [];
+
+  const fetchStudentsFromDivisions = async (divisionIds: string[]) => {
+    let combinedStudents: any = [];
+    for (const divisionId of divisionIds) {
+      try {
+        const storedDivisionData = await AsyncStorage.getItem(DIVISION_STUDENTS_LIST(divisionId));
+        const parsedData = storedDivisionData ? JSON.parse(storedDivisionData).students || [] : [];
+        combinedStudents = combinedStudents.concat(parsedData);
+      } catch (error) {
+        console.log('Error fetching students from offline data:', error);
+      }
+    }
+    return combinedStudents;
+  };
+
+  useEffect(() => {
+    const getAllStudents = async () => {
+      if (divisions.length > 0) {
+        const students = await fetchStudentsFromDivisions(divisions);
+        setAllStudents(students);
+      }
+    };
+    getAllStudents();
+  }, [divisions]);
+
+  const isStudentPresent = (studentId: string) => presentStudents.includes(studentId);
+
+  //@ts-ignore
+  const sortedStudents = allStudents.sort((a, b) => parseInt(a.username) - parseInt(b.username));
+
+  const presentCount = presentStudents.length;
+  const totalCount = sortedStudents.length;
+
+  const confirmStudentSwitch = (studentId: string, isPresent: boolean) => {
+    const newStatus = isPresent ? 'absent' : 'present';
+    Alert.alert(
+      'Confirm Update',
+      `Are you sure you want to mark this student as ${newStatus}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'OK',
+          onPress: () => handleStudentSwitch(studentId),
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const handleStudentSwitch = async (studentId: string) => {
+    setLoadingStudentId(studentId);
+    try {
+      const token = await SecureStore.getItemAsync('token');
+      await axios.patch(facultyEndpoints.CHANGE_STUDENT_STATUS, {
+        studentId,
+        attendanceId,
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Refetch the updated attendance data
+      await refetch();
+    } catch (error: any) {
+      if (error.response.data.message) {
+        Alert.alert('Error', error.response.data.message);
+      } else {
+        Alert.alert('Error', 'Something went wrong');
+      }
+    } finally {
+      setLoadingStudentId(null);
+    }
+  };
+
+  if (isOfflineLoading || isLoading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Stack.Screen options={{ headerShown: false }} />
+        <ActivityIndicator size="large" color="#9DBDFF" />
+      </View>
+    );
+  }
+
+  if (error && !offlineData) {
+    return (
+      <View className="flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Stack.Screen options={{ headerShown: false }} />
+        <Text className="text-[#FF6B6B]">N / A</Text>
+      </View>
+    );
+  }
+
+  // Header component to display the subject info and present count
+  const ListHeaderComponent = () => (
+    <View className="p-4">
+      {/* Top Card with Subject & Attendance Details */}
+      <View className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
+        <Text className="text-2xl font-NunitoExtraBold text-[#9DBDFF] mb-2">{subjectDetails.subjectName}</Text>
+        <View className="flex flex-row items-center mb-1">
+          <Ionicons name="git-branch-outline" size={16} color="#9DBDFF" />
+          <Text className="text-[#F6F5F5] ml-2">Branch: {subjectDetails.branch}</Text>
+        </View>
+        <View className="flex flex-row items-center mb-1">
+          <Ionicons name="calendar-outline" size={16} color="#9DBDFF" />
+          <Text className="text-[#F6F5F5] ml-2">Semester: {subjectDetails.semester}</Text>
+        </View>
+        <View className="flex flex-row items-center mb-1">
+          <Ionicons name="layers-outline" size={16} color="#9DBDFF" />
+          <Text className="text-[#F6F5F5] ml-2">Division: {subjectDetails.division}</Text>
+        </View>
+        <View className="flex flex-row items-center mb-1">
+          <Ionicons name="book-outline" size={16} color="#9DBDFF" />
+          <Text className="text-[#F6F5F5] ml-2">Type: {subjectDetails.subjectType}</Text>
+        </View>
+        <View className="flex flex-row items-center mb-1">
+          <Ionicons name="key-outline" size={16} color="#9DBDFF" />
+          <Text className="text-[#F6F5F5] ml-2">Code: {subjectDetails.subjectCode}</Text>
+        </View>
+        <View className="flex flex-row items-center mb-1">
+          <Ionicons name="time-outline" size={16} color="#9DBDFF" />
+          <Text className="text-[#F6F5F5] ml-2">Lecture Hours: {attendanceDetails.value}</Text>
+        </View>
+        <View className="flex flex-row items-center mt-2">
+          <Ionicons name="chatbubble-outline" size={16} color="#9DBDFF" />
+          <Text className="text-[#F6F5F5] ml-2">Attendance Message: {attendanceDetails.message}</Text>
+        </View>
+      </View>
+
+      {/* Present Count Summary */}
+      <View className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
+        <View className="flex flex-row items-center">
+          <Ionicons name="people-outline" size={20} color="#9DBDFF" />
+          <Text className="text-xl font-NunitoExtraBold text-[#9DBDFF] ml-2">Present Count : {presentCount} / {totalCount}</Text>
+        </View>
+      </View>
+    </View>
+  );
+
+  return (
+    <View className="flex flex-1 bg-[#1E1E1E]">
+      <Stack.Screen options={{ headerShown: false }} />
+
+      <FlatList
+        data={sortedStudents}
+        keyExtractor={(item: any) => item.id}
+        renderItem={({ item }) => {
+          const isPresent = isStudentPresent(item.id);
+          return (
+            <View
+              className={`p-2 pl-4 pr-5 rounded-lg mb-2 mx-4 flex-row justify-between items-center ${isPresent ? 'bg-[#2D6A4F]' : 'bg-[#c33f43]'
+                } border border-[#1B4332]`}
+            >
+              <View>
+                <Text className="text-[#F6F5F5] font-NunitoExtraBold text-lg">
+                  <FontAwesome5 name="id-badge" size={18} color="#F6F5F5" /> Enroll: {item?.username}
+                </Text>
+                <Text className="text-[#F6F5F5]">
+                  <FontAwesome name="user" size={18} color="#F6F5F5" /> Name: {item?.firstName} {item?.lastName}
+                </Text>
+              </View>
+              <TouchableOpacity
+                className={`p-3 rounded-full ${isPresent ? 'bg-[#A7C957]' : 'bg-[#FF6B6B]'}`}
+                onPress={() => confirmStudentSwitch(item.id, isPresent)}
+                disabled={loadingStudentId === item.id} // Disable button while loading
+              >
+                {loadingStudentId === item.id ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <MaterialIcons name="edit" size={20} color="#fff" />
+                )}
+              </TouchableOpacity>
+            </View>
+          );
+        }}
+        contentContainerStyle={{ paddingBottom: 200 }}
+        ListHeaderComponent={ListHeaderComponent} // This makes the top cards scrollable along with the list
+      />
+    </View>
+  );
+};
+
+export default ViewAttendanceScreen;

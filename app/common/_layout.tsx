@@ -5,9 +5,9 @@ export default function Layout() {
   return (
     <Stack>
       <Stack.Screen
-        name='student'
+        name='student/subject-info/[id]'
         options={{
-          headerShown: false,
+          headerShown: true,
         }}
       />
     </Stack>

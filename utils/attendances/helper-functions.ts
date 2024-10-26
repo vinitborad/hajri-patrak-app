@@ -125,7 +125,7 @@ export const closeAttendance = async (subjectId: string, message: string) => {
   } catch (error: any) {
     return {
       success: false,
-      message: "Internal error",
+      message: error.response?.data?.message || "Internal error",
     }
   }
 }

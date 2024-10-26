@@ -88,7 +88,7 @@ const StudentsList = () => {
         <Text className="text-[#F6F5F5] text-2xl font-NunitoBold mb-3 mt-5 ml-1">Student List</Text>
 
         {/* Student List */}
-        {data?.data?.students.map((student: any) => (
+        {data?.students.map((student: any) => (
           <View key={student.username} className="bg-[#3b3e44] mb-4 rounded-xl border border-[#9DBDFF]">
             <View className="flex-row justify-between items-center px-3 py-1 rounded-t-xl bg-[#5b5f68]">
               <Text className="text-[#9DBDFF] text-lg font-NunitoRegular">{student.username}</Text>

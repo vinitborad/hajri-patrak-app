@@ -84,7 +84,7 @@ const BranchesScreen = () => {
   useEffect(() => {
     if (sortedBranches.length === 1) {
       const branch = sortedBranches[0];
-      router.push(`/faculty/(tabs)/home/college/${college}/department/${department}/branch/${branch}`);
+      router.replace(`/faculty/(tabs)/home/college/${college}/department/${department}/branch/${branch}`);
     }
   }, [sortedBranches]);
 

@@ -1,4 +1,3 @@
-
 // offline atttendance
 export const QUEUED_ATTENDANCES = 'queued-attendances';
 export const archivedAttendancesKey = (subjectId: string) => `archived-attendances-${subjectId}`;
@@ -8,28 +7,39 @@ export const archivedAttendancesKey = (subjectId: string) => `archived-attendanc
 // data
 export const ACTIVE_SUBJECTS_STRUCTURE = 'acitve-subjects-structure';
 export const ACTIVE_SUBJECTS_STRUCTURE_KEY = 'active-subjects-structure-contentkey';
+export const PREVIOUS_DIVISIONS_STRUCTURE = 'previous-divisions-structure';
 // attendance
 export const LIVE_ATTENDANCE = (subjectId: string) => `live-attendance-${subjectId}`;
 export const DIVISION_STUDENTS_LIST = (divisionId: string) => `division-students-list-data-${divisionId}`;
 export const DIVISION_STUDENTS_LIST_KEY = (divisionId: string) => `division-students-list-contentkey-${divisionId}`;
 export const PREV_ATTENDANCES = (subjectId: string) => `previous-attendances-${subjectId}`;
-// pinnig keys
+// pinnig keys for active structure
 export const PINNED_COLLEGES = 'pinned-colleges';
 export const PINNED_DEPARTMENTS = (college: string) => `pinned-departments-${college}`;
 export const PINNED_BRANCHES = (college: string, department: string) => `pinned-branches-${college}-${department}`;
 export const PINNED_DIVISIONS = (college: string, department: string, branch: string) => `pinned-divisions-${college}-${department}-${branch}`;
 export const PINNED_SEM_DIV = 'pinned-sem-div';
-
+// pinning keys for previous sturcutre
+export const PINNED_PREV_COLLEGES = 'pinned-prev-colleges';
+export const PINNED_PREV_DEPARTMENTS = (college: string) => `pinned-prev-departments-${college}`;
+export const PINNED_PREV_BRANCHES = (college: string, department: string) => `pinned-prev-branches-${college}-${department}`;
+export const PINNED_PREV_DIVISIONS = (college: string, department: string, branch: string) => `pinned-prev-divisions-${college}-${department}-${branch}`;
+export const PINNED_PREV_SEM_DIV = 'pinned-prev-sem-div';
+// 
 export const ANALYSIS = (subjectId: string) => `attendance-analysis-${subjectId}`;
 export const ATTENDANCE_INFO = (attendanceId: string) => `attendance-info-${attendanceId}`;
 export const FACULTY_PROFILE = 'faculty-profile';
 
 
 // STUDENT ASYNC STORE KEYS
-export const STUDENT_SUBJECTS_LIST = 'student-subjects-list';
+// DATA
+// active subjects
 export const STUDENT_SUBJECT_INFO = (subjectId: string) => `student-subject-info-${subjectId}`;
 export const STUDENT_ACTIVE_SUBJECTS = 'student-active-subjects';
 export const STUDENT_ACTIVE_SUBJECTS_KEY = 'student-active-subjects-contentkey';
+// previous divisions
+export const STUDENT_PREVIOUS_DIVISIONS = 'student-previous-divisions';
+export const STUDENT_PREVIOUS_DIVISIONS_KEY = 'student-previous-divisions-contentkey';
 // student profile
 export const STUDENT_PROFILE = 'student-profile';
 
@@ -59,7 +69,5 @@ export const PINNED_STUDENTS_STRUCTURE_PASSOUT_YEARS_ADMIN = (college: string, d
 export const ATOM_FACULTY_ADD_SUBJECT_FORM_DATA = 'atom-faculty-add-subject-form-data';
 // OWN's KEYS
 export const ADMIN_PROFILE = 'admin-profile';
-
-
 // creation keys
 export const STUDENTS_SHEET_DATA = 'students-sheet-data';

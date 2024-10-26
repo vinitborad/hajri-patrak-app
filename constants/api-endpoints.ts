@@ -8,10 +8,16 @@ export const authEndpoints = {
 };
 
 export const studentEndpoints = {
-  // data endpoints
+  // DATA ENDPOINTS
+  // active subjects endpoints
   STUDENT_ACTIVE_SUBJECTS: `${BASE_URL}/student/data/get-active-subjects`,
   STUDENT_SUBJECT_INFO: `${BASE_URL}/student/data/subject-info`,
   STUDENT_SUBJECTS_LIST: `${BASE_URL}/subject/student-subjects`,
+  // previous divisions endpoints
+  STUDENT_PREVIOUS_DIVISIONS: `${BASE_URL}/student/data/previous-divisions`,
+  STUDENT_PREVIOUS_DIVISION_SUBJECTS: `${BASE_URL}/student/data/division-subjects`,
+  
+  // attendance endpoints
   QR_MARK_ATTENDANCE: `${BASE_URL}/code-pairs/mark-attendance`,
 
   // profile endpoints
@@ -22,7 +28,8 @@ export const studentEndpoints = {
 export const facultyEndpoints = {
   // data endpoints
   // structure enpoints
-  GET_ACTIVE_SUBJECTS_STRUCTURE: `${BASE_URL}/faculty/data/get-active-structure`,
+  GET_ACTIVE_SUBJECTS_STRUCTURE: `${BASE_URL}/faculty/data/active-structure`,
+  GET_PREVIOUS_DIVISIONS_STRUCTURE: `${BASE_URL}/faculty/data/previous-structure`,
   
   // attendance endpoints
   GET_PREVIOUS_ATTENDANCES: `${BASE_URL}/faculty/attendance/previous-attendances`,

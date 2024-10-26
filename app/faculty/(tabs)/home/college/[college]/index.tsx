@@ -84,7 +84,7 @@ const DepartmentsScreen = () => {
   useEffect(() => {
     if (sortedDepartments.length === 1) {
       const department = sortedDepartments[0];
-      router.push(`/faculty/(tabs)/home/college/${college}/department/${department}`);
+      router.replace(`/faculty/(tabs)/home/college/${college}/department/${department}`);
     }
   }, [sortedDepartments]);
 

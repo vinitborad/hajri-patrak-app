@@ -76,7 +76,7 @@ const Profile = () => {
 
         <TouchableOpacity
           className="flex-row items-center mb-4 p-4 bg-[#3b3e44] rounded-lg border border-[#f6ff90]"
-          onPress={() => Alert.alert('Coming Soon', 'This interface is currently under development.')}
+          onPress={() => router.push('/student/(tabs)/profile/previous-divisions')}
         >
           <FontAwesome name="history" size={24} color="#f6ff90" />
           <Text className="text-[#f6ff90] text-lg ml-4 font-NunitoBold">Previous Subjects</Text>

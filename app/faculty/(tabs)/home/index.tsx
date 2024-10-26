@@ -80,7 +80,7 @@ const CollegesScreen = () => {
   useEffect(() => {
     if (sortedColleges.length === 1) {
       const college = sortedColleges[0];
-      router.push(`/faculty/(tabs)/home/college/${college}`);
+      router.replace(`/faculty/(tabs)/home/college/${college}`);
     }
   }, [sortedColleges]);
 

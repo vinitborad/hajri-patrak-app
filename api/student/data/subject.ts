@@ -1,5 +1,5 @@
 import { studentEndpoints } from '@/constants/api-endpoints';
-import { STUDENT_ACTIVE_SUBJECTS, STUDENT_ACTIVE_SUBJECTS_KEY } from '@/constants/async-store-keys';
+import { STUDENT_ACTIVE_SUBJECTS, STUDENT_ACTIVE_SUBJECTS_KEY, STUDENT_PREVIOUS_DIVISIONS, STUDENT_PREVIOUS_DIVISIONS_KEY } from '@/constants/async-store-keys';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
@@ -10,7 +10,7 @@ export const useGetStudentSubjects = () => {
     queryKey: ['student-active-subjects'],
     queryFn: async () => {
       const token = await SecureStore.getItemAsync('token');
-      const contentKey = await AsyncStorage.getItem(STUDENT_ACTIVE_SUBJECTS); // Fetch contentKey from AsyncStorage
+      const contentKey = await AsyncStorage.getItem(STUDENT_ACTIVE_SUBJECTS_KEY); // Fetch contentKey from AsyncStorage
 
       const response = await axios.get(studentEndpoints.STUDENT_ACTIVE_SUBJECTS, {
         headers: {
@@ -49,6 +49,64 @@ export const useGetStudentSubjectInfo = ({ subjectId }: { subjectId: string }) =
         },
         params: {
           subjectId: subjectId,
+        },
+      });
+
+      return response.data?.data;
+    },
+    //TODO: chnage params later accordingly
+    // Adjust refetch behaviors
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    retry: 1, // Limit retry attempts
+  });
+};
+
+export const useGetPreviousDivisions = () => {
+  return useQuery({
+    queryKey: ['student-previous-divisions'],
+    queryFn: async () => {
+      const token = await SecureStore.getItemAsync('token');
+      const contentKey = await AsyncStorage.getItem(STUDENT_PREVIOUS_DIVISIONS_KEY); // Fetch contentKey from AsyncStorage
+
+      const response = await axios.get(studentEndpoints.STUDENT_PREVIOUS_DIVISIONS, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: { contentKey },
+      });
+
+      const { isUpdated, data, contentKey: newContentKey, success } = response.data;
+
+      // if (isUpdated && data && newContentKey && success) {
+      if (data && success) {
+        // Store the new data and contentKey in AsyncStorage
+        await AsyncStorage.setItem(STUDENT_PREVIOUS_DIVISIONS, JSON.stringify(data));
+        await AsyncStorage.setItem(STUDENT_PREVIOUS_DIVISIONS_KEY, newContentKey);
+      }
+
+      return { data, isUpdated };
+
+    },
+    //TODO: chnage params later accordingly
+    // Adjust refetch behaviors
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    retry: 1, // Limit retry attempts
+  });
+};
+
+export const useGetPreviousDivisionSubjects = ({ divisionId }: { divisionId : string }) => {
+  return useQuery({
+    queryKey: ['student-previous-division-subjects', divisionId],
+    queryFn: async () => {
+      const token = await SecureStore.getItemAsync('token');
+      const response = await axios.get(studentEndpoints.STUDENT_PREVIOUS_DIVISION_SUBJECTS, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          divisionId,
         },
       });
 

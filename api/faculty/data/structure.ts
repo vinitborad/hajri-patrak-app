@@ -3,11 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ACTIVE_SUBJECTS_STRUCTURE, ACTIVE_SUBJECTS_STRUCTURE_KEY, DIVISION_STUDENTS_LIST, DIVISION_STUDENTS_LIST_KEY } from '@/constants/async-store-keys';
+import { ACTIVE_SUBJECTS_STRUCTURE, ACTIVE_SUBJECTS_STRUCTURE_KEY, DIVISION_STUDENTS_LIST, DIVISION_STUDENTS_LIST_KEY, PREVIOUS_DIVISIONS_STRUCTURE } from '@/constants/async-store-keys';
 
 export const useGetSubjectsStructure = () => {
   return useQuery({
-    queryKey: ['active-subjects-structure'],
+    queryKey: ['faculty-active-subjects-structure'],
     queryFn: async () => {
       const token = await SecureStore.getItemAsync('token');
       const contentKey = await AsyncStorage.getItem(ACTIVE_SUBJECTS_STRUCTURE_KEY); // Fetch contentKey from AsyncStorage
@@ -40,7 +40,7 @@ export const useGetSubjectsStructure = () => {
 export const useGetDivisionStudentsList = (divisionId: string) => {
   console.log('divisionId : ', divisionId);
   return useQuery({
-    queryKey: ['division-students-list', divisionId],
+    queryKey: ['faculty-division-students-list', divisionId],
     queryFn: async () => {
       const token = await SecureStore.getItemAsync('token');
       const contentKey = await AsyncStorage.getItem(DIVISION_STUDENTS_LIST_KEY(divisionId));
@@ -60,6 +60,33 @@ export const useGetDivisionStudentsList = (divisionId: string) => {
       }
 
       return { data, isUpdated };
+    },
+    //TODO: change params later accordingly
+    // Adjust refetch behaviors
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    retry: 1, // Limit retry attempts
+  });
+};
+
+export const useGetPreviousSubjectsStructure = () => {
+  return useQuery({
+    queryKey: ['faculty-previous-subjects-structure'],
+    queryFn: async () => {
+      const token = await SecureStore.getItemAsync('token');
+
+      const response = await axios.get(facultyEndpoints.GET_PREVIOUS_DIVISIONS_STRUCTURE, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // store the data in AsyncStorage 
+      if (response.data.success && response.data.data) {
+        await AsyncStorage.setItem(PREVIOUS_DIVISIONS_STRUCTURE, JSON.stringify(response.data.data));
+      }
+
+      return response.data.data;
     },
     //TODO: change params later accordingly
     // Adjust refetch behaviors
