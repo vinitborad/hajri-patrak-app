@@ -93,7 +93,7 @@ const SubjectsScreen: React.FC = () => {
         <Text className="text-[#F6F5F5] text-base font-NunitoBold">{item.subjectType}</Text>
         <TouchableOpacity
           onPress={() =>
-            router.replace(
+            router.push(
               `/faculty/(tabs)/home/subject/${item.subjectId}`
             )
           }

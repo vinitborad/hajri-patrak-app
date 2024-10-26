@@ -31,11 +31,11 @@ const Profile = () => {
   // Decide whether to use local profile or fetched profile
   const profile = studentProfile || localProfile;
 
-  const onSignOut = () => {
-    SecureStore.deleteItemAsync('token');
-    SecureStore.deleteItemAsync('role');
+  const onSignOut = async () => {
+    await SecureStore.deleteItemAsync('token');
+    await SecureStore.deleteItemAsync('role');
     // clear whole async store
-    AsyncStorage.clear();
+    await AsyncStorage.clear();
     router.replace('/');
   };
 

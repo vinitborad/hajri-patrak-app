@@ -123,7 +123,7 @@ const DivisionsScreen = () => {
 
   // Handle division press
   const handleDivisionPress = (graduationLevel: string, sem: string, div: string, passoutYear: string) => {
-    router.replace(`/faculty/(tabs)/home/college/${college}/department/${department}/branch/${branch}/subject?graduationLevel=${graduationLevel}&sem=${sem}&division=${div}&passoutYear=${passoutYear}`);
+    router.push(`/faculty/(tabs)/home/college/${college}/department/${department}/branch/${branch}/subject?graduationLevel=${graduationLevel}&sem=${sem}&division=${div}&passoutYear=${passoutYear}`);
   };
 
   // Render each division card

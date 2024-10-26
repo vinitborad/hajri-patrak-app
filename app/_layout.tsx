@@ -1,11 +1,15 @@
 import QueryProvider from '@/utils/QueryProvider';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import axios from 'axios';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
+import { logout } from '@/utils/auth/logout';
+import { checkTokenValidity } from '@/utils/auth/check-token-validity';
+import { setupAxiosInterceptors } from '@/utils/auth/axios-interceptor';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -61,6 +65,28 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
+  const router = useRouter();
+  const [isCheckingToken, setIsCheckingToken] = useState(true);
+
+  // checking token validy by expriy time and loging out if expired
+  useEffect(() => {
+    const validateToken = async () => {
+      const isValid = await checkTokenValidity();
+      if (!isValid) {
+        await logout(router); // Log out the user
+      } else {
+        setIsCheckingToken(false); // Allow rendering the app if token is valid
+      }
+    };
+
+    // Set up Axios interceptors when the app starts
+    setupAxiosInterceptors(router);
+    validateToken();
+  }, []);
+
+  if (isCheckingToken) {
+    return null; // Render nothing while checking the token
+  }
 
   return (
     <ThemeProvider value={DefaultTheme}>
