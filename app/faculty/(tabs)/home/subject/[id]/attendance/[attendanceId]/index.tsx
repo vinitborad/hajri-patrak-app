@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, TextInput, Alert } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useGetAttendanceInfo } from '@/api/faculty/attendances';
 import { FontAwesome, FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
@@ -8,18 +8,22 @@ import { ATTENDANCE_INFO, DIVISION_STUDENTS_LIST } from '@/constants/async-store
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { facultyEndpoints } from '@/constants/api-endpoints';
+import StudentInfoModal from '@/components/custom/StudentInfoModal';
 
 const ViewAttendanceScreen = () => {
   const { attendanceId } = useLocalSearchParams();
 
-  const [offlineData, setOfflineData] = useState(null); // Store offline data
-  const [isOfflineLoading, setIsOfflineLoading] = useState(true); // Track offline loading state
-  const [allStudents, setAllStudents] = useState([]); // Store combined students from divisions
-  const [loadingStudentId, setLoadingStudentId] = useState<string | null>(null); // Track which student is being updated
+  const [offlineData, setOfflineData] = useState(null);
+  const [isOfflineLoading, setIsOfflineLoading] = useState(true);
+  const [allStudents, setAllStudents] = useState([]);
+  const [loadingStudentId, setLoadingStudentId] = useState<string | null>(null);
+  const [searchText, setSearchText] = useState('');
+  const [selectedStudentUsername, setSelectedStudentUsername] = useState<string | null>(null);
+
+  const searchInputRef = useRef<TextInput>(null); // Reference to control TextInput focus
 
   const { data, isLoading, error, refetch } = useGetAttendanceInfo(attendanceId as string);
 
-  // Fetch offline data on mount
   useEffect(() => {
     const fetchOfflineData = async () => {
       try {
@@ -37,7 +41,6 @@ const ViewAttendanceScreen = () => {
     fetchOfflineData();
   }, [attendanceId]);
 
-  // Store the fetched data in AsyncStorage
   useEffect(() => {
     if (data) {
       try {
@@ -81,9 +84,7 @@ const ViewAttendanceScreen = () => {
 
   const isStudentPresent = (studentId: string) => presentStudents.includes(studentId);
 
-  //@ts-ignore
-  const sortedStudents = allStudents.sort((a, b) => parseInt(a.username) - parseInt(b.username));
-
+  const sortedStudents = allStudents.sort((a: any, b: any) => parseInt(a.username) - parseInt(b.username));
   const presentCount = presentStudents.length;
   const totalCount = sortedStudents.length;
 
@@ -107,16 +108,16 @@ const ViewAttendanceScreen = () => {
     setLoadingStudentId(studentId);
     try {
       const token = await SecureStore.getItemAsync('token');
-      await axios.patch(facultyEndpoints.CHANGE_STUDENT_STATUS, {
-        studentId,
-        attendanceId,
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await axios.patch(
+        facultyEndpoints.CHANGE_STUDENT_STATUS,
+        { studentId, attendanceId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      // Refetch the updated attendance data
       await refetch();
     } catch (error: any) {
       if (error.response.data.message) {
@@ -147,10 +148,8 @@ const ViewAttendanceScreen = () => {
     );
   }
 
-  // Header component to display the subject info and present count
   const ListHeaderComponent = () => (
-    <View className="p-4">
-      {/* Top Card with Subject & Attendance Details */}
+    <View className="px-4">
       <View className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
         <Text className="text-2xl font-NunitoExtraBold text-[#9DBDFF] mb-2">{subjectDetails.subjectName}</Text>
         <View className="flex flex-row items-center mb-1">
@@ -183,7 +182,6 @@ const ViewAttendanceScreen = () => {
         </View>
       </View>
 
-      {/* Present Count Summary */}
       <View className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
         <View className="flex flex-row items-center">
           <Ionicons name="people-outline" size={20} color="#9DBDFF" />
@@ -193,24 +191,59 @@ const ViewAttendanceScreen = () => {
     </View>
   );
 
+  // Filter students based on searchText
+  const filteredStudents = sortedStudents.filter((student: any) => {
+    const fullName = `${student.firstName} ${student.lastName}`.toLowerCase();
+    return (
+      student.username.includes(searchText) || fullName.includes(searchText.toLowerCase())
+    );
+  });
+
   return (
     <View className="flex flex-1 bg-[#1E1E1E]">
       <Stack.Screen options={{ headerShown: false }} />
+      {/* Search Bar */}
+      <View className="flex-row items-center bg-[#3b3e44] p-2 rounded-lg mt-2 mb-2 ml-4 mr-4">
+        <Ionicons name="search" size={20} color="#9DBDFF" />
+        <TextInput
+          ref={searchInputRef} // Attach ref to TextInput
+          placeholder="Search by enrollment or name"
+          placeholderTextColor="#9DBDFF"
+          value={searchText}
+          onChangeText={setSearchText}
+          className="ml-2 flex-1 text-white"
+        />
+        {searchText ? (
+          <TouchableOpacity
+            onPress={() => {
+              setSearchText('');
+              searchInputRef.current?.blur(); // Remove focus when clearing
+            }}
+          >
+            <Ionicons name="close" size={20} color="#9DBDFF" />
+          </TouchableOpacity>
+        ) : null}
+      </View>
 
       <FlatList
-        data={sortedStudents}
+        data={filteredStudents}
         keyExtractor={(item: any) => item.id}
         renderItem={({ item }) => {
           const isPresent = isStudentPresent(item.id);
           return (
             <View
               className={`p-2 pl-4 pr-5 rounded-lg mb-2 mx-4 flex-row justify-between items-center ${isPresent ? 'bg-[#2D6A4F]' : 'bg-[#c33f43]'
-                } border border-[#1B4332]`}
+                } border border-[#1B4332}`}
             >
               <View>
-                <Text className="text-[#F6F5F5] font-NunitoExtraBold text-lg">
-                  <FontAwesome5 name="id-badge" size={18} color="#F6F5F5" /> Enroll: {item?.username}
-                </Text>
+                <View className='flex-row items-center gap-x-1'>
+                  <Text className="text-[#F6F5F5] font-NunitoExtraBold text-lg">
+                    <FontAwesome5 name="id-badge" size={18} color="#F6F5F5" /> {item.username}
+                  </Text>
+                  <TouchableOpacity onPress={() => setSelectedStudentUsername(item.username)}>
+                    <Ionicons name="information-circle-outline" size={24} color="#9DBDFF" />
+                  </TouchableOpacity>
+                </View>
                 <Text className="text-[#F6F5F5]">
                   <FontAwesome name="user" size={18} color="#F6F5F5" /> Name: {item?.firstName} {item?.lastName}
                 </Text>
@@ -218,7 +251,7 @@ const ViewAttendanceScreen = () => {
               <TouchableOpacity
                 className={`p-3 rounded-full ${isPresent ? 'bg-[#A7C957]' : 'bg-[#FF6B6B]'}`}
                 onPress={() => confirmStudentSwitch(item.id, isPresent)}
-                disabled={loadingStudentId === item.id} // Disable button while loading
+                disabled={loadingStudentId === item.id}
               >
                 {loadingStudentId === item.id ? (
                   <ActivityIndicator size="small" color="#fff" />
@@ -230,8 +263,17 @@ const ViewAttendanceScreen = () => {
           );
         }}
         contentContainerStyle={{ paddingBottom: 200 }}
-        ListHeaderComponent={ListHeaderComponent} // This makes the top cards scrollable along with the list
+        ListHeaderComponent={ListHeaderComponent}
       />
+
+      {/* Student Info Modal */}
+      {selectedStudentUsername && (
+        <StudentInfoModal
+          username={selectedStudentUsername}
+          onClose={() => setSelectedStudentUsername(null)}
+        />
+      )}
+
     </View>
   );
 };

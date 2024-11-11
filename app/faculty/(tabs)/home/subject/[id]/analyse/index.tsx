@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, TextInput, Animated, ActivityIndicator } from 'react-native';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useGetAnalyseAttendance } from '@/api/faculty/attendances';
 import { FontAwesome, FontAwesome5, Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ANALYSIS } from '@/constants/async-store-keys';
 import { calculateAttendanceLevel } from '@/utils/attendances/helper-functions';
+import StudentInfoModal from '@/components/custom/StudentInfoModal';
 
 const AnalyseAttendanceScreen = () => {
+  const router = useRouter();
+
   const { id } = useLocalSearchParams();
   const { data, isLoading, error } = useGetAnalyseAttendance(id as string);
 
@@ -16,6 +19,7 @@ const AnalyseAttendanceScreen = () => {
   const [isOfflineLoading, setIsOfflineLoading] = useState(true); // To manage offline data loading state
   const [isSearchActive, setIsSearchActive] = useState(false); // Track if search is active
   const [searchText, setSearchText] = useState(''); // For search input
+  const [selectedStudentUsername, setSelectedStudentUsername] = useState<string | null>(null); // For StudentInfoModal
 
   const searchWidth = new Animated.Value(40); // Initial width for search button
   const [animatedWidth, setAnimatedWidth] = useState(searchWidth); // Control the width
@@ -208,14 +212,24 @@ const AnalyseAttendanceScreen = () => {
                 <View className="bg-white border border-[#9DBDFF] rounded-full p-1 flex items-center justify-center aspect-square">
                   <Text className="text-[black] -mt-2">{item.interDivision}</Text>
                 </View>
+                <TouchableOpacity onPress={() => setSelectedStudentUsername(item.student.username)}>
+                  <Ionicons name="information-circle-outline" size={24} color="#9DBDFF" />
+                </TouchableOpacity>
               </View>
               <Text className="text-[#F6F5F5]">
                 <FontAwesome name="user" size={18} color="#F6F5F5" /> Name: {item.student.personalInfo.firstName}{' '}
                 {item.student.personalInfo.lastName}
               </Text>
             </View>
-            <View className="flex-row items-center justify-between gap-2">
-              <View>
+
+            <View className="flex-row items-center justify-between">
+              <TouchableOpacity
+                className="mr-1"
+                onPress={() => router.push(`/faculty/(tabs)/home/subject/${id}/analyse/student-previous-attendances?username=${item.student.username}`)}
+              >
+                <FontAwesome name="history" size={24} color="#9DBDFF" />
+              </TouchableOpacity>
+              <View className="mr-1">
                 <Text className="text-white font-NunitoMedium">
                   {item.attendedLecs}/{item.totalLecs}
                 </Text>
@@ -228,6 +242,15 @@ const AnalyseAttendanceScreen = () => {
         )}
         contentContainerStyle={{ paddingBottom: 250 }}
       />
+
+      {/* Student Info Modal */}
+      {selectedStudentUsername && (
+        <StudentInfoModal
+          username={selectedStudentUsername}
+          onClose={() => setSelectedStudentUsername(null)}
+        />
+      )}
+
     </View>
   );
 };

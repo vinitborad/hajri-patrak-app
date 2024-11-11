@@ -4,7 +4,6 @@ import { jwtDecode } from 'jwt-decode';
 // Utility function to check JWT expiry
 export const checkTokenValidity = async () => {
   const token = await SecureStore.getItemAsync('token');
-  console.log('Token:', token);
   if (token) {
     const decodedToken = jwtDecode<{ exp: number }>(token);
     const currentTime = Date.now() / 1000; // Current time in seconds

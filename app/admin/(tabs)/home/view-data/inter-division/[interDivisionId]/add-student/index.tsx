@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import { View, Text, ActivityIndicator, TouchableOpacity, FlatList, Alert, Modal, ScrollView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, ActivityIndicator, TouchableOpacity, FlatList, Alert, Modal, ScrollView, TextInput, Keyboard } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import { adminEndpoints } from '@/constants/api-endpoints'; // Import your API endpoint
+import { adminEndpoints } from '@/constants/api-endpoints';
 import { useGetStudentsStrcutreStudentList } from '@/api/admin/data/students-structure';
+import StudentInfoModal from '@/components/custom/StudentInfoModal';
 
 const AddStudentScreen = () => {
   const router = useRouter();
-
   const {
     interDivisionId,
     college,
@@ -17,7 +17,7 @@ const AddStudentScreen = () => {
     branch,
     graduationLevel,
     passoutYear,
-  } = useLocalSearchParams(); // Extract params
+  } = useLocalSearchParams();
 
   const { data, isLoading, error } = useGetStudentsStrcutreStudentList({
     college,
@@ -27,13 +27,47 @@ const AddStudentScreen = () => {
     passoutYear,
   });
 
-  const [selectedStudents, setSelectedStudents] = useState<string[]>([]); // Track selected students
-  const [modalVisible, setModalVisible] = useState(false); // Control modal visibility for student info
-  const [currentStudent, setCurrentStudent] = useState<any>(null); // Hold current student info
-  const [isAdding, setIsAdding] = useState(false); // To track adding process
-  const [failedStudents, setFailedStudents] = useState<any[]>([]); // To track failed additions
+  const [searchText, setSearchText] = useState('');
+  const [filteredData, setFilteredData] = useState<any[]>([]);
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [currentStudent, setCurrentStudent] = useState<any>(null);
+  const [isAdding, setIsAdding] = useState(false);
+  const [failedStudents, setFailedStudents] = useState<any[]>([]);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const searchInputRef = useRef<TextInput>(null);
+  const [selectedStudentUsername, setSelectedStudentUsername] = useState<string | null>(null);
 
-  // Toggle student selection
+  useEffect(() => {
+    if (data?.students) {
+      filterAndSortData(searchText);
+    }
+  }, [data, searchText]);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
+
+  const filterAndSortData = (text: string) => {
+    const lowercasedText = text.toLowerCase();
+    const filteredList = data?.students
+      .filter((student: any) => {
+        const fullName = `${student.firstName} ${student.lastName}`.toLowerCase();
+        return (
+          student.username.includes(lowercasedText) ||
+          fullName.includes(lowercasedText)
+        );
+      })
+      .sort((a: any, b: any) => parseInt(a.username) - parseInt(b.username));
+    setFilteredData(filteredList);
+  };
+
   const toggleStudentSelection = (studentId: string) => {
     setSelectedStudents((prevSelected) => {
       if (prevSelected.includes(studentId)) {
@@ -44,13 +78,11 @@ const AddStudentScreen = () => {
     });
   };
 
-  // Show student info in modal
   const showStudentInfo = (student: any) => {
     setCurrentStudent(student);
     setModalVisible(true);
   };
 
-  // Function to add selected students one by one
   const addStudentsToDivision = async () => {
     setIsAdding(true);
     setFailedStudents([]);
@@ -75,11 +107,11 @@ const AddStudentScreen = () => {
         );
 
         if (!response.data.success) {
-          failed.push(student); // Add failed student to list
+          failed.push(student);
         }
       } catch (err) {
         const student = data?.students.find((s: any) => s._id === studentId);
-        failed.push(student); // Add failed student to list
+        failed.push(student);
       }
     }
 
@@ -94,38 +126,33 @@ const AddStudentScreen = () => {
         ).join('\n')}`
       );
     } else {
-      // If all students were successfully added, navigate back and refresh the previous screen
       router.back();
     }
   };
 
-  // Function to ask for confirmation before adding students
   const confirmAddStudents = () => {
     Alert.alert(
       'Confirm Addition',
       'Are you sure you want to add the selected students to the division?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'OK', onPress: addStudentsToDivision }, // Proceed if user confirms
+        { text: 'OK', onPress: addStudentsToDivision },
       ],
       { cancelable: true }
     );
   };
 
-  // Render individual student card
   const renderStudentItem = ({ item }: { item: any }) => {
     const isSelected = selectedStudents.includes(item._id);
     return (
       <View
         key={item.username}
-        className={`bg-[#3b3e44] mb-4 w-full rounded-xl border ${
-          isSelected ? 'border-green-500' : 'border-[#9DBDFF]'
-        }`}
+        className={`bg-[#3b3e44] mb-4 w-full rounded-xl border ${isSelected ? 'border-green-500' : 'border-[#9DBDFF]'}`}
       >
         <View className="flex-row w-full justify-between items-center px-3 py-1 rounded-t-xl bg-[#5b5f68] relative">
           <Text className="text-[#9DBDFF] text-lg font-NunitoRegular">{item.username}</Text>
-          <TouchableOpacity onPress={() => showStudentInfo(item)}>
-            <MaterialIcons name="info-outline" size={24} color="#9DBDFF" />
+          <TouchableOpacity onPress={() => setSelectedStudentUsername(item.username)}>
+            <Ionicons name="information-circle-outline" size={24} color="#9DBDFF" />
           </TouchableOpacity>
         </View>
         <TouchableOpacity
@@ -138,7 +165,6 @@ const AddStudentScreen = () => {
     );
   };
 
-  // If data is loading, show loading indicator
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center">
@@ -147,7 +173,6 @@ const AddStudentScreen = () => {
     );
   }
 
-  // If there's an error, display it
   if (error) {
     return (
       <View className="flex-1 justify-center items-center">
@@ -158,53 +183,62 @@ const AddStudentScreen = () => {
 
   return (
     <View className="flex-1 bg-[#1E1E1E] p-4 items-center w-full">
-      {/* Student List */}
+      {/* Search Bar */}
+      <View className="flex-row items-center bg-[#3b3e44] p-2 rounded-lg mb-4 w-full">
+        <Ionicons name="search" size={20} color="#9DBDFF" />
+        <TextInput
+          ref={searchInputRef}
+          placeholder="Search by username or name"
+          placeholderTextColor="#9DBDFF"
+          value={searchText}
+          onChangeText={(text) => {
+            setSearchText(text);
+            filterAndSortData(text);
+          }}
+          className="ml-2 flex-1 text-white"
+        />
+        {searchText ? (
+          <TouchableOpacity
+            onPress={() => {
+              setSearchText('');
+              searchInputRef.current?.blur();
+            }}
+          >
+            <Ionicons name="close" size={20} color="#9DBDFF" />
+          </TouchableOpacity>
+        ) : null}
+      </View>
+
       <FlatList
-        data={data?.students}
+        data={filteredData}
         showsVerticalScrollIndicator={false}
         keyExtractor={(item) => item._id}
         renderItem={renderStudentItem}
         contentContainerStyle={{ paddingBottom: 100, width: '100%' }}
       />
 
-      {/* Add Button Stuck at the Bottom */}
-      <TouchableOpacity
-        className="bg-[#9DBDFF] rounded-lg absolute bottom-20 w-fit px-4"
-        onPress={confirmAddStudents} // Call confirmation dialog before adding students
-        disabled={isAdding} // Disable the button while adding students
-      >
-        {isAdding ? (
-          <ActivityIndicator size="small" color="white" />
-        ) : (
-          <Text className="text-white text-center font-NunitoExtraBold text-xl">Add</Text>
-        )}
-      </TouchableOpacity>
+      {!keyboardVisible && (
+        <TouchableOpacity
+          className="bg-[#9DBDFF] rounded-lg absolute bottom-20 w-fit px-4"
+          onPress={confirmAddStudents}
+          disabled={isAdding}
+        >
+          {isAdding ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <Text className="text-white text-center font-NunitoExtraBold text-xl">Add</Text>
+          )}
+        </TouchableOpacity>
+      )}
 
-      {/* Modal for Student Info */}
-      <Modal visible={modalVisible} transparent={true} animationType="slide">
-        <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-          <View className="bg-[#3b3e44] p-6 rounded-lg w-[85%]">
-            <Text className="text-xl text-[#9DBDFF] font-NunitoExtraBold mb-4">
-              {currentStudent?.firstName} {currentStudent?.lastName}'s Info
-            </Text>
-            <ScrollView>
-              <Text className="text-[#F6F5F5]">Username: {currentStudent?.username}</Text>
-              <Text className="text-[#F6F5F5]">Email: {currentStudent?.email}</Text>
-              <Text className="text-[#F6F5F5]">Phone: {currentStudent?.phone}</Text>
-              <Text className="text-[#F6F5F5]">Address: {currentStudent?.address}</Text>
-              <Text className="text-[#F6F5F5]">Parent Info: {currentStudent?.parentFirstName} {currentStudent?.parentLastName}</Text>
-              <Text className="text-[#F6F5F5]">Parent Email: {currentStudent?.parentEmail}</Text>
-              <Text className="text-[#F6F5F5]">Parent Phone: {currentStudent?.parentPhone}</Text>
-            </ScrollView>
-            <TouchableOpacity
-              className="bg-[#9DBDFF] p-3 mt-4 rounded-lg"
-              onPress={() => setModalVisible(false)}
-            >
-              <Text className="text-white text-center font-NunitoExtraBold">Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      {/* Student Info Modal */}
+      {selectedStudentUsername && (
+        <StudentInfoModal
+          username={selectedStudentUsername}
+          onClose={() => setSelectedStudentUsername(null)}
+        />
+      )}
+
     </View>
   );
 };

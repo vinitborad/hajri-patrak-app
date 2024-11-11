@@ -7,11 +7,15 @@ import { useRouter } from 'expo-router';
 import defaultImage from '@/assets/images/default-profile.png';
 import { STUDENT_PROFILE } from '@/constants/async-store-keys';
 import { useGetStudentProfile } from '@/api/student/data/profile';
+import * as ImagePicker from 'expo-image-picker';
+import axios from 'axios';
+import { studentEndpoints } from '@/constants/api-endpoints'; // Import your endpoints
 
 const Profile = () => {
   const router = useRouter();
   const [localProfile, setLocalProfile] = useState<any>(null);
-  const { data: studentProfile, isLoading } = useGetStudentProfile();
+  const [isUploading, setIsUploading] = useState(false); // State for showing loader on image upload
+  const { data: studentProfile, isLoading, refetch } = useGetStudentProfile(); // Add refetch to refresh profile
 
   // Fetch the local profile data on component mount
   useEffect(() => {
@@ -39,6 +43,70 @@ const Profile = () => {
     router.replace('/');
   };
 
+  const pickImage = async () => {
+    try {
+      // Ask for permission to access media library
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        Alert.alert("Permission denied", "You need to allow access to the photo library to upload a photo.");
+        return;
+      }
+
+      // Open the image picker
+      const pickerResult: any = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: true,
+        aspect: [1, 1], // 1:1 ratio crop
+        quality: 1, // Max quality
+      });
+
+      if (!pickerResult.cancelled) {
+        // Check file size (image size is in bytes)
+        const fileSizeInMB = pickerResult.assets[0].fileSize / (1024 * 1024);
+        if (fileSizeInMB > 1) {
+          Alert.alert("File too large", "Please select an image smaller than 1MB.");
+          return;
+        }
+
+        await uploadImage(pickerResult.assets[0].uri);
+      }
+    } catch (error) {
+      Alert.alert('Try Again !');
+    }
+  };
+
+  const uploadImage = async (imageUri: string) => {
+    setIsUploading(true);
+    try {
+      const token = await SecureStore.getItemAsync('token');
+      const formData: any = new FormData();
+      formData.append('photo', {
+        uri: imageUri,
+        name: 'profile.jpg', // Name of the file
+        type: 'image/jpeg', // Image type
+      });
+
+      // Upload image to the server
+      const response = await axios.post(studentEndpoints.UPDATE_PHOTO, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.data.success) {
+        Alert.alert('Success', response.data.message);
+        refetch(); // Refresh profile data after successful upload
+      } else {
+        Alert.alert('Error', 'Unable to update photo.');
+      }
+    } catch (error: any) {
+      // show error message if comming from server
+      Alert.alert('Error', error.response?.data?.message || 'Unable to update photo.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
     <View className="flex-1 bg-[#1E1E1E]">
       {/* Header */}
@@ -50,17 +118,25 @@ const Profile = () => {
 
       {/* Profile Picture */}
       <View className="mt-[-50px] flex items-center">
-        <View className="bg-[#3b3e44] p-2 rounded-full">
-          {profile?.personalInfo?.photoUrl ? (
+        <View className="bg-[#3b3e44] p-2 rounded-full relative">
+          {isUploading ? (
+            <View className='w-24 h-24 flex items-center justify-center'>
+              <ActivityIndicator size="large" color="#9DBDFF" />
+            </View>
+          ) : (
             <Image
-              source={profile.personalInfo.photoUrl ? { uri: profile.personalInfo.photoUrl } : defaultImage}
+              source={profile?.personalInfo?.photoUrl ? { uri: profile.personalInfo.photoUrl } : defaultImage}
               className="w-24 h-24 rounded-full"
             />
-          ) : (
-            <View className="w-24 h-24 rounded-full bg-[#686D76] flex items-center justify-center">
-              <Ionicons name="person" size={48} color="#9DBDFF" />
-            </View>
           )}
+          {/* Pencil Icon for editing photo */}
+          <TouchableOpacity
+            className="absolute top-0 right-0 bg-[#9DBDFF] p-2 rounded-full"
+            onPress={pickImage}
+            disabled={isUploading}
+          >
+            <Ionicons name="pencil" size={16} color="#1E1E1E" />
+          </TouchableOpacity>
         </View>
       </View>
 

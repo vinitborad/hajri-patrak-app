@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Image,
+  Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
@@ -24,6 +26,7 @@ const AtomStudentScreen = () => {
   const [originalStudentInfo, setOriginalStudentInfo] = useState<any>(null); // Store original student info
   const [isLoading, setIsLoading] = useState(false); // Loading state for search
   const [isUpdating, setIsUpdating] = useState(false); // Loading state for update
+  const [isPhotoModalVisible, setIsPhotoModalVisible] = useState(false); // Control photo modal visibility
 
   const handleSearch = async () => {
     if (!username) {
@@ -224,9 +227,33 @@ const AtomStudentScreen = () => {
             </TouchableOpacity>
           )}
 
+          {/* Student Photo */}
+          {originalStudentInfo?.photoUrl && (
+            <TouchableOpacity onPress={() => setIsPhotoModalVisible(true)} className="self-center mb-4">
+              <Image
+                source={{ uri: originalStudentInfo.photoUrl }}
+                style={{ width: 100, height: 100, borderRadius: 50 }}
+              />
+            </TouchableOpacity>
+          )}
+
+          {/* Fullscreen Photo Modal */}
+          <Modal visible={isPhotoModalVisible} transparent animationType="fade">
+            <TouchableOpacity
+              style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.9)', justifyContent: 'center', alignItems: 'center' }}
+              onPress={() => setIsPhotoModalVisible(false)}
+            >
+              <Image
+                source={{ uri: originalStudentInfo?.photoUrl }}
+                style={{ width: '90%', height: '80%', resizeMode: 'contain' }}
+              />
+            </TouchableOpacity>
+          </Modal>
+
           {/* Student Info Section (Editable fields) */}
           {studentInfo && (
-            <>
+            <View>
+
               <View className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
                 <Text className="text-[#9DBDFF] mb-2">EDUCATIONAL INFO</Text>
                 <Text className="text-[#F6F5F5]">College: {studentInfo.educationMeta?.college || ''}</Text>
@@ -338,7 +365,7 @@ const AtomStudentScreen = () => {
                   <Text className="text-center text-white">DELETE STUDENT</Text>
                 </TouchableOpacity>
               </View>
-            </>
+            </View>
           )}
         </ScrollView>
       </View>
