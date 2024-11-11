@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, TextInput, Alert, Keyboard, ActivityIndicator } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import { FontAwesome, FontAwesome5, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LIVE_ATTENDANCE, DIVISION_STUDENTS_LIST } from '@/constants/async-store-keys';
 import { isConnected } from '@/utils/network';
@@ -9,6 +9,7 @@ import { callCreateAttendance, closeAttendance } from '@/utils/attendances/helpe
 import axios from 'axios';
 import { facultyEndpoints } from '@/constants/api-endpoints';
 import * as SecureStore from 'expo-secure-store';
+import StudentInfoModal from '@/components/custom/StudentInfoModal';
 
 const LiveAttendanceScreen = () => {
   const { id } = useLocalSearchParams();
@@ -19,6 +20,7 @@ const LiveAttendanceScreen = () => {
   const [qrStudents, setQrStudents] = useState<any[]>([]);
   const [message, setMessage] = useState('');
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false); // To track keyboard visibility
+  const [selectedStudentUsername, setSelectedStudentUsername] = useState<string | null>(null); // For StudentInfoModal
 
   // Listen for keyboard events to track if it's visible or not
   useEffect(() => {
@@ -143,7 +145,8 @@ const LiveAttendanceScreen = () => {
               }
             },
           },
-        ]
+        ],
+        { cancelable: true }
       );
     } catch (error) {
       console.error('Error submitting attendance:', error);
@@ -239,7 +242,7 @@ const LiveAttendanceScreen = () => {
           const isPresent = isStudentPresent(item.id) || isQr;
           return (
             <View
-              className={`p-2 pl-4 pr-5 rounded-lg mb-2 mx-4 flex-row justify-between items-center ${isPresent ? 'bg-[#2D6A4F]' : 'bg-[#c33f43]'
+              className={`p-2 pl-4 pr-3 rounded-lg mb-2 mx-4 flex-row justify-between items-center ${isPresent ? 'bg-[#2D6A4F]' : 'bg-[#c33f43]'
                 } border border-[#1B4332]`}
             >
               <View>
@@ -250,11 +253,14 @@ const LiveAttendanceScreen = () => {
                   <FontAwesome name="user" size={18} color="#F6F5F5" /> Name: {item.firstName} {item.lastName}
                 </Text>
               </View>
-              {isQr && (
-                <View>
+              <View className="flex-row items-center gap-x-2">
+                {isQr && (
                   <MaterialCommunityIcons name="qrcode-scan" size={35} color="#9DBDFF" />
-                </View>
-              )}
+                )}
+                <TouchableOpacity onPress={() => setSelectedStudentUsername(item.username)}>
+                  <Ionicons name="information-circle-outline" size={35} color="#9DBDFF" />
+                </TouchableOpacity>
+              </View>
             </View>
           );
         }}
@@ -281,6 +287,14 @@ const LiveAttendanceScreen = () => {
             </TouchableOpacity>
           </View>
         </View>
+      )}
+
+      {/* Student Info Modal */}
+      {selectedStudentUsername && (
+        <StudentInfoModal
+          username={selectedStudentUsername}
+          onClose={() => setSelectedStudentUsername(null)}
+        />
       )}
 
     </View>

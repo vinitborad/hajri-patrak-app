@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Modal, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useGetPreviousAttendances } from '@/api/faculty/attendances';
-import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { AntDesign, FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LIVE_ATTENDANCE, PREV_ATTENDANCES } from '@/constants/async-store-keys';
 import { isConnected } from '@/utils/network';
@@ -177,6 +177,29 @@ const SubjectDetailScreen = () => {
     }
   };
 
+  const handleDeleteLiveAttendance = async () => {
+    try {
+      // ask for confirmation
+      Alert.alert(
+        'Confirm Deletion ?',
+        'Are you sure you want to delete this live attendance ?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Yes !',
+            onPress: async () => {
+              await AsyncStorage.removeItem(LIVE_ATTENDANCE(id as string));
+              setLiveAttendance(null);
+            },
+          },
+        ],
+        { cancelable: true }
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Something went wrong !');
+    }
+  }
+
   //@ts-ignore
   const renderAttendanceItem = ({ item }) => (
     <View key={item.id} className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
@@ -278,7 +301,14 @@ const SubjectDetailScreen = () => {
                   onPress={() => router.push(`/faculty/(tabs)/home/subject/${id}/live`)}
                 >
                   <Ionicons name="eye-outline" size={20} color="#9DBDFF" />
-                  <Text className="ml-2 text-[#F6F5F5]">View Live Attendance</Text>
+                  <Text className="ml-2 text-[#F6F5F5]">Open Live Attendance</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  className="bg-[#f63d3d] p-2 mt-2 rounded-lg flex flex-row items-center justify-center"
+                  onPress={() => handleDeleteLiveAttendance()}
+                >
+                  <AntDesign name="delete" size={20} color="#9DBDFF" />
+                  <Text className="ml-2 text-[#F6F5F5]">Delete Attendance !</Text>
                 </TouchableOpacity>
               </View>
             ) : (

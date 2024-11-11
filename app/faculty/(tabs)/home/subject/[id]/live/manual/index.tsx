@@ -3,7 +3,8 @@ import { View, Text, FlatList, TouchableOpacity, Alert, ActivityIndicator } from
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LIVE_ATTENDANCE, DIVISION_STUDENTS_LIST } from '@/constants/async-store-keys';
-import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import { FontAwesome, FontAwesome5, Ionicons } from '@expo/vector-icons';
+import StudentInfoModal from '@/components/custom/StudentInfoModal';
 
 const ManualMarkScreen = () => {
   const router = useRouter();
@@ -13,6 +14,7 @@ const ManualMarkScreen = () => {
   const [liveAttendance, setLiveAttendance] = useState<any>(null); // Live attendance data
   const [markedPresentStudents, setMarkedPresentStudents] = useState<string[]>([]); // List of marked present students
   const [markMode, setMarkMode] = useState<'present' | 'absent'>('present'); // Mode: present or absent
+  const [selectedStudentUsername, setSelectedStudentUsername] = useState<string | null>(null); // For StudentInfoModal
 
   useEffect(() => {
     const fetchData = async () => {
@@ -165,18 +167,32 @@ const ManualMarkScreen = () => {
                   <FontAwesome name="user" size={18} color="#F6F5F5" /> Name: {item.firstName} {item.lastName}
                 </Text>
               </View>
+
+              <TouchableOpacity onPress={() => setSelectedStudentUsername(item.username)}>
+                <Ionicons name="information-circle-outline" size={35} color="#9DBDFF" />
+              </TouchableOpacity>
+
             </TouchableOpacity>
           );
         }}
-        contentContainerStyle={{ paddingBottom: 16 }}
+        contentContainerStyle={{ paddingBottom: 300 }}
       />
 
       {/* Submit Button */}
-      <View className="mt-auto mb-20 mx-auto w-2/5">
-        <TouchableOpacity className="bg-[#9DBDFF] rounded-t-full p-1" onPress={handleSubmit}>
+      <View className="mt-auto absolute bottom-20 w-full flex items-center justify-center">
+        <TouchableOpacity className="bg-[#9DBDFF] rounded-t-full p-1 px-8" onPress={handleSubmit}>
           <Text className="text-center text-[#1E1E1E] text-base font-NunitoExtraBold">Submit</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Student Info Modal */}
+      {selectedStudentUsername && (
+        <StudentInfoModal
+          username={selectedStudentUsername}
+          onClose={() => setSelectedStudentUsername(null)}
+        />
+      )}
+
     </View>
   );
 };
