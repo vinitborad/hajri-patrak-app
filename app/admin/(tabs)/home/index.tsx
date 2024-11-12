@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native'
 import React from 'react'
-import { Feather, FontAwesome, Ionicons } from '@expo/vector-icons'
+import { Feather, FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 
 const HomeScreen = () => {
@@ -46,11 +46,19 @@ const HomeScreen = () => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            className='flex-row justify-center items-center border border-[#920707] py-4 rounded-lg bg-[#3b3e44] gap-x-2 w-full'
+            className='flex-row justify-center items-center border border-[#f19640] py-4 rounded-lg bg-[#3b3e44] gap-x-2 w-full'
             onPress={() => router.push('/admin/(tabs)/home/create-data')}
           >
-            <Feather name="plus" size={24} color="#F6F5F5" />
-            <Text className="text-[#F6F5F5] text-lg ml-4 font-NunitoBold">Create New Entities</Text>
+            <Feather name="plus" size={24} color="#f19640" />
+            <Text className="text-[#f19640] text-lg ml-4 font-NunitoBold">Create New Entities</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className='flex-row justify-center items-center border border-[#be4040] py-4 rounded-lg bg-[#3b3e44] gap-x-2 w-full'
+            onPress={() => router.push('/admin/(tabs)/home/upgrade-divisions')}
+          >
+            <MaterialIcons name="upgrade" size={24} color="#be4040" />
+            <Text className="text-[#be4040] text-lg ml-4 font-NunitoBold">Semester Upgrades</Text>
           </TouchableOpacity>
 
         </View>

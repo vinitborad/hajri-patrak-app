@@ -106,6 +106,9 @@ export const adminEndpoints = {
   GET_PROFILE: `${BASE_URL}/admin/owns/profile`,
   UPDATE_PHOTO: `${BASE_URL}/admin/owns/profile/photo`,
   CHANGE_PASSWORD: `${BASE_URL}/admin/auth/change-password`,
+
+  // MANAGEMENTS ENDPOINTS
+  UPGRADE_DIVISIONS: `${BASE_URL}/admin/management/upgrade-divisions`,
 }
 
 export const commonEndpoints = {

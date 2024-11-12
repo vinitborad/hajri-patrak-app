@@ -39,6 +39,12 @@ export default function Layout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="upgrade-divisions"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 }
