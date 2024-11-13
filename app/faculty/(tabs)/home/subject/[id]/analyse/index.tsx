@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, TextInput, Animated, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, TextInput, Animated, ActivityIndicator, Alert, Linking } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useGetAnalyseAttendance } from '@/api/faculty/attendances';
-import { FontAwesome, FontAwesome5, Ionicons } from '@expo/vector-icons';
+import { FontAwesome, FontAwesome5, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ANALYSIS } from '@/constants/async-store-keys';
 import { calculateAttendanceLevel } from '@/utils/attendances/helper-functions';
 import StudentInfoModal from '@/components/custom/StudentInfoModal';
+import * as SecureStore from 'expo-secure-store';
+import axios from 'axios';
+import { commonEndpoints } from '@/constants/api-endpoints';
 
 const AnalyseAttendanceScreen = () => {
   const router = useRouter();
@@ -20,6 +23,7 @@ const AnalyseAttendanceScreen = () => {
   const [isSearchActive, setIsSearchActive] = useState(false); // Track if search is active
   const [searchText, setSearchText] = useState(''); // For search input
   const [selectedStudentUsername, setSelectedStudentUsername] = useState<string | null>(null); // For StudentInfoModal
+  const [isSheetLoading, setIsSheetLoading] = useState(false); // Loading state for the sheet link
 
   const searchWidth = new Animated.Value(40); // Initial width for search button
   const [animatedWidth, setAnimatedWidth] = useState(searchWidth); // Control the width
@@ -142,6 +146,31 @@ const AnalyseAttendanceScreen = () => {
     }
   };
 
+  // Open Google Sheet
+  const openSheet = async () => {
+    setIsSheetLoading(true); // Start loading
+    try {
+      const token = await SecureStore.getItemAsync('token'); // Get the JWT token
+      const response = await axios.get(commonEndpoints.GET_ANALYSE_ATTENDANCE_SHEET_LINK, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: { subjectId: id },
+      });
+
+      const { data } = response;
+      if (data.success && data.data) {
+        Linking.openURL(data.data); // Open the Google Sheets link
+      } else {
+        Alert.alert('Error', 'Failed to retrieve the sheet link.');
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.response?.data?.message || 'Something went wrong !');
+    } finally {
+      setIsSheetLoading(false); // Stop loading
+    }
+  };
+
   return (
     <View className="flex flex-1 bg-[#1E1E1E]">
       <Stack.Screen options={{ headerShown: false }} />
@@ -165,6 +194,16 @@ const AnalyseAttendanceScreen = () => {
             >
               <Text className="text-white">DESC</Text>
             </TouchableOpacity>
+
+            {/* Google Sheet Button */}
+            <TouchableOpacity className="bg-[#3b3e44] p-2 rounded-lg" onPress={openSheet}>
+              {isSheetLoading ? (
+                <ActivityIndicator size="small" color="#9DBDFF" />
+              ) : (
+                <MaterialCommunityIcons name="google-spreadsheet" size={24} color="black" />
+              )}
+            </TouchableOpacity>
+
           </View>
         ) : (
           <Animated.View style={{ width: animatedWidth }}>
@@ -225,6 +264,7 @@ const AnalyseAttendanceScreen = () => {
             <View className="flex-row items-center justify-between">
               <TouchableOpacity
                 className="mr-1"
+                // @ts-ignore
                 onPress={() => router.push(`/faculty/(tabs)/home/subject/${id}/analyse/student-previous-attendances?username=${item.student.username}`)}
               >
                 <FontAwesome name="history" size={24} color="#9DBDFF" />

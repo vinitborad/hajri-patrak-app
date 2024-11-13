@@ -115,6 +115,7 @@ export const commonEndpoints = {
   // ATTENDANCE ENDPOINTS
   // subject info endpoints
   GET_ANALYSE_ATTENDANCE: `${BASE_URL}/common/data/attendance/analyse`,
+  GET_ANALYSE_ATTENDANCE_SHEET_LINK: `${BASE_URL}/common/data/attendance/analyse/sheet-link`,
   GET_DIVISION_STUDENTS_LIST: `${BASE_URL}/common/data/division-students-list`,
 
   // STUDENT ENDPOINTS
