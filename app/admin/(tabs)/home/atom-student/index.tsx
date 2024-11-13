@@ -261,7 +261,6 @@ const AtomStudentScreen = () => {
                 <Text className="text-[#F6F5F5]">Graduation Level: {studentInfo.educationMeta?.graduationLevel || ''}</Text>
                 <Text className="text-[#F6F5F5]">Branch: {studentInfo.educationMeta?.branch || ''}</Text>
                 <Text className="text-[#F6F5F5]">Passout Year: {studentInfo.educationMeta?.passoutYear || ''}</Text>
-                <Text className="text-[#F6F5F5]">Current Semester: {studentInfo.educationMeta?.currentSemester || ''}</Text>
               </View>
 
               {/* Editable Fields */}

@@ -32,7 +32,6 @@ const CreateStudentScreen = () => {
     department: '',
     graduationLevel: '',
     branch: '',
-    currentSemester: '',
     passoutYear: '',
     divisionInfo: [
       { division: '', interDivision: '' } // Initial division field
@@ -54,7 +53,6 @@ const CreateStudentScreen = () => {
     department: false,
     graduationLevel: false,
     branch: false,
-    currentSemester: false,
     passoutYear: false,
     divisionInfo: false, // Validation for division fields
   });
@@ -90,7 +88,6 @@ const CreateStudentScreen = () => {
       department: !formData.department,
       graduationLevel: !formData.graduationLevel,
       branch: !formData.branch,
-      currentSemester: !formData.currentSemester,
       passoutYear: !formData.passoutYear,
       divisionInfo: formData.divisionInfo.some(div => !div.division || !div.interDivision), // Validate divisionInfo
     };

@@ -28,7 +28,6 @@ const CreateStudentsScreen = () => {
     department: '',
     graduationLevel: '',
     branch: '',
-    currentSemester: '',
     passoutYear: '',
     divisionInfo: [{ division: '', interDivision: '' }],
   });
@@ -38,7 +37,6 @@ const CreateStudentsScreen = () => {
     department: false,
     graduationLevel: false,
     branch: false,
-    currentSemester: false,
     passoutYear: false,
     divisionInfo: false,
   });
@@ -80,7 +78,6 @@ const CreateStudentsScreen = () => {
       department: !formData.department,
       graduationLevel: !formData.graduationLevel,
       branch: !formData.branch,
-      currentSemester: !formData.currentSemester,
       passoutYear: !formData.passoutYear,
       divisionInfo: formData.divisionInfo.some((div) => !div.division || !div.interDivision),
     };
@@ -204,7 +201,7 @@ const CreateStudentsScreen = () => {
 
           {/* Input Fields */}
           <View className="px-4">
-            {['college', 'department', 'graduationLevel', 'branch', 'currentSemester', 'passoutYear'].map(
+            {['college', 'department', 'graduationLevel', 'branch', 'passoutYear'].map(
               (field, index) => (
                 <TextInput
                   key={index}

@@ -30,7 +30,7 @@ const ProfileInfoScreen = () => {
     );
   }
 
-  if(!profileData) {
+  if (!profileData) {
     return (
       <View className="flex-1 justify-center items-center bg-[#1E1E1E] pb-8">
         <Text className="text-[#9DBDFF] text-xl font-NunitoExtraBold">No data found !</Text>
@@ -89,10 +89,6 @@ const ProfileInfoScreen = () => {
         <View className="flex-row items-center mb-4">
           <Ionicons name="school-outline" size={20} color="#9DBDFF" />
           <Text className="text-[#F6F5F5] ml-3">{educationInfo?.department} - {educationInfo?.branch}</Text>
-        </View>
-        <View className="flex-row items-center mb-4">
-          <Ionicons name="calendar-outline" size={20} color="#9DBDFF" />
-          <Text className="text-[#F6F5F5] ml-3">Current Semester: {educationInfo?.currentSemester}</Text>
         </View>
         <View className="flex-row items-center mb-4">
           <Ionicons name="hourglass-outline" size={20} color="#9DBDFF" />
