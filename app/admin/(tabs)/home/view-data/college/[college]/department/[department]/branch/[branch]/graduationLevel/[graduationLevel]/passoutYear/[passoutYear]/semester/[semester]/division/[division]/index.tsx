@@ -28,6 +28,8 @@ const DivisionInfoScreen = () => {
   const [modalVisible, setModalVisible] = useState(false); // Modal visibility state
   const [selectedSubject, setSelectedSubject] = useState<any>(null); // Track selected subject
   const [newSubjectName, setNewSubjectName] = useState(''); // Input field state
+  const [isSubjectDeleting, setIsSubjectDeleting] = useState<string | null>(null); // To track loading state for delete button
+  const [isDivisionDeleting, setIsDivisionDeleting] = useState<string | null>(null); // To track loading state for delete button
 
   const { data: apiResponse, isLoading, error, refetch } = useGetSubjectsStructure();
 
@@ -103,6 +105,94 @@ const DivisionInfoScreen = () => {
   // Get subjects and interDivisions for the specific division
   const divisionData = offlineData?.[college]?.[department]?.[branch]?.[graduationLevel]?.[passoutYear]?.[semester]?.[division];
 
+  const deleteSubject = async (subjectId: string) => {
+    Alert.alert('Confirm Delete !', 'Are you sure you want to delete this subject ?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Yes',
+        onPress: () => {
+          Alert.alert(
+            'Confirm Delete Again !',
+            'This action is irreversible. Do you really want to delete this subject ?',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'Delete',
+                onPress: async () => {
+                  setIsSubjectDeleting(subjectId);
+                  try {
+                    const token = await SecureStore.getItemAsync('token');
+                    const response = await axios.delete(adminEndpoints.DELETE_SUBJECT, {
+                      headers: {
+                        Authorization: `Bearer ${token}`,
+                      },
+                      params: { subjectId },
+                    });
+
+                    if (response.data.success) {
+                      Alert.alert('Success', 'Subject deleted successfully.');
+                      refetch(); // Refresh the data
+                    } else {
+                      Alert.alert('Error', response.data.message || 'Failed to delete subject.');
+                    }
+                  } catch (error: any) {
+                    Alert.alert('Error', error?.response?.data?.message || 'Failed to delete subject.');
+                  } finally {
+                    setIsSubjectDeleting(null); // Reset loading state
+                  }
+                },
+              },
+            ]
+          );
+        },
+      },
+    ]);
+  };
+
+  const deleteInterDivision = async (divisionId: string) => {
+    Alert.alert('Confirm Delete !', 'Are you sure you want to delete this inter division ?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Yes',
+        onPress: () => {
+          Alert.alert(
+            'Confirm Delete Again !',
+            'This action is irreversible. Do you really want to delete this inter division ?',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'Delete',
+                onPress: async () => {
+                  setIsDivisionDeleting(divisionId);
+                  try {
+                    const token = await SecureStore.getItemAsync('token');
+                    const response = await axios.delete(adminEndpoints.DELTE_INTER_DIVISION, {
+                      headers: {
+                        Authorization: `Bearer ${token}`,
+                      },
+                      params: { interDivisionId: divisionId },
+                    });
+
+                    if (response.data.success) {
+                      Alert.alert('Success', 'Inter division deleted successfully.');
+                      refetch(); // Refresh the data
+                    } else {
+                      Alert.alert('Error', response.data.message || 'Failed to delete inter division.');
+                    }
+                  } catch (error: any) {
+                    Alert.alert('Error', error?.response?.data?.message || 'Failed to delete inter division.');
+                  } finally {
+                    setIsDivisionDeleting(null); // Reset loading state
+                  }
+                },
+              },
+            ]
+          );
+        },
+      },
+    ]);
+  };
+
   if (isOfflineLoading || isLoading) {
     return (
       <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
@@ -135,6 +225,7 @@ const DivisionInfoScreen = () => {
       className="flex-row justify-between items-center bg-[#3b3e44] p-4 pr-5 rounded-lg shadow-md m-2 border border-[#9DBDFF]"
       onPress={() =>
         router.push({
+          // @ts-ignore
           pathname: `/admin/(tabs)/home/view-data/subject/${item.subjectId}`,
           params: {
             subjectName: item.subjectName,
@@ -164,9 +255,13 @@ const DivisionInfoScreen = () => {
           <Entypo name="pencil" size={24} color="#e6eeff" />
         </TouchableOpacity>
       </View>
-      <View>
-        <MaterialIcons name="delete" size={24} color="#FF6B6B" />
-      </View>
+      <TouchableOpacity disabled={isSubjectDeleting === item.subjectId} onPress={() => deleteSubject(item.subjectId)}>
+        {isSubjectDeleting === item.subjectId ? (
+          <ActivityIndicator size="small" color="#FF6B6B" />
+        ) : (
+          <MaterialIcons name="delete" size={24} color="#FF6B6B" />
+        )}
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 
@@ -177,6 +272,7 @@ const DivisionInfoScreen = () => {
       className="flex-row justify-between items-center bg-[#3b3e44] p-4 pr-5 rounded-lg shadow-md m-2 border border-[#9DBDFF]"
       onPress={() => {
         router.push({
+          // @ts-ignore
           pathname: `/admin/(tabs)/home/view-data/inter-division/${item._id}`,
           params: {
             college,
@@ -194,6 +290,13 @@ const DivisionInfoScreen = () => {
       <View>
         <Text className="text-lg font-NunitoBold text-[#9DBDFF]">Inter Div {item.interDivision}</Text>
       </View>
+      <TouchableOpacity disabled={isDivisionDeleting === item.subjectId} onPress={() => deleteInterDivision(item._id)}>
+        {isDivisionDeleting === item.subjectId ? (
+          <ActivityIndicator size="small" color="#FF6B6B" />
+        ) : (
+          <MaterialIcons name="delete" size={24} color="#FF6B6B" />
+        )}
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 

@@ -101,6 +101,8 @@ export const adminEndpoints = {
   // DELETION or REMOVAL endpoints
   DELETE_STUDENT: `${BASE_URL}/admin/delete/student`,
   DELETE_FACULTY: `${BASE_URL}/admin/delete/faculty`,
+  DELETE_SUBJECT: `${BASE_URL}/admin/delete/subject`,
+  DELTE_INTER_DIVISION: `${BASE_URL}/admin/delete/inter-division`,
 
   // OWN's ENDPOINTS
   GET_PROFILE: `${BASE_URL}/admin/owns/profile`,
