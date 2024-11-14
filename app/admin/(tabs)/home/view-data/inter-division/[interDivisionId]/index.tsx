@@ -26,8 +26,6 @@ const InterDivisionStudentsListScreen = () => {
   const searchInputRef = useRef<TextInput>(null);
   const [selectedStudentUsername, setSelectedStudentUsername] = useState<string | null>(null);
 
-  console.log(data);
-
   // Sort and filter data initially and whenever data or searchText changes
   useEffect(() => {
     if (data) {

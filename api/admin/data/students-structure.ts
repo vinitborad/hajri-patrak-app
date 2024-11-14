@@ -28,8 +28,6 @@ export const useGetStudentsStrcutreStudentList = ({
         }
       });
 
-      console.log(response.data.data);
-
       return response.data.data;
     },
     //TODO: change params later accordingly

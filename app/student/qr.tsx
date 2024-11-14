@@ -1,113 +1,180 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useState, useEffect } from 'react';
-import { Alert, Text, TouchableOpacity, View, Animated } from 'react-native';
+import { Alert, Text, TouchableOpacity, View, Animated, ActivityIndicator } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import * as Location from 'expo-location';
 import { generalEndpoints, studentEndpoints } from '@/constants/api-endpoints';
 import axios from 'axios';
-import { Ionicons } from '@expo/vector-icons';
+import { AntDesign, Ionicons } from '@expo/vector-icons';
+
+const INSTITUTE_LOCATION = {
+  latitude: parseFloat(process.env.EXPO_PUBLIC_INSTITUTE_LATITUDE || '0'),
+  longitude: parseFloat(process.env.EXPO_PUBLIC_INSTITUTE_LONGITUDE || '0'),
+};
+
+const RADIUS_LIMIT = parseInt(process.env.EXPO_PUBLIC_INSTITUTE_RANGE_LIMIT || '0');
+
+const checkProximityToInstitute = (userLocation: Location.LocationObject) => {
+  // print env variables
+  console.log('INSTITUTE_LOCATION:', INSTITUTE_LOCATION);
+  console.log('RADIUS_LIMIT:', RADIUS_LIMIT);
+
+  const { latitude, longitude } = userLocation.coords;
+  const toRad = (value: number) => (value * Math.PI) / 180;
+  const R = 6371e3; // Earth's radius in meters
+  const dLat = toRad(latitude - INSTITUTE_LOCATION.latitude);
+  const dLon = toRad(longitude - INSTITUTE_LOCATION.longitude);
+  const lat1 = toRad(INSTITUTE_LOCATION.latitude);
+  const lat2 = toRad(latitude);
+
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  const distance = R * c;
+  console.log('Distance:', distance);
+  return distance <= RADIUS_LIMIT;
+};
 
 export default function App() {
+  const [loading, setLoading] = useState<boolean>(false);
   const [permission, requestPermission] = useCameraPermissions();
+  const [locationPermission, requestLocationPermission] = Location.useForegroundPermissions();
   const [isActive, setIsActive] = useState<boolean>(true);
   const [scanAnim] = useState(new Animated.Value(0));
+  const [locationEnabledFlag, setLocationEnabledFlag] = useState(true);
+  const [locationAccuracyFlag, setLocationAccuracyFlag] = useState(true);
+
+  useEffect(() => {
+    getPreciseLocation();
+  }, []);
+
+  const getPreciseLocation = async () => {
+    setLoading(true);
+    try {
+      const camPerm = await requestPermission();
+      const locPerm = await requestLocationPermission();
+
+      if (camPerm.granted && locPerm.granted) {
+        const status = await Location.getProviderStatusAsync();
+        if (status.locationServicesEnabled) {
+          setLocationEnabledFlag(true);
+          // console.log('Location services are enabled');
+          const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Highest });
+          // console.log('Location:', location);
+          if (location.coords.accuracy && location.coords.accuracy > 100) {
+            // console.log('Location accuracy is not enough');
+            setLocationAccuracyFlag(false);
+            return null;
+          } else {
+            // console.log('Location accuracy is enough');
+            setLocationAccuracyFlag(true);
+            return location;
+          }
+        } else {
+          setLocationEnabledFlag(false);
+          return null;
+        }
+      }
+    } catch (error) {
+      setLocationEnabledFlag(false);
+      setLocationAccuracyFlag(false);
+      return null;
+    }
+    finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
     if (isActive) {
       Animated.loop(
         Animated.sequence([
-          Animated.timing(scanAnim, {
-            toValue: 1,
-            duration: 1500,
-            useNativeDriver: true,
-          }),
-          Animated.timing(scanAnim, {
-            toValue: 0,
-            duration: 1500,
-            useNativeDriver: true,
-          }),
-        ]),
+          Animated.timing(scanAnim, { toValue: 1, duration: 1500, useNativeDriver: true }),
+          Animated.timing(scanAnim, { toValue: 0, duration: 1500, useNativeDriver: true }),
+        ])
       ).start();
     }
   }, [isActive]);
 
-  const checkLocation = async () => {
-    
-  }
+  const handleScan = async (data: any) => {
+    const fetchedTimeOffset = await fetchTimeOffset();
+    const adjustedTimeUTC = new Date(new Date().getTime() + fetchedTimeOffset * 1000).toISOString();
+
+    if (!locationEnabledFlag) {
+      Alert.alert("Error", "Location services are off. Please enable them to proceed.");
+      return;
+    }
+
+    const currentLocation = await getPreciseLocation();
+
+    if (currentLocation) {
+      if (checkProximityToInstitute(currentLocation)) {
+        const value: string = data.data;
+        const oCode = value.slice(0, 5);
+        const code = value.slice(5);
+
+        try {
+          const token = await SecureStore.getItemAsync('token');
+
+          const response = await axios.post(
+            studentEndpoints.QR_MARK_ATTENDANCE,
+            { oCode, time: adjustedTimeUTC, code },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          if (response.data.success) {
+            Alert.alert('Success', response.data.message || 'Attendance marked successfully');
+          } else {
+            Alert.alert('Error', response.data.message || 'Failed to mark attendance');
+          }
+        } catch (error: any) {
+          Alert.alert('Error', error.response?.data?.message || 'Failed to mark attendance');
+        }
+      } else {
+        Alert.alert('Error', 'You are not in the institute');
+      }
+    }
+  };
 
   const fetchTimeOffset = async () => {
     try {
       const localTime = new Date();
       const response = await fetch(`${generalEndpoints.GET_SYNC_TIME}`);
       const data = await response.json();
-      const serverTime = new Date(data.utc_datetime);
-      const timeDifference = serverTime.getTime() - localTime.getTime();
-      const timeDifferenceInSeconds = timeDifference / 1000;
-      return timeDifferenceInSeconds;
-    } catch (error) {
+      return (new Date(data.utc_datetime).getTime() - localTime.getTime()) / 1000;
+    } catch {
       return 0;
     }
   };
 
-  async function handleScan(data: any) {
-    try {
-      const fetchedTimeOffset = await fetchTimeOffset();
-      const now = new Date();
-      const adjustedTime = new Date(now.getTime() + fetchedTimeOffset * 1000);
-      const adjustedTimeUTC = adjustedTime.toISOString();
-
-      const value: string = data.data;
-      const oCode = value.slice(0, 5);
-      const code = value.slice(5);
-
-      const token = await SecureStore.getItemAsync('token');
-
-      const response = await axios.post(studentEndpoints.QR_MARK_ATTENDANCE,
-        {
-          oCode,
-          time: adjustedTimeUTC,
-          code,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const success = response.data.success;
-
-      if (success) {
-        Alert.alert('Success', 'Attendance marked successfully');
-      } else {
-        Alert.alert('Error', 'Failed to mark attendance');
-      }
-    } catch (error: any) {
-      Alert.alert('Error', 'Failed to mark attendance');
-    }
-  }
-
   const animatedStyle = {
-    transform: [
-      {
-        translateY: scanAnim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0, 200], // Adjust based on your square height
-        }),
-      },
-    ],
+    transform: [{ translateY: scanAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 200] }) }],
   };
 
-  if (!permission) {
-    return <View className="flex-1 justify-center items-center bg-[#1E1E1E]" />;
-  }
-
-  if (!permission.granted) {
+  if (loading) {
     return (
       <View className="flex-1 justify-center items-center bg-[#1E1E1E]">
-        <Text className="text-center pb-2 text-lg text-[#F6F5F5]">We need your permission to show the camera</Text>
-        <TouchableOpacity onPress={requestPermission} className="p-3 bg-[#9DBDFF] rounded-lg mt-4">
-          <Text className="text-white">Grant Permission</Text>
-        </TouchableOpacity>
+        <ActivityIndicator size="large" color="#9DBDFF" />
+      </View>
+    );
+  }
+
+  if (!permission || !permission.granted || !locationPermission || !locationPermission.granted || !locationAccuracyFlag || !locationEnabledFlag) {
+    return (
+      <View className="flex-1 justify-center items-center bg-[#1E1E1E]">
+        {(!permission || !permission.granted) && (
+          <Text className="text-white font-NunitoMedium text-base">Please, Give Camera permission to proceed</Text>
+        )}
+        {(!locationPermission || !locationPermission.granted) && (
+          <Text className="text-white font-NunitoMedium text-base">Please, Give Location permission to proceed</Text>
+        )}
+        {!locationEnabledFlag && (
+          <Text className="text-white font-NunitoMedium text-base">Turn on GPS !</Text>
+        )}
+        {!locationAccuracyFlag && (
+          <Text className="text-white font-NunitoMedium text-base">Please, Give Precise Location Permission.</Text>
+        )}
       </View>
     );
   }
@@ -117,30 +184,20 @@ export default function App() {
       {isActive ? (
         <CameraView
           className="flex-1"
-          barcodeScannerSettings={{
-            barcodeTypes: ["qr"],
-          }}
-          onBarcodeScanned={(data) => {
-            setIsActive(false);
-            handleScan(data);
-          }}
+          barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+          onBarcodeScanned={(data) => { setIsActive(false); handleScan(data); }}
         >
-          {/* QR Scanner Overlay */}
           <View className="absolute top-0 left-0 right-0 bottom-0 justify-center items-center">
             <View className="border-4 border-[#9DBDFF] rounded-lg relative" style={{ height: 250, width: 250 }}>
-              {/* QR Logo */}
               <Ionicons name="qr-code" size={120} color="#9DBDFF" style={{ opacity: 0.2, position: 'absolute', top: '50%', left: '50%', transform: [{ translateX: -60 }, { translateY: -60 }] }} />
-
-              {/* Scanning Bar */}
               <Animated.View className="absolute left-0 right-0 h-1 bg-[#9DBDFF]" style={animatedStyle} />
             </View>
           </View>
         </CameraView>
       ) : (
         <View className="flex-1 justify-center items-center">
-          <Text className="text-center pb-2 text-lg text-[#F6F5F5]">Press the button to scan the QR code</Text>
           <TouchableOpacity onPress={() => setIsActive(true)} className="p-2 bg-[#9DBDFF] rounded-lg">
-            <Text className="text-[#1E1E1E]">Scan QR Code</Text>
+            <AntDesign name="qrcode" size={100} color="black" />
           </TouchableOpacity>
         </View>
       )}

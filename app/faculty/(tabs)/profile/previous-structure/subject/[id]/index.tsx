@@ -42,22 +42,6 @@ const SubjectDetailScreen = () => {
     fetchPreviousData();
   }, [id]);
 
-  // useFocusEffect(
-  //   React.useCallback(() => {
-  //     const fetchLiveAttendance = async () => {
-  //       try {
-  //         const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(id as string));
-  //         if (liveData) {
-  //           setLiveAttendance(JSON.parse(liveData));
-  //         }
-  //       } catch (error) {
-  //         console.log('Error fetching live attendance:', error);
-  //       }
-  //     };
-  //     fetchLiveAttendance();
-  //   }, [id])
-  // );
-
   const isValidApiResponse = (data: any): boolean => {
     if (!data || !data.subject || !Array.isArray(data.attendances)) {
       return false;

@@ -17,7 +17,6 @@ const ProfileInfoScreen = () => {
       if (storedProfile) {
         setProfileData(JSON.parse(storedProfile));
       }
-      console.log('Profile Data:', storedProfile);
       setLoading(false);
     };
     loadProfileData();

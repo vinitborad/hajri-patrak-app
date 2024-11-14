@@ -38,7 +38,6 @@ export const useGetSubjectsStructure = () => {
 };
 
 export const useGetDivisionStudentsList = (divisionId: string) => {
-  console.log('divisionId : ', divisionId);
   return useQuery({
     queryKey: ['faculty-division-students-list', divisionId],
     queryFn: async () => {

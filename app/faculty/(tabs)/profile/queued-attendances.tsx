@@ -45,7 +45,6 @@ const QueuedAttendancesScreen = () => {
               }
               // Your sync logic here
               const { success, message } = await processQueuedAttendances();
-              console.log('Process queued attendances response: ', success, message);
               if (success) {
                 Alert.alert('Synced', 'All queued attendances processed successfully.');
               } else {
@@ -64,7 +63,6 @@ const QueuedAttendancesScreen = () => {
 
   const onDeletePress = (uniqueId: string) => {
     try {
-      console.log('Deleting queued attendance with uniqueId: ', uniqueId);
       // ask for confirmation
       Alert.alert(
         'Confirm Deletion ?',
