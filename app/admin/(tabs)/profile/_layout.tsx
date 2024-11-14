@@ -2,7 +2,11 @@ import { Stack } from "expo-router";
 
 export default function FacultyProfileLayout() {
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        presentation: 'transparentModal',
+      }}
+    >
       <Stack.Screen
         name="index"
         options={{

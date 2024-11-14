@@ -30,6 +30,10 @@ export default function App() {
     }
   }, [isActive]);
 
+  const checkLocation = async () => {
+    
+  }
+
   const fetchTimeOffset = async () => {
     try {
       const localTime = new Date();
@@ -94,12 +98,10 @@ export default function App() {
   };
 
   if (!permission) {
-    // Camera permissions are still loading.
     return <View className="flex-1 justify-center items-center bg-[#1E1E1E]" />;
   }
 
   if (!permission.granted) {
-    // Camera permissions are not granted yet.
     return (
       <View className="flex-1 justify-center items-center bg-[#1E1E1E]">
         <Text className="text-center pb-2 text-lg text-[#F6F5F5]">We need your permission to show the camera</Text>

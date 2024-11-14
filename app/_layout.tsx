@@ -1,6 +1,6 @@
 import QueryProvider from '@/utils/QueryProvider';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -88,11 +88,25 @@ function RootLayoutNav() {
   }
 
   return (
-    <ThemeProvider value={DefaultTheme}>
+    <ThemeProvider value={DarkTheme}>
       <QueryProvider>
-        <Stack>
+        <Stack
+          screenOptions={{
+            // contentStyle: { backgroundColor: '#1E1E1Ez' },
+            presentation: 'transparentModal',
+            // cardStyleInterpolator: ({ current }) => ({
+            //   cardStyle: {
+            //     opacity: current.progress,
+            //     backgroundColor: '#1E1E1E',
+            //   },
+            // }),
+          }}
+        >
           <Stack.Screen name='index' options={{ headerShown: false }} />
-          <Stack.Screen name='auth' options={{ headerShown: false }} />
+          <Stack.Screen name='auth' options={{
+            headerShown: false,
+            presentation: "transparentModal",
+          }} />
           <Stack.Screen name='student' options={{ headerShown: false }} />
           <Stack.Screen name='faculty' options={{ headerShown: false }} />
           <Stack.Screen name='admin' options={{ headerShown: false }} />

@@ -81,6 +81,7 @@ const PreviousAllAttendancesScreen = () => {
         keyExtractor={(item) => item._id}
         renderItem={renderAttendanceItem}
         contentContainerStyle={{ paddingBottom: 200 }}
+        showsVerticalScrollIndicator={false}
       />
     </View>
   );

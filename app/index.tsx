@@ -9,11 +9,6 @@ const index = () => {
   const [role, setRole] = useState<'faculty' | 'student' | 'admin' | 'parent'>();
   const [loading, setLoading] = useState(true);
 
-  // remove all items from secure store and async store
-  // SecureStore.deleteItemAsync('token');
-  // SecureStore.deleteItemAsync('role');
-  // AsyncStorage.clear();
-
   useEffect(() => {
     const fetchToken = async () => {
       const storedToken = await SecureStore.getItemAsync('token');

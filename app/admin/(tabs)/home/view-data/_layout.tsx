@@ -2,20 +2,24 @@ import { Stack } from "expo-router";
 
 export default function Layout() {
   return (
-    <Stack>
-      <Stack.Screen 
+    <Stack
+      screenOptions={{
+        presentation: 'transparentModal',
+      }}
+    >
+      <Stack.Screen
         name="index"
         options={{
           headerShown: false,
         }}
       />
-      <Stack.Screen 
+      <Stack.Screen
         name="subject/[subjectId]"
         options={{
           headerShown: false,
         }}
       />
-      <Stack.Screen 
+      <Stack.Screen
         name="inter-division/[interDivisionId]"
         options={{
           headerShown: false,

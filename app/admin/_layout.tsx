@@ -8,7 +8,11 @@ export default function AdminLayout() {
   const router = useRouter();
 
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        presentation: 'transparentModal',
+      }}
+    >
 
       <Stack.Screen
         name="(tabs)"
@@ -30,7 +34,7 @@ export default function AdminLayout() {
             fontSize: 20, // Font size consistent with other screens
           },
           headerTintColor: '#9DBDFF', // Back button color
-          headerBackTitleVisible: false, // Hide back button text
+          // headerBackTitleVisible: false, // Hide back button text
           headerLeft: () => (
             <TouchableOpacity
               style={{ paddingLeft: 8, paddingRight: 16 }}

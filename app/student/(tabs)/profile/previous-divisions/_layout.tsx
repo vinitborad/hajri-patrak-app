@@ -2,17 +2,21 @@ import { Stack } from "expo-router";
 
 export default function StudentProfileLayout() {
   return (
-    <Stack>
-      <Stack.Screen 
+    <Stack
+      screenOptions={{
+        presentation: 'transparentModal',
+      }}
+    >
+      <Stack.Screen
         name="index"
         options={{
-          headerShown: false, 
+          headerShown: false,
         }}
       />
-      <Stack.Screen 
+      <Stack.Screen
         name="[id]/subjects/index"
         options={{
-          headerShown: false, 
+          headerShown: false,
         }}
       />
     </Stack>

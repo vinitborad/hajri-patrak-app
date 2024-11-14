@@ -113,6 +113,7 @@ const AttendanceStudentsListScreen = () => {
         renderItem={renderStudentItem}
         contentContainerStyle={{ paddingBottom: 200, paddingTop: 0 }}
         className='w-full'
+        showsVerticalScrollIndicator={false}
       />
 
       {/* Student Info Modal */}

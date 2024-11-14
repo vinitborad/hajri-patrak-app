@@ -104,7 +104,7 @@ const SubjectItem = ({ subject, router }) => {
     <TouchableOpacity
       onPress={() => router.push(`/common/student/subject-info/${subject._id}`)}
       className="flex flex-row justify-between items-center bg-[#3b3e44] p-4 pl-6 mb-2 rounded-xl w-full border border-[#FFD7C4]"
-      activeOpacity={0.7}
+      activeOpacity={0.5}
     >
       <Text className="text-xl font-NunitoBold text-white w-full">
         {subject.subjectName.toUpperCase()} ({subject.subjectCode})

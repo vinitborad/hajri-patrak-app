@@ -169,7 +169,7 @@ const AdminSignInScreen = () => {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
-          <View className="bg-[#1E1E1E] flex items-center justify-start h-full w-full pt-24">
+          <View className="bg-[#1E1E1E] flex items-center justify-start h-full w-full pt-16">
             <View className='flex items-center justify-center w-full gap-y-14'>
               <View className='flex-col items-center justify-center w-full'>
                 <Image
