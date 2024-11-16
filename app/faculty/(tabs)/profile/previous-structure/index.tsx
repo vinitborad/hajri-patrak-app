@@ -20,7 +20,6 @@ const PreviousCollegesScreen = () => {
     const fetchOfflineData = async () => {
       try {
         const cachedData = await AsyncStorage.getItem(PREVIOUS_DIVISIONS_STRUCTURE);
-        console.log('cachedData:', cachedData);
         if (cachedData) {
           setOfflineData(JSON.parse(cachedData)); // Set offline data
         }

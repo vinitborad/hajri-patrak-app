@@ -5,7 +5,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { useGetSubjectsStructure } from '@/api/admin/data/structure';
 import { ADMIN_DATA_STRUCTURE, PINNED_DIVISIONS_ADMIN } from '@/constants/async-store-keys';
-import { useQueryClient } from '@tanstack/react-query';
 import { adminEndpoints } from '@/constants/api-endpoints';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
@@ -22,12 +21,11 @@ type Params = {
 const DivisionScreen = () => {
   const { college, department, branch, graduationLevel, passoutYear, semester } = useLocalSearchParams<Params>();
   const router = useRouter();
-  const queryClient = useQueryClient(); // Initialize QueryClient
 
   const [offlineData, setOfflineData] = useState<any>(null);
   const [isOfflineLoading, setIsOfflineLoading] = useState(true);
   const [pinnedDivisions, setPinnedDivisions] = useState<string[]>([]);
-  const [activeStatuses, setActiveStatuses] = useState<{ [key: string]: boolean }>({});
+  const [activeStatuses, setActiveStatuses] = useState<{ [key: string]: boolean | null }>({});
   const [loadingStatuses, setLoadingStatuses] = useState<{ [key: string]: boolean }>({}); // Track loading state for each division
 
   const { data: apiResponse, isLoading, error } = useGetSubjectsStructure();
@@ -40,7 +38,9 @@ const DivisionScreen = () => {
           setOfflineData(JSON.parse(cachedData));
         }
 
-        const cachedPinnedDivisions = await AsyncStorage.getItem(PINNED_DIVISIONS_ADMIN(college, department, branch, graduationLevel, passoutYear, semester));
+        const cachedPinnedDivisions = await AsyncStorage.getItem(
+          PINNED_DIVISIONS_ADMIN(college, department, branch, graduationLevel, passoutYear, semester)
+        );
         if (cachedPinnedDivisions) {
           setPinnedDivisions(JSON.parse(cachedPinnedDivisions));
         }
@@ -60,9 +60,66 @@ const DivisionScreen = () => {
     }
   }, [apiResponse]);
 
+  const sortedDivisions = useMemo(() => {
+    if (
+      !offlineData ||
+      !offlineData[college] ||
+      !offlineData[college][department] ||
+      !offlineData[college][department][branch] ||
+      !offlineData[college][department][branch][graduationLevel] ||
+      !offlineData[college][department][branch][graduationLevel][passoutYear] ||
+      !offlineData[college][department][branch][graduationLevel][passoutYear][semester]
+    ) {
+      return [];
+    }
+
+    const divisions = Object.keys(
+      offlineData[college][department][branch][graduationLevel][passoutYear][semester]
+    );
+    const pinned = divisions.filter((div) => pinnedDivisions.includes(div));
+    const unpinned = divisions.filter((div) => !pinnedDivisions.includes(div));
+    return [...pinned, ...unpinned];
+  }, [offlineData, college, department, branch, graduationLevel, passoutYear, semester, pinnedDivisions]);
+
+  const fetchAllDivisionStatuses = async () => {
+    try {
+      const token = await SecureStore.getItemAsync('token');
+      const response = await axios.get(adminEndpoints.GET_DIVISION_ACTIVE_STATUS, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          college,
+          department,
+          branch,
+          graduationLevel,
+          passoutYear,
+          semester,
+        },
+      });
+
+      if (response.data?.success) {
+        const statuses = response.data.data.reduce((acc: any, div: any) => {
+          acc[div.division.toLowerCase()] = div.isActive;
+          return acc;
+        }, {});
+        setActiveStatuses(statuses);
+      }
+    } catch (error) {
+      console.error('Error fetching all division statuses:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllDivisionStatuses();
+  }, [sortedDivisions]);
+
   const savePinnedDivisions = async (newPinnedDivisions: string[]) => {
     try {
-      await AsyncStorage.setItem(PINNED_DIVISIONS_ADMIN(college, department, branch, graduationLevel, passoutYear, semester), JSON.stringify(newPinnedDivisions));
+      await AsyncStorage.setItem(
+        PINNED_DIVISIONS_ADMIN(college, department, branch, graduationLevel, passoutYear, semester),
+        JSON.stringify(newPinnedDivisions)
+      );
     } catch (error) {
       console.log('Error saving pinned divisions:', error);
     }
@@ -79,60 +136,6 @@ const DivisionScreen = () => {
     });
   };
 
-  const sortedDivisions = useMemo(() => {
-    if (
-      !offlineData ||
-      !offlineData[college] ||
-      !offlineData[college][department] ||
-      !offlineData[college][department][branch] ||
-      !offlineData[college][department][branch][graduationLevel] ||
-      !offlineData[college][department][branch][graduationLevel][passoutYear] ||
-      !offlineData[college][department][branch][graduationLevel][passoutYear][semester]
-    ) {
-      return [];
-    }
-
-    const divisions = Object.keys(offlineData[college][department][branch][graduationLevel][passoutYear][semester]);
-    const pinned = divisions.filter((div) => pinnedDivisions.includes(div));
-    const unpinned = divisions.filter((div) => !pinnedDivisions.includes(div));
-    return [...pinned, ...unpinned];
-  }, [offlineData, college, department, branch, graduationLevel, passoutYear, semester, pinnedDivisions]);
-
-  const fetchDivisionStatus = async (division: string) => {
-    try {
-      const token = await SecureStore.getItemAsync('token');
-      const response = await axios.get(adminEndpoints.GET_DIVISION_ACTIVE_STATUS, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: {
-          college,
-          department,
-          branch,
-          graduationLevel,
-          passoutYear,
-          semester,
-          division
-        }
-      });
-
-      if (response.data?.success) {
-        setActiveStatuses((prev) => ({ ...prev, [division]: response.data.data.isActive }));
-      } else {
-        setActiveStatuses((prev) => ({ ...prev, [division]: false }));
-      }
-    } catch (error) {
-      // @ts-ignore
-      setActiveStatuses((prev) => ({ ...prev, [division]: null })); // Indicate error state
-    }
-  };
-
-  // Fetch active status for each division when component mounts
-  useEffect(() => {
-    sortedDivisions.forEach(fetchDivisionStatus);
-  }, [sortedDivisions]);
-
-  // Handle toggle activation/deactivation
   const handleToggleActivation = async (division: string, isActive: boolean) => {
     const confirmationMessage = isActive
       ? 'Are you sure you want to deactivate this division?'
@@ -157,15 +160,15 @@ const DivisionScreen = () => {
               graduationLevel,
               passoutYear,
               semester,
-              division
+              division,
             }, {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
             });
 
-            // Refresh the status by refetching
-            fetchDivisionStatus(division);
+            // Update specific division status locally
+            setActiveStatuses((prev) => ({ ...prev, [division]: !isActive }));
           } catch (error) {
             Alert.alert('Error', 'Failed to update division status.');
           } finally {
@@ -183,16 +186,18 @@ const DivisionScreen = () => {
     return (
       <TouchableOpacity
         className="flex-row justify-between items-center bg-[#3b3e44] p-4 pr-5 rounded-lg shadow-md m-2 border border-[#9DBDFF]"
-        onPress={() => router.push(`/admin/(tabs)/home/view-data/college/${college}/department/${department}/branch/${branch}/graduationLevel/${graduationLevel}/passoutYear/${passoutYear}/semester/${semester}/division/${item}`)}
+        onPress={() =>
+          router.push(
+            `/admin/(tabs)/home/view-data/college/${college}/department/${department}/branch/${branch}/graduationLevel/${graduationLevel}/passoutYear/${passoutYear}/semester/${semester}/division/${item}`
+          )
+        }
       >
         <View>
           <Text className="text-lg font-NunitoBold text-[#9DBDFF] capitalize">{`Division ${item}`}</Text>
         </View>
-        <View className='flex-row gap-x-1 items-center'>
-          {isActive === null ? (
-            <TouchableOpacity onPress={() => Alert.alert('No internet connection')}>
-              <MaterialIcons name="cloud-off" size={24} color="gray" />
-            </TouchableOpacity>
+        <View className="flex-row gap-x-1 items-center">
+          {(isActive === null || isActive === undefined) ? (
+            <MaterialIcons name="cloud-off" size={24} color="gray" />
           ) : isLoading ? (
             <ActivityIndicator size="small" color="#9DBDFF" />
           ) : (
