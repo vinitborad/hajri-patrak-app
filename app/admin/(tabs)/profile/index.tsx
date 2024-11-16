@@ -10,11 +10,15 @@ import defaultImage from '@/assets/images/default-profile.png';
 import { ADMIN_PROFILE } from '@/constants/async-store-keys';
 import { useGetAdminProfile } from '@/api/admin/owns/profile';
 import { adminEndpoints } from '@/constants/api-endpoints'; // Ensure you have the correct endpoint for admin photo update
+import { useQueryClient } from '@tanstack/react-query';
 
 const AdminProfileScreen = () => {
   const router = useRouter();
+  const queryClient = useQueryClient(); // Get the QueryClient instance
+
   const [localProfile, setLocalProfile] = useState<any>(null);
   const [isUploading, setIsUploading] = useState(false); // State for showing loader on image upload
+  const [isLoggingOut, setIsLoggingOut] = useState(false); // State for showing loader on logout button
   const { data: adminProfile, isLoading, refetch } = useGetAdminProfile(); // Add refetch to refresh profile
 
   // Fetch the local profile data on component mount
@@ -36,11 +40,33 @@ const AdminProfileScreen = () => {
   const profile = adminProfile || localProfile;
 
   const onSignOut = async () => {
-    await SecureStore.deleteItemAsync('token');
-    await SecureStore.deleteItemAsync('role');
-    // clear whole async store
-    await AsyncStorage.clear();
-    router.replace('/');
+    Alert.alert(
+      'Confirm Logout',
+      'Are you sure you want to log out ?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Yes',
+          onPress: async () => {
+            setIsLoggingOut(true);
+            try {
+              await SecureStore.deleteItemAsync('token');
+              await SecureStore.deleteItemAsync('role');
+              // Clear async storage
+              await AsyncStorage.clear();
+              // Invalidate all queries in React Query
+              queryClient.clear();
+              router.replace('/');
+            } catch (error) {
+              console.error('Error during logout:', error);
+            } finally {
+              setIsLoggingOut(false);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   const pickImage = async () => {
@@ -169,8 +195,14 @@ const AdminProfileScreen = () => {
           className="flex-row justify-center items-center py-2 bg-[#FF6B6B] rounded-3xl w-1/2"
           onPress={onSignOut}
         >
-          <MaterialIcons name="logout" size={24} color="white" />
-          <Text className="text-white text-center text-lg font-NunitoExtraBold ml-4">LOG OUT</Text>
+          {isLoggingOut ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <>
+              <MaterialIcons name="logout" size={24} color="white" />
+              <Text className="text-white text-center text-lg font-NunitoExtraBold ml-4">LOG OUT</Text>
+            </>
+          )}
         </TouchableOpacity>
       </View>
 

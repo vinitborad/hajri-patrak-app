@@ -10,17 +10,28 @@ import { useGetStudentProfile } from '@/api/student/data/profile';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import { studentEndpoints } from '@/constants/api-endpoints'; // Import your endpoints
+import { useQueryClient } from '@tanstack/react-query';
 
 const Profile = () => {
   const router = useRouter();
+  const queryClient = useQueryClient(); // Get the QueryClient instance
+
+  const [role, setRole] = useState<string | null>(null); // State for user role
   const [localProfile, setLocalProfile] = useState<any>(null);
   const [isUploading, setIsUploading] = useState(false); // State for showing loader on image upload
+  const [isLoggingOut, setIsLoggingOut] = useState(false); // State for showing loader on logout button
   const { data: studentProfile, isLoading, refetch } = useGetStudentProfile(); // Add refetch to refresh profile
 
   // Fetch the local profile data on component mount
   useEffect(() => {
     const fetchLocalProfile = async () => {
       try {
+        // Fetch role from SecureStore
+        const storedRole = await SecureStore.getItemAsync('role');
+        if (storedRole) {
+          setRole(storedRole); // Set role state
+        }
+
         const storedProfile = await AsyncStorage.getItem(STUDENT_PROFILE);
         if (storedProfile) {
           setLocalProfile(JSON.parse(storedProfile));
@@ -36,11 +47,33 @@ const Profile = () => {
   const profile = studentProfile || localProfile;
 
   const onSignOut = async () => {
-    await SecureStore.deleteItemAsync('token');
-    await SecureStore.deleteItemAsync('role');
-    // clear whole async store
-    await AsyncStorage.clear();
-    router.replace('/');
+    Alert.alert(
+      'Confirm Logout',
+      'Are you sure you want to log out ?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Yes',
+          onPress: async () => {
+            setIsLoggingOut(true);
+            try {
+              await SecureStore.deleteItemAsync('token');
+              await SecureStore.deleteItemAsync('role');
+              // Clear async storage
+              await AsyncStorage.clear();
+              // Invalidate all queries in React Query
+              queryClient.clear();
+              router.replace('/');
+            } catch (error) {
+              console.error('Error during logout:', error);
+            } finally {
+              setIsLoggingOut(false);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   const pickImage = async () => {
@@ -130,13 +163,15 @@ const Profile = () => {
             />
           )}
           {/* Pencil Icon for editing photo */}
-          <TouchableOpacity
-            className="absolute top-0 right-0 bg-[#9DBDFF] p-2 rounded-full"
-            onPress={pickImage}
-            disabled={isUploading}
-          >
-            <Ionicons name="pencil" size={16} color="#1E1E1E" />
-          </TouchableOpacity>
+          {(role === 'student' || role === 'admin-student') && (
+            <TouchableOpacity
+              className="absolute top-0 right-0 bg-[#9DBDFF] p-2 rounded-full"
+              onPress={pickImage}
+              disabled={isUploading}
+            >
+              <Ionicons name="pencil" size={16} color="#1E1E1E" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -179,8 +214,14 @@ const Profile = () => {
           className="flex-row justify-center items-center py-2 bg-[#FF6B6B] rounded-3xl w-1/2"
           onPress={onSignOut}
         >
-          <MaterialIcons name="logout" size={24} color="white" />
-          <Text className="text-white text-center text-lg font-NunitoExtraBold ml-4">LOG OUT</Text>
+          {isLoggingOut ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <>
+              <MaterialIcons name="logout" size={24} color="white" />
+              <Text className="text-white text-center text-lg font-NunitoExtraBold ml-4">LOG OUT</Text>
+            </>
+          )}
         </TouchableOpacity>
       </View>
 

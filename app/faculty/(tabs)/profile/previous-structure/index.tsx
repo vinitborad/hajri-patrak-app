@@ -20,6 +20,7 @@ const PreviousCollegesScreen = () => {
     const fetchOfflineData = async () => {
       try {
         const cachedData = await AsyncStorage.getItem(PREVIOUS_DIVISIONS_STRUCTURE);
+        console.log('cachedData:', cachedData);
         if (cachedData) {
           setOfflineData(JSON.parse(cachedData)); // Set offline data
         }
@@ -44,6 +45,7 @@ const PreviousCollegesScreen = () => {
       setOfflineData(apiResponse); // Update UI with new data
       AsyncStorage.setItem(PREVIOUS_DIVISIONS_STRUCTURE, JSON.stringify(apiResponse)); // Save updated data to AsyncStorage
     }
+    console.log('apiResponse:', apiResponse);
   }, [apiResponse]);
 
   // Persist pinned colleges in AsyncStorage whenever updated

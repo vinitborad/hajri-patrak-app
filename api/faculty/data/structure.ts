@@ -74,11 +74,13 @@ export const useGetPreviousSubjectsStructure = () => {
     queryFn: async () => {
       const token = await SecureStore.getItemAsync('token');
 
+      console.log('Fetching previous divisions structure');
       const response = await axios.get(facultyEndpoints.GET_PREVIOUS_DIVISIONS_STRUCTURE, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+      console.log('Previous divisions structure response:', response.data);
 
       // store the data in AsyncStorage 
       if (response.data.success && response.data.data) {
