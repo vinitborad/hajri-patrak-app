@@ -1,6 +1,6 @@
 import QueryProvider from '@/utils/QueryProvider';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, ThemeProvider } from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -88,7 +88,7 @@ function RootLayoutNav() {
   }
 
   return (
-    <ThemeProvider value={DarkTheme}>
+    <ThemeProvider value={DefaultTheme}>
       <QueryProvider>
         <Stack
           screenOptions={{
