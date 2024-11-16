@@ -101,8 +101,10 @@ const SubjectDetailScreen = () => {
   const dataToShow = data || offlineData;
   const subjectDetails = dataToShow?.subject || {};
   const attendances = dataToShow?.attendances || [];
-  //@ts-ignore
-  const closedAttendances = attendances.filter((attendance) => attendance.type !== 'live');
+  // Sort closed attendances by createdAt in descending order (newest first)
+  const closedAttendances = attendances
+    .filter((attendance: any) => attendance.type !== 'live')
+    .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const createAttendance = async () => {
     try {

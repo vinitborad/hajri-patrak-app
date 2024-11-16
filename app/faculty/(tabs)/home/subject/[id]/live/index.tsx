@@ -18,6 +18,7 @@ const LiveAttendanceScreen = () => {
 
   const setShouldRefresh = useAttendanceStore((state) => state.setShouldRefresh);
 
+  const [isClosing, setIsClosing] = useState(false); // Track if closing is in progress
   const [liveAttendance, setLiveAttendance] = useState<any>(null); // Live attendance data from AsyncStorage
   const [students, setStudents] = useState<any[]>([]); // List of students from all divisions
   const [qrStudents, setQrStudents] = useState<any[]>([]);
@@ -135,6 +136,7 @@ const LiveAttendanceScreen = () => {
           {
             text: 'Yes',
             onPress: async () => {
+              setIsClosing(true); // Start loader and disable buttons
               try {
                 const { success, message: comingMessage } = await closeAttendance(id as string, message);
                 if (success) {
@@ -146,6 +148,8 @@ const LiveAttendanceScreen = () => {
                 }
               } catch (error) {
                 Alert.alert('Error', 'Failed to close attendance');
+              } finally {
+                setIsClosing(false); // Stop loader and enable buttons
               }
             },
           },
@@ -212,6 +216,7 @@ const LiveAttendanceScreen = () => {
         <TouchableOpacity
           className="flex-1 bg-[#9DBDFF] p-4 rounded-lg mr-2 flex-row justify-center items-center"
           onPress={() => handleQRClick()}
+          disabled={isClosing}
         >
           {/* Alert.alert('QR Code', 'Coming soon! 🔥')  */}
           <FontAwesome name="qrcode" size={24} color="#1E1E1E" />
@@ -220,6 +225,7 @@ const LiveAttendanceScreen = () => {
         <TouchableOpacity
           className="flex-1 bg-[#9DBDFF] p-4 rounded-lg ml-2 flex-row justify-center items-center"
           onPress={() => router.push(`/faculty/(tabs)/home/subject/${id}/live/manual`)}
+          disabled={isClosing}
         >
           <FontAwesome name="pencil" size={24} color="#1E1E1E" />
           <Text className="text-center text-[#1E1E1E] text-lg ml-2">Manual</Text>
@@ -278,13 +284,21 @@ const LiveAttendanceScreen = () => {
             <TouchableOpacity
               className="bg-[#b92f2f] p-1 flex-1 flex-row justify-center items-center rounded-l-full"
               onPress={handleCloseAttendance}
+              disabled={isClosing} // Disable Close button while closing
             >
-              <FontAwesome name="times-circle" size={20} color="white" />
-              <Text className="text-center text-white text-lg ml-2 -mt-1">Close</Text>
+              {isClosing ? (
+                <ActivityIndicator size="small" color="white" /> // Show loader on Close button
+              ) : (
+                <>
+                  <FontAwesome name="times-circle" size={20} color="white" />
+                  <Text className="text-center text-white text-lg ml-2 -mt-1">Close</Text>
+                </>
+              )}
             </TouchableOpacity>
             <TouchableOpacity
               className="bg-[#3b3e44] p-1 flex-1 flex-row justify-center items-center rounded-r-full"
               onPress={handleRefresh}
+              disabled={isClosing} // Disable Refresh button while closing
             >
               <Text className="text-center text-[#9DBDFF] text-lg mr-2 -mt-1">Refresh</Text>
               <FontAwesome name="refresh" size={20} color="#9DBDFF" />

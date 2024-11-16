@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Alert, Modal, Image } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Alert, Modal, Image, Animated, TextInput } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { adminEndpoints } from '@/constants/api-endpoints';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { useGetStudentsStrcutreStudentList } from '@/api/admin/data/students-structure';
 
 const StudentsList = () => {
@@ -13,6 +13,11 @@ const StudentsList = () => {
   // States
   const [selectedStudent, setSelectedStudent] = useState<any>(null); // For viewing student details
   const [isDeleting, setIsDeleting] = useState<string | null>(null); // Track delete state per student
+  const [searchText, setSearchText] = useState(''); // State for search input
+  const [isSearchActive, setIsSearchActive] = useState(false); // State for search bar visibility
+
+  const searchWidth = new Animated.Value(40); // Initial width for search button
+  const [animatedWidth, setAnimatedWidth] = useState(searchWidth); // Control the width
 
   // Fetch students list
   const { data, isLoading, error, refetch } = useGetStudentsStrcutreStudentList({
@@ -22,6 +27,42 @@ const StudentsList = () => {
     graduationLevel,
     passoutYear,
   });
+
+  // Sort students by username as numbers
+  const sortedStudents = data?.students.sort((a: any, b: any) => Number(a.username) - Number(b.username));
+
+  // Filter students based on searchText
+  const filteredStudents = sortedStudents?.filter((student: any) => {
+    const fullName = `${student.firstName.toLowerCase()} ${student.lastName.toLowerCase()}`;
+    return (
+      student.username.toLowerCase().includes(searchText.toLowerCase()) ||
+      fullName.includes(searchText.toLowerCase())
+    );
+  });
+
+
+  // Animate Search bar expansion and collapse
+  const toggleSearch = () => {
+    if (isSearchActive) {
+      // Close search
+      Animated.timing(animatedWidth, {
+        toValue: 40, // Back to icon size
+        duration: 300,
+        useNativeDriver: false,
+      }).start(() => {
+        setIsSearchActive(false); // Turn off search mode
+        setSearchText(''); // Reset search text
+      });
+    } else {
+      // Open search
+      setIsSearchActive(true); // Activate search mode
+      Animated.timing(animatedWidth, {
+        toValue: 250, // Full width of search bar
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+    }
+  };
 
   // Function to delete student
   const deleteStudent = async (studentId: string) => {
@@ -85,10 +126,36 @@ const StudentsList = () => {
     <View className="flex-1 bg-[#1E1E1E]">
       <ScrollView contentContainerStyle={{ paddingBottom: 200, paddingHorizontal: 13 }}>
         {/* Heading */}
-        <Text className="text-[#F6F5F5] text-2xl font-NunitoBold mb-3 mt-5 ml-1">Student List</Text>
+        {/* Sorting Buttons and Search Bar */}
+        <View className="p-4 flex-row justify-between items-center">
+          {!isSearchActive ? (
+            <View className="flex-row gap-3">
+              <Text className="text-[#F6F5F5] text-2xl font-NunitoBold">Student List</Text>
+            </View>
+          ) : (
+            <Animated.View style={{ width: animatedWidth }}>
+              <TextInput
+                className="bg-[#3b3e44] p-2 rounded-lg text-white"
+                placeholder="Search ..."
+                placeholderTextColor="#9DBDFF"
+                value={searchText}
+                onChangeText={setSearchText}
+              />
+            </Animated.View>
+          )}
+
+          {/* Search Button or Close Button */}
+          <TouchableOpacity className="bg-[#3b3e44] p-2 rounded-full" onPress={toggleSearch}>
+            {isSearchActive ? (
+              <Ionicons name="close" size={24} color="#9DBDFF" />
+            ) : (
+              <Ionicons name="search" size={24} color="#9DBDFF" />
+            )}
+          </TouchableOpacity>
+        </View>
 
         {/* Student List */}
-        {data?.students.map((student: any) => (
+        {filteredStudents.map((student: any) => (
           <View key={student.username} className="bg-[#3b3e44] mb-4 rounded-xl border border-[#9DBDFF]">
             <View className="flex-row justify-between items-center px-3 py-1 rounded-t-xl bg-[#5b5f68]">
               <Text className="text-[#9DBDFF] text-lg font-NunitoRegular">{student.username}</Text>

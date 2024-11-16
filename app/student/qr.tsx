@@ -15,10 +15,6 @@ const INSTITUTE_LOCATION = {
 const RADIUS_LIMIT = parseInt(process.env.EXPO_PUBLIC_INSTITUTE_RANGE_LIMIT || '0');
 
 const checkProximityToInstitute = (userLocation: Location.LocationObject) => {
-  // print env variables
-  console.log('INSTITUTE_LOCATION:', INSTITUTE_LOCATION);
-  console.log('RADIUS_LIMIT:', RADIUS_LIMIT);
-
   const { latitude, longitude } = userLocation.coords;
   const toRad = (value: number) => (value * Math.PI) / 180;
   const R = 6371e3; // Earth's radius in meters
@@ -32,7 +28,6 @@ const checkProximityToInstitute = (userLocation: Location.LocationObject) => {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
   const distance = R * c;
-  console.log('Distance:', distance);
   return distance <= RADIUS_LIMIT;
 };
 
@@ -59,15 +54,11 @@ export default function App() {
         const status = await Location.getProviderStatusAsync();
         if (status.locationServicesEnabled) {
           setLocationEnabledFlag(true);
-          // console.log('Location services are enabled');
           const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Highest });
-          // console.log('Location:', location);
           if (location.coords.accuracy && location.coords.accuracy > 100) {
-            // console.log('Location accuracy is not enough');
             setLocationAccuracyFlag(false);
             return null;
           } else {
-            // console.log('Location accuracy is enough');
             setLocationAccuracyFlag(true);
             return location;
           }

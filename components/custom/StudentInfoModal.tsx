@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import { commonEndpoints } from '@/constants/api-endpoints';
 import * as SecureStore from 'expo-secure-store';
@@ -13,6 +13,7 @@ interface StudentInfoModalProps {
 const StudentInfoModal: React.FC<StudentInfoModalProps> = ({ username, onClose }) => {
   const [studentData, setStudentData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false); // To track error state
   const [isPhotoModalVisible, setIsPhotoModalVisible] = useState(false); // State to control photo modal visibility
 
   useEffect(() => {
@@ -23,6 +24,7 @@ const StudentInfoModal: React.FC<StudentInfoModalProps> = ({ username, onClose }
 
   const fetchStudentData = async () => {
     setLoading(true);
+    setError(false); // Reset error state before fetching
     try {
       const token = await SecureStore.getItemAsync('token');
       const response = await axios.get(commonEndpoints.GET_STUDENT_PROFILE, {
@@ -33,9 +35,11 @@ const StudentInfoModal: React.FC<StudentInfoModalProps> = ({ username, onClose }
       });
       if (response.data.success) {
         setStudentData(response.data.data);
+      } else {
+        setError(true);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to load student data.');
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -53,6 +57,11 @@ const StudentInfoModal: React.FC<StudentInfoModalProps> = ({ username, onClose }
 
           {loading ? (
             <ActivityIndicator size="large" color="#9DBDFF" />
+          ) : error ? (
+            <View className="flex items-center justify-center mt-4">
+              <MaterialIcons name="error-outline" size={80} color="red" />
+              <Text className="text-red-500 text-lg mt-4">Failed to load student data.</Text>
+            </View>
           ) : studentData ? (
             <View className="flex-col items-center">
               {/* Profile Photo */}
@@ -66,8 +75,10 @@ const StudentInfoModal: React.FC<StudentInfoModalProps> = ({ username, onClose }
 
               {/* Fullscreen Photo Modal */}
               <Modal visible={isPhotoModalVisible} transparent animationType="fade">
-                <TouchableOpacity style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.9)', justifyContent: 'center', alignItems: 'center' }}
-                  onPress={() => setIsPhotoModalVisible(false)}>
+                <TouchableOpacity
+                  style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.9)', justifyContent: 'center', alignItems: 'center' }}
+                  onPress={() => setIsPhotoModalVisible(false)}
+                >
                   <Image
                     source={{ uri: studentData.personalInfo.photoUrl }}
                     style={{ width: '90%', height: '80%', resizeMode: 'contain' }}
@@ -111,9 +122,7 @@ const StudentInfoModal: React.FC<StudentInfoModalProps> = ({ username, onClose }
                 </Text>
               </View>
             </View>
-          ) : (
-            <Text className="text-red-500">Failed to load student data.</Text>
-          )}
+          ) : null}
         </View>
       </View>
     </Modal>

@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, TextInput, Animated, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, TextInput, Animated, ActivityIndicator, Linking, Alert } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { FontAwesome, FontAwesome5, Ionicons, MaterialIcons, AntDesign } from '@expo/vector-icons';
+import { FontAwesome, FontAwesome5, Ionicons, MaterialIcons, AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useCommonGetSubjectAnalyse } from '@/api/common';
 import { calculateAttendanceLevel } from '@/utils/attendances/helper-functions';
 import StudentInfoModal from '@/components/custom/StudentInfoModal';
+import axios from 'axios';
+import * as SecureStore from 'expo-secure-store';
+import { commonEndpoints } from '@/constants/api-endpoints';
 
 const SubjectDetailScreen = () => {
   const router = useRouter();
@@ -29,6 +32,7 @@ const SubjectDetailScreen = () => {
   const searchWidth = new Animated.Value(40); // Initial width for search button
   const [animatedWidth, setAnimatedWidth] = useState(searchWidth); // Control width animation for search
   const [selectedStudentUsername, setSelectedStudentUsername] = useState<string | null>(null); // For StudentInfoModal
+  const [isSheetLoading, setIsSheetLoading] = useState(false); // Google Sheet loading state
 
   const calculatePercentage = (attendedLecs: number, totalLecs: number) => {
     if (totalLecs === 0) return 0;
@@ -80,6 +84,31 @@ const SubjectDetailScreen = () => {
         duration: 300,
         useNativeDriver: false,
       }).start();
+    }
+  };
+
+  // Open Google Sheet
+  const openSheet = async () => {
+    setIsSheetLoading(true); // Start loading
+    try {
+      const token = await SecureStore.getItemAsync('token'); // Get the JWT token
+      const response = await axios.get(commonEndpoints.GET_ANALYSE_ATTENDANCE_SHEET_LINK, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: { subjectId: subjectId },
+      });
+
+      const { data } = response;
+      if (data.success && data.data) {
+        Linking.openURL(data.data); // Open the Google Sheets link
+      } else {
+        Alert.alert('Error', 'Failed to retrieve the sheet link.');
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.response?.data?.message || 'Something went wrong !');
+    } finally {
+      setIsSheetLoading(false); // Stop loading
     }
   };
 
@@ -157,6 +186,14 @@ const SubjectDetailScreen = () => {
                   </TouchableOpacity>
                   <TouchableOpacity className={`bg-[#3b3e44] p-2 rounded-lg ${filter === 'desc' ? 'border border-[#9DBDFF]' : ''}`} onPress={() => toggleSorting('desc')}>
                     <Text className="text-white">DESC</Text>
+                  </TouchableOpacity>
+                  {/* Google Sheet Button */}
+                  <TouchableOpacity className="bg-[#3b3e44] p-2 rounded-lg" onPress={openSheet}>
+                    {isSheetLoading ? (
+                      <ActivityIndicator size="small" color="#9DBDFF" />
+                    ) : (
+                      <MaterialCommunityIcons name="google-spreadsheet" size={24} color="black" />
+                    )}
                   </TouchableOpacity>
                 </View>
               ) : (
