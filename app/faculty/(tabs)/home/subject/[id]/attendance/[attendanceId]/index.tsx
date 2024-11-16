@@ -9,6 +9,7 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { facultyEndpoints } from '@/constants/api-endpoints';
 import StudentInfoModal from '@/components/custom/StudentInfoModal';
+import { useAttendanceStore } from '@/stores/attendanceStore';
 
 const ViewAttendanceScreen = () => {
   const { attendanceId } = useLocalSearchParams();
@@ -23,6 +24,8 @@ const ViewAttendanceScreen = () => {
   const searchInputRef = useRef<TextInput>(null); // Reference to control TextInput focus
 
   const { data, isLoading, error, refetch } = useGetAttendanceInfo(attendanceId as string);
+
+  const triggerRefetch = useAttendanceStore((state) => state.triggerRefetch);
 
   useEffect(() => {
     const fetchOfflineData = async () => {
@@ -119,6 +122,9 @@ const ViewAttendanceScreen = () => {
       );
 
       await refetch();
+
+      // Trigger refetch for the parent screen
+      triggerRefetch();
     } catch (error: any) {
       if (error.response.data.message) {
         Alert.alert('Error', error.response.data.message);

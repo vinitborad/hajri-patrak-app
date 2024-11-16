@@ -10,10 +10,13 @@ import axios from 'axios';
 import { facultyEndpoints } from '@/constants/api-endpoints';
 import * as SecureStore from 'expo-secure-store';
 import StudentInfoModal from '@/components/custom/StudentInfoModal';
+import { useAttendanceStore } from '@/stores/attendanceStore';
 
 const LiveAttendanceScreen = () => {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+
+  const setShouldRefresh = useAttendanceStore((state) => state.setShouldRefresh);
 
   const [liveAttendance, setLiveAttendance] = useState<any>(null); // Live attendance data from AsyncStorage
   const [students, setStudents] = useState<any[]>([]); // List of students from all divisions
@@ -136,6 +139,7 @@ const LiveAttendanceScreen = () => {
                 const { success, message: comingMessage } = await closeAttendance(id as string, message);
                 if (success) {
                   Alert.alert('Success', comingMessage);
+                  setShouldRefresh(true); // Notify parent to refresh
                   router.back();
                 } else {
                   Alert.alert('Error', comingMessage);

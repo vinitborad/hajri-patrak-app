@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Modal, ScrollView, ActivityIndicator, Alert } from 'react-native';
-import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useGetPreviousAttendances } from '@/api/faculty/attendances';
 import { AntDesign, FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -10,12 +10,16 @@ import { callCreateAttendance } from '@/utils/attendances/helper-functions';
 import axios from 'axios';
 import { facultyEndpoints } from '@/constants/api-endpoints';
 import * as SecureStore from 'expo-secure-store';
+import { useAttendanceStore } from '@/stores/attendanceStore';
 
 const SubjectDetailScreen = () => {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
   const { data, isLoading, error, refetch } = useGetPreviousAttendances(id as string);
+  const setRefetch = useAttendanceStore((state) => state.setRefetch);
+  const shouldRefresh = useAttendanceStore((state) => state.shouldRefresh);
+  const setShouldRefresh = useAttendanceStore((state) => state.setShouldRefresh);
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [value, setValue] = useState('');
@@ -24,6 +28,20 @@ const SubjectDetailScreen = () => {
   const [isOfflineLoading, setIsOfflineLoading] = useState(true);
   const [liveAttendance, setLiveAttendance] = useState<any>(null);
   const [loadingAttendanceId, setLoadingAttendanceId] = useState<string | null>(null); // For showing loader on delete
+
+  useEffect(() => {
+    // Set the refetch function in the store
+    setRefetch(refetch);
+  }, [refetch]);
+
+
+  useEffect(() => {
+    if (shouldRefresh) {
+      setLiveAttendance(null); // Reset the live attendance
+      refetch(); // Refetch the data
+      setShouldRefresh(false); // Reset the flag
+    }
+  }, [shouldRefresh, refetch, setShouldRefresh]);
 
   useEffect(() => {
     const fetchPreviousData = async () => {
@@ -53,6 +71,13 @@ const SubjectDetailScreen = () => {
     if (data && isValidApiResponse(data)) {
       AsyncStorage.setItem(PREV_ATTENDANCES(id as string), JSON.stringify(data));
     }
+    const fetchLiveAttendanceData = async () => {
+      const liveAttendanceData = await AsyncStorage.getItem(LIVE_ATTENDANCE(id as string));
+      if (liveAttendanceData) {
+        setLiveAttendance(JSON.parse(liveAttendanceData));
+      }
+    };
+    fetchLiveAttendanceData();
   }, [data, id]);
 
   if (isOfflineLoading || isLoading) {
