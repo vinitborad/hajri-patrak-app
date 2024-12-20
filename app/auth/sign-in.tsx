@@ -19,6 +19,7 @@ import { useRouter } from 'expo-router';
 import Icon from '@/assets/images/icon.png';
 import { EvilIcons, Ionicons } from '@expo/vector-icons';
 import { CustomCheckBox } from '@/components/custom/CheckBox';
+import DeviceInfo from 'react-native-device-info';
 
 const SignInScreen = () => {
   const [username, setUsername] = useState<string>('');
@@ -33,6 +34,13 @@ const SignInScreen = () => {
 
   // Monitor keyboard visibility
   useEffect(() => {
+    const fetchUniqueId = async () => {
+      const id = await DeviceInfo.getUniqueId();
+      console.log("Unique decive ID: ", id);
+    };
+
+    fetchUniqueId();
+
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
       setKeyboardVisible(true);
     });
