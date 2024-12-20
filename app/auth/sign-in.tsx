@@ -34,13 +34,6 @@ const SignInScreen = () => {
 
   // Monitor keyboard visibility
   useEffect(() => {
-    const fetchUniqueId = async () => {
-      const id = await DeviceInfo.getUniqueId();
-      console.log("Unique decive ID: ", id);
-    };
-
-    fetchUniqueId();
-
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
       setKeyboardVisible(true);
     });
@@ -62,10 +55,12 @@ const SignInScreen = () => {
         return;
       }
       try {
+        const uniqueDeviceId = await DeviceInfo.getUniqueId();
         const finalRole = isParentLogin ? 'parent' : role; // Determine if login is as a parent
         const response = await axios.post(`${process.env.EXPO_PUBLIC_API_ENDPOINT}/${finalRole}/auth/signin`, {
           username,
           password,
+          uniqueDeviceId,
         });
         if (response.data.success && response.data.token) {
           await SecureStore.setItemAsync('token', response.data.token);

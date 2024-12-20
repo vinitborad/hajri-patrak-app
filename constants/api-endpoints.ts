@@ -81,6 +81,7 @@ export const adminEndpoints = {
   GET_ATOM_STUDENT_DIVISIONS_LIST: `${BASE_URL}/admin/student/divisions-list`,
   REMOVE_STUDENT_FROM_DIVISION: `${BASE_URL}/admin/student/remove-division`,
   ADD_STUDENT_TO_DIVISION: `${BASE_URL}/admin/student/add-division`,
+  UNHOOK_STUDENT_DEVICE: `${BASE_URL}/admin/student/unhook-device`,
 
   // atom faculty endpoints
   GET_ATOM_FACULTY_PROFILE: `${BASE_URL}/admin/faculty/profile`,

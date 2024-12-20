@@ -187,6 +187,37 @@ const AtomStudentScreen = () => {
     ]);
   };
 
+  const unhookStudentDevice = async () => {
+    // ask for confirmation
+    Alert.alert('Confirm Unhook', 'Are you sure you want to unhook this student device ?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Yes',
+        onPress: async () => {
+          try {
+            const token = await SecureStore.getItemAsync('token');
+
+            await axios.patch(adminEndpoints.UNHOOK_STUDENT_DEVICE, {
+              studentUsername: studentInfo.username,
+            }, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+
+            Alert.alert('Success', 'Device unhooked successfully.');
+          } catch (error: any) {
+            if (error.response) {
+              Alert.alert('Error', error.response.data.message);
+            } else {
+              Alert.alert('Error', 'Failed to unhook student device.');
+            }
+          }
+        },
+      },
+    ]);
+  }
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: '#1E1E1E' }}
@@ -346,7 +377,10 @@ const AtomStudentScreen = () => {
                   )}
                 </TouchableOpacity>
 
-                <TouchableOpacity className="bg-[#3b3e44] py-2 px-4 rounded-lg mb-2 border border-[#9DBDFF]">
+                <TouchableOpacity
+                  className="bg-[#3b3e44] py-2 px-4 rounded-lg mb-2 border border-[#9DBDFF]"
+                  onPress={unhookStudentDevice}
+                >
                   <Text className="text-center text-[#9DBDFF]">UNHOOK DEVICE</Text>
                 </TouchableOpacity>
 
