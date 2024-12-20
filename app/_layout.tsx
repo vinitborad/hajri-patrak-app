@@ -10,6 +10,8 @@ import { logout } from '@/utils/auth/logout';
 import { checkTokenValidity } from '@/utils/auth/check-token-validity';
 import { setupAxiosInterceptors } from '@/utils/auth/axios-interceptor';
 import React from 'react';
+// Import your global CSS file
+import "../global.css";
 
 export {
   // Catch any errors thrown by the Layout component.
