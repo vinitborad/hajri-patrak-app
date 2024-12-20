@@ -1,6 +1,6 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useState, useEffect } from 'react';
-import { Alert, Text, TouchableOpacity, View, Animated, ActivityIndicator } from 'react-native';
+import { Alert, Text, TouchableOpacity, View, Animated, ActivityIndicator, StyleSheet } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import * as Location from 'expo-location';
 import { generalEndpoints, studentEndpoints } from '@/constants/api-endpoints';
@@ -89,6 +89,7 @@ export default function App() {
   }, [isActive]);
 
   const handleScan = async (data: any) => {
+    console.log(data.data);
     const fetchedTimeOffset = await fetchTimeOffset();
     const adjustedTimeUTC = new Date(new Date().getTime() + fetchedTimeOffset * 1000).toISOString();
 
@@ -171,10 +172,34 @@ export default function App() {
   }
 
   return (
-    <View className="flex-1 justify-center bg-[#1E1E1E]">
+    <View style={styles.container}>
+      {/* <View className="flex-1 justify-center h-full bg-white">
+        {isActive ? (
+          <View className=' bg-red-500'>
+            <CameraView
+              className="flex-1 w-full h-full"
+              barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+              onBarcodeScanned={(data) => { setIsActive(false); handleScan(data); }}
+            >
+              <View className="absolute top-0 left-0 right-0 bottom-0 justify-center items-center">
+                <View className="border-4 border-[#9DBDFF] rounded-lg relative" style={{ height: 250, width: 250 }}>
+                  <Ionicons name="qr-code" size={120} color="#9DBDFF" style={{ opacity: 0.2, position: 'absolute', top: '50%', left: '50%', transform: [{ translateX: -60 }, { translateY: -60 }] }} />
+                  <Animated.View className="absolute left-0 right-0 h-1 bg-[#9DBDFF]" style={animatedStyle} />
+                </View>
+              </View>
+            </CameraView>
+          </View>
+        ) : (
+          <View className="flex-1 justify-center items-center">
+            <TouchableOpacity onPress={() => setIsActive(true)} className="p-2 bg-[#9DBDFF] rounded-lg">
+              <AntDesign name="qrcode" size={100} color="black" />
+            </TouchableOpacity>
+          </View>
+        )}
+      </View> */}
       {isActive ? (
         <CameraView
-          className="flex-1"
+          style={styles.camera}
           barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
           onBarcodeScanned={(data) => { setIsActive(false); handleScan(data); }}
         >
@@ -186,7 +211,7 @@ export default function App() {
           </View>
         </CameraView>
       ) : (
-        <View className="flex-1 justify-center items-center">
+        <View className="flex justify-center items-center">
           <TouchableOpacity onPress={() => setIsActive(true)} className="p-2 bg-[#9DBDFF] rounded-lg">
             <AntDesign name="qrcode" size={100} color="black" />
           </TouchableOpacity>
@@ -195,3 +220,34 @@ export default function App() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: '#1E1E1E',
+  },
+  message: {
+    textAlign: 'center',
+    paddingBottom: 10,
+  },
+  camera: {
+    flex: 1,
+  },
+  buttonContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: 'transparent',
+    margin: 64,
+  },
+  button: {
+    flex: 1,
+    alignSelf: 'flex-end',
+    alignItems: 'center',
+  },
+  text: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+});
