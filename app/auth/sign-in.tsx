@@ -22,6 +22,8 @@ import { CustomCheckBox } from '@/components/custom/CheckBox';
 import DeviceInfo from 'react-native-device-info';
 
 const SignInScreen = () => {
+  const router = useRouter();
+
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [role, setRole] = useState<'faculty' | 'student' | 'parent'>('student');
@@ -29,8 +31,6 @@ const SignInScreen = () => {
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false); // State for toggling password visibility
   const [loading, setLoading] = useState(false); // State for loading
-
-  const router = useRouter();
 
   // Monitor keyboard visibility
   useEffect(() => {

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "749054804876",
+    "project_id": "hajri-patrik",
+    "storage_bucket": "hajri-patrik.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:749054804876:android:7820c0c21eabe751f1cca9",
+        "android_client_info": {
+          "package_name": "com.vinitborad.hajripatrakapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3JXUxrDDtK721gVuhB7ONs2UplUtY7lc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
