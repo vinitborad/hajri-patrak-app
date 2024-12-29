@@ -135,7 +135,7 @@ const DivisionsScreen = () => {
     );
   }
 
-  if (error || !offlineData) {
+  if (error && !offlineData) {
     return (
       <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
         <Stack.Screen options={{ headerShown: false }} />
