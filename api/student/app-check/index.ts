@@ -6,7 +6,7 @@ export const useGetAppCheck = () => {
     queryKey: ['student-profile'],
     queryFn: async () => {
       try {
-        const appCheck = await firebase.appCheck();
+        const appCheck = firebase.appCheck();
 
         const rnfbProvider = appCheck.newReactNativeFirebaseAppCheckProvider();
 
