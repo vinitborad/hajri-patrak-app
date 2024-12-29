@@ -106,7 +106,7 @@ const SignInScreen = () => {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            <View className="bg-[#1E1E1E] flex items-center justify-start h-full w-full pt-16">
+            <View className="bg-[#1E1E1E] flex items-center justify-start h-full w-full pt-24">
               <View className='flex items-center justify-center w-full gap-y-14'>
                 <View className=' flex-col items-center justify-center w-full'>
                   <Image
@@ -135,7 +135,7 @@ const SignInScreen = () => {
                     </TouchableOpacity>
                   </View>
 
-                  <View className="flex w-10/12 items-center gap-y-3">
+                  <View className="flex w-10/12 items-center gap-y-3 mt-5">
                     <TextInput
                       placeholder="Username"
                       placeholderTextColor="#A0A0A0"

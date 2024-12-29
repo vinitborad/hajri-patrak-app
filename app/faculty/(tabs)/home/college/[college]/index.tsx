@@ -9,7 +9,7 @@ import { ACTIVE_SUBJECTS_STRUCTURE, PINNED_DEPARTMENTS } from '@/constants/async
 const DepartmentsScreen = () => {
   const { college } = useLocalSearchParams(); // Extract the college parameter
   const router = useRouter();
-  
+
   const [offlineData, setOfflineData] = useState<any>(null); // To hold offline data
   const [isOfflineLoading, setIsOfflineLoading] = useState(true); // To manage loading state for offline data
   const [pinnedDepartments, setPinnedDepartments] = useState<string[]>([]); // Array for pinned departments in this college

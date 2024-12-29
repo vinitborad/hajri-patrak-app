@@ -55,7 +55,7 @@ const ForgotPasswordScreen = () => {
   };
 
   return (
-    <View className="bg-[#1E1E1E] flex items-center justify-start h-full w-full pt-24">
+    <View className="bg-[#1E1E1E] flex items-center justify-start h-full w-full pt-44">
       <View className='flex items-center justify-center w-full gap-y-14'>
         <View className='flex-col items-center justify-center w-full'>
           <Image

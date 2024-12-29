@@ -95,14 +95,7 @@ function RootLayoutNav() {
       <QueryProvider>
         <Stack
           screenOptions={{
-            // contentStyle: { backgroundColor: '#1E1E1Ez' },
             presentation: 'transparentModal',
-            // cardStyleInterpolator: ({ current }) => ({
-            //   cardStyle: {
-            //     opacity: current.progress,
-            //     backgroundColor: '#1E1E1E',
-            //   },
-            // }),
           }}
         >
           <Stack.Screen name='index' options={{ headerShown: false }} />

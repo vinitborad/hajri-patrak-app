@@ -169,7 +169,7 @@ const AdminSignInScreen = () => {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
-          <View className="bg-[#1E1E1E] flex items-center justify-start h-full w-full pt-16">
+          <View className="bg-[#1E1E1E] flex items-center justify-start h-full w-full pt-24">
             <View className='flex items-center justify-center w-full gap-y-14'>
               <View className='flex-col items-center justify-center w-full'>
                 <Image
@@ -201,7 +201,7 @@ const AdminSignInScreen = () => {
                   </TouchableOpacity>
                 </View>
 
-                <View className="flex w-10/12 items-center gap-y-3">
+                <View className="flex w-10/12 items-center gap-y-3 mt-5">
                   {/* Animated Student Username Input */}
                   <Animated.View style={{ height: studentUsernameHeight, overflow: 'hidden', width: '100%', marginBottom: -6 }}>
                     <TextInput
