@@ -8,7 +8,7 @@ import { ACTIVE_SUBJECTS_STRUCTURE, PINNED_COLLEGES } from '@/constants/async-st
 
 const CollegesScreen = () => {
   const router = useRouter();
-  
+
   const [offlineData, setOfflineData] = useState<any>(null); // To hold offline data
   const [isOfflineLoading, setIsOfflineLoading] = useState(true); // To manage loading state for offline data
   const [pinnedColleges, setPinnedColleges] = useState<string[]>([]); // Array for pinned colleges
@@ -94,7 +94,7 @@ const CollegesScreen = () => {
     );
   }
 
-  if (isOfflineLoading || isLoading) {
+  if (isOfflineLoading) {
     return (
       <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
         <Stack.Screen options={{ headerShown: false }} />

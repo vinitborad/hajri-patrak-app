@@ -55,7 +55,7 @@ const SubjectsScreen: React.FC = () => {
     //@ts-ignore
     dataToShow?.[college]?.[department]?.[branch]?.[graduationLevel]?.[passoutYear]?.[sem]?.[division].subjects || [];
 
-  if (isOfflineLoading || isLoading) {
+  if (isOfflineLoading) {
     return (
       <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
         <Stack.Screen options={{ headerShown: false }} />

@@ -80,7 +80,7 @@ const BranchesScreen = () => {
     return [...pinned, ...unpinned];
   }, [offlineData, college, department, pinnedBranches]);
 
-  // Redirect if only one branch exists
+  // // Redirect if only one branch exists
   useEffect(() => {
     if (sortedBranches.length === 1) {
       const branch = sortedBranches[0];
@@ -88,7 +88,7 @@ const BranchesScreen = () => {
     }
   }, [sortedBranches]);
 
-  if (isOfflineLoading || isLoading) {
+  if (isOfflineLoading) {
     return (
       <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
         <Stack.Screen options={{ headerShown: false }} />

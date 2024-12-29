@@ -126,6 +126,33 @@ const DivisionsScreen = () => {
     router.push(`/faculty/(tabs)/home/college/${college}/department/${department}/branch/${branch}/subject?graduationLevel=${graduationLevel}&sem=${sem}&division=${div}&passoutYear=${passoutYear}`);
   };
 
+  if (isOfflineLoading) {
+    return (
+      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Stack.Screen options={{ headerShown: false }} />
+        <ActivityIndicator size="large" color="#9DBDFF" />
+      </View>
+    );
+  }
+
+  if (error || !offlineData) {
+    return (
+      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Stack.Screen options={{ headerShown: false }} />
+        <Text className="text-[#FF6B6B]">N / A</Text>
+      </View>
+    );
+  }
+
+  if (!Object.keys(sortedDivisionsByGraduationLevel).length) {
+    return (
+      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
+        <Stack.Screen options={{ headerShown: false }} />
+        <Text className="text-[#FF6B6B]">N / A</Text>
+      </View>
+    );
+  }
+
   // Render each division card
   const renderDivisionItem = ({ item }: { item: any }) => (
     <TouchableOpacity
@@ -159,33 +186,6 @@ const DivisionsScreen = () => {
       ))}
     </View>
   );
-
-  if (isOfflineLoading || isLoading) {
-    return (
-      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
-        <Stack.Screen options={{ headerShown: false }} />
-        <ActivityIndicator size="large" color="#9DBDFF" />
-      </View>
-    );
-  }
-
-  if (error && !offlineData) {
-    return (
-      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
-        <Stack.Screen options={{ headerShown: false }} />
-        <Text className="text-[#FF6B6B]">N / A</Text>
-      </View>
-    );
-  }
-
-  if (!Object.keys(sortedDivisionsByGraduationLevel).length) {
-    return (
-      <View className="flex flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
-        <Stack.Screen options={{ headerShown: false }} />
-        <Text className="text-[#FF6B6B]">N / A</Text>
-      </View>
-    );
-  }
 
   return (
     <View className="flex flex-1 justify-center items-center bg-[#1E1E1E]">
