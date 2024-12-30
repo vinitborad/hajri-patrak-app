@@ -1,17 +1,20 @@
-import QueryProvider from '@/utils/QueryProvider';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { useEffect, useState } from 'react';
 import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import 'react-native-reanimated';
+import "../global.css";
+
+import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { Stack, useRouter } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useState } from 'react';
-import 'react-native-reanimated';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+
+import { firebase } from "@react-native-firebase/app-check"
+
+import QueryProvider from '@/utils/QueryProvider';
 import { logout } from '@/utils/auth/logout';
 import { checkTokenValidity } from '@/utils/auth/check-token-validity';
 import { setupAxiosInterceptors } from '@/utils/auth/axios-interceptor';
-import React from 'react';
 // Import your global CSS file
-import "../global.css";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -27,6 +30,10 @@ export const unstable_settings = {
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+
+  const router = useRouter();
+  const [isCheckingToken, setIsCheckingToken] = useState(true);
+
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     'NunitoBlack': require('../assets/fonts/nunito/Nunito-Black.ttf'),
@@ -59,35 +66,45 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
-
-  return <RootLayoutNav />;
-}
-
-function RootLayoutNav() {
-  const router = useRouter();
-  const [isCheckingToken, setIsCheckingToken] = useState(true);
-
-  // checking token validy by expriy time and loging out if expired
   useEffect(() => {
+    const initializeAppCheck = async () => {
+      console.log('initializing app check');
+      try {
+        const appCheck = firebase.appCheck();
+        const rnfbProvider = appCheck.newReactNativeFirebaseAppCheckProvider();
+        rnfbProvider.configure({
+          android: {
+            provider: __DEV__ ? 'debug' : 'playIntegrity',
+            debugToken: process.env.EXPO_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN
+          },
+        });
+        await appCheck.initializeAppCheck({
+          provider: rnfbProvider,
+          isTokenAutoRefreshEnabled: true
+        });
+      } catch (error) { }
+    };
     const validateToken = async () => {
-      const isValid = await checkTokenValidity();
-      if (!isValid) {
+      console.log('validating token');
+      try {
+        const isValid = await checkTokenValidity();
+        if (!isValid) {
+          await logout(router); // Log out the user
+        } else {
+          setIsCheckingToken(false); // Allow rendering the app if token is valid
+        }
+      } catch (error) {
         await logout(router); // Log out the user
-      } else {
-        setIsCheckingToken(false); // Allow rendering the app if token is valid
       }
     };
 
-    // Set up Axios interceptors when the app starts
-    setupAxiosInterceptors(router);
+    initializeAppCheck();
     validateToken();
+    setupAxiosInterceptors(router);
   }, []);
 
-  if (isCheckingToken) {
-    return null; // Render nothing while checking the token
+  if (!loaded || isCheckingToken) {
+    return null;
   }
 
   return (

@@ -10,7 +10,7 @@ import axios from 'axios';
 import { facultyEndpoints } from '@/constants/api-endpoints';
 import * as SecureStore from 'expo-secure-store';
 import StudentInfoModal from '@/components/custom/StudentInfoModal';
-import { useAttendanceStore } from '@/stores/attendanceStore';
+import { useAttendanceStore } from '@/stores/attendance-store';
 
 const LiveAttendanceScreen = () => {
   const { id } = useLocalSearchParams();

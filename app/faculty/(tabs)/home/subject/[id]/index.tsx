@@ -10,7 +10,7 @@ import { callCreateAttendance } from '@/utils/attendances/helper-functions';
 import axios from 'axios';
 import { facultyEndpoints } from '@/constants/api-endpoints';
 import * as SecureStore from 'expo-secure-store';
-import { useAttendanceStore } from '@/stores/attendanceStore';
+import { useAttendanceStore } from '@/stores/attendance-store';
 
 const SubjectDetailScreen = () => {
   const { id } = useLocalSearchParams();

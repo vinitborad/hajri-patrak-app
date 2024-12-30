@@ -1,8 +1,14 @@
 import axios from "axios";
 import { logout } from "./logout";
+import { firebase } from "@react-native-firebase/app-check"
 
 // Set up a global Axios interceptor
 export const setupAxiosInterceptors = async (router: any) => {
+  console.log('setting up axios interceptors');
+  const appCheck = firebase.appCheck();
+  const tokenResult = await appCheck.getToken();
+  console.log('firebase app check token', tokenResult.token);
+
   axios.interceptors.response.use(
     response => response, // Return the response if successful
     async error => {
@@ -13,8 +19,17 @@ export const setupAxiosInterceptors = async (router: any) => {
       ) {
         await logout(router); // Log out the user
       }
-
       return Promise.reject(error); // Forward the error to be handled elsewhere
     }
   );
+
+  axios.interceptors.request.use(
+    async (config) => {
+      if (tokenResult.token) {
+        config.headers['X-Firebase-AppCheck'] = tokenResult.token;
+      }
+      return config;
+    },
+    (error) => Promise.reject(error)
+  )
 };
