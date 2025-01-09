@@ -8,7 +8,7 @@ import { useFonts } from 'expo-font';
 import { Stack, useRouter } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
-import { firebase } from "@react-native-firebase/app-check"
+// import { firebase } from "@react-native-firebase/app-check"
 
 import QueryProvider from '@/utils/QueryProvider';
 import { logout } from '@/utils/auth/logout';
@@ -67,26 +67,26 @@ export default function RootLayout() {
   }, [loaded]);
 
   useEffect(() => {
-    const initializeAppCheck = async () => {
-      console.log('initializing app check');
-      try {
-        const appCheck = firebase.appCheck();
-        const rnfbProvider = appCheck.newReactNativeFirebaseAppCheckProvider();
-        console.log('app check debug token', process.env.EXPO_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN);
-        rnfbProvider.configure({
-          android: {
-            provider: __DEV__ ? 'debug' : 'playIntegrity',
-            debugToken: process.env.EXPO_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN
-          },
-        });
-        await appCheck.initializeAppCheck({
-          provider: rnfbProvider,
-          isTokenAutoRefreshEnabled: true
-        });
-      } catch (error) {
-        console.error('Failed to initialize Firebase App Check', error);
-      }
-    };
+    // const initializeAppCheck = async () => {
+    //   console.log('initializing app check');
+    //   try {
+    //     const appCheck = firebase.appCheck();
+    //     const rnfbProvider = appCheck.newReactNativeFirebaseAppCheckProvider();
+    //     console.log('app check debug token', process.env.EXPO_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN);
+    //     rnfbProvider.configure({
+    //       android: {
+    //         provider: __DEV__ ? 'debug' : 'playIntegrity',
+    //         debugToken: process.env.EXPO_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN
+    //       },
+    //     });
+    //     await appCheck.initializeAppCheck({
+    //       provider: rnfbProvider,
+    //       isTokenAutoRefreshEnabled: true
+    //     });
+    //   } catch (error) {
+    //     console.error('Failed to initialize Firebase App Check', error);
+    //   }
+    // };
     const validateToken = async () => {
       console.log('validating token');
       try {
@@ -101,7 +101,7 @@ export default function RootLayout() {
       }
     };
 
-    initializeAppCheck();
+    // initializeAppCheck();
     validateToken();
     setupAxiosInterceptors(router);
   }, []);

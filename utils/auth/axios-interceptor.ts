@@ -1,14 +1,14 @@
 import axios from "axios";
 import { logout } from "./logout";
-import { firebase } from "@react-native-firebase/app-check"
+// import { firebase } from "@react-native-firebase/app-check"
 
 // Set up a global Axios interceptor
 export const setupAxiosInterceptors = async (router: any) => {
   try {
-    console.log('setting up axios interceptors');
-    const appCheck = firebase.appCheck();
-    const tokenResult = await appCheck.getToken();
-    console.log('firebase app check token', tokenResult.token);
+    // console.log('setting up axios interceptors');
+    // const appCheck = firebase.appCheck();
+    // const tokenResult = await appCheck.getToken();
+    // console.log('firebase app check token', tokenResult.token);
 
     axios.interceptors.response.use(
       response => response, // Return the response if successful
@@ -24,15 +24,15 @@ export const setupAxiosInterceptors = async (router: any) => {
       }
     );
 
-    axios.interceptors.request.use(
-      async (config) => {
-        if (tokenResult.token) {
-          config.headers['X-Firebase-AppCheck'] = tokenResult.token;
-        }
-        return config;
-      },
-      (error) => Promise.reject(error)
-    )
+    // axios.interceptors.request.use(
+    //   async (config) => {
+    //     if (tokenResult.token) {
+    //       config.headers['X-Firebase-AppCheck'] = tokenResult.token;
+    //     }
+    //     return config;
+    //   },
+    //   (error) => Promise.reject(error)
+    // )
   } catch (error) {
     console.error('Failed to set up Axios interceptors', error);
   }
