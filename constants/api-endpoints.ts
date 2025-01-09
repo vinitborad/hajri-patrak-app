@@ -5,6 +5,9 @@ export const BASE_URL = process.env.EXPO_PUBLIC_API_ENDPOINT as string;
 export const authEndpoints = {
   STUDENT_SIGNIN: `${BASE_URL}/auth/student-signin`,
   FACULTY_SIGNIN: `${BASE_URL}/auth/faculty-signin`,
+
+  // FORGOT PASSWORD ENDPOINTS
+  FORGOT_PASSWORD: (role: string) => `${BASE_URL}/forgot-password/${role}`,
 };
 
 export const studentEndpoints = {

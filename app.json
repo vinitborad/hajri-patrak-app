@@ -29,7 +29,6 @@
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION"
       ],
-      // "googleServicesFile": "./config/google-services.json",
       "package": "com.vinitborad.hajripatrakapp"
     },
     "web": {
@@ -39,8 +38,6 @@
     },
     "plugins": [
       "expo-router",
-      // "@react-native-firebase/app",
-      // "@react-native-firebase/app-check",
       "expo-dev-launcher",
       [
         "expo-font",
