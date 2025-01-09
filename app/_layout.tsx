@@ -72,6 +72,7 @@ export default function RootLayout() {
       try {
         const appCheck = firebase.appCheck();
         const rnfbProvider = appCheck.newReactNativeFirebaseAppCheckProvider();
+        console.log('app check debug token', process.env.EXPO_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN);
         rnfbProvider.configure({
           android: {
             provider: __DEV__ ? 'debug' : 'playIntegrity',
@@ -82,7 +83,9 @@ export default function RootLayout() {
           provider: rnfbProvider,
           isTokenAutoRefreshEnabled: true
         });
-      } catch (error) { }
+      } catch (error) {
+        console.error('Failed to initialize Firebase App Check', error);
+      }
     };
     const validateToken = async () => {
       console.log('validating token');
