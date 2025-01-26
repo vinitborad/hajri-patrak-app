@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useTransition } from 'react';
 import { View, Text, FlatList, TouchableOpacity, TextInput, Animated, ActivityIndicator, Alert, Linking } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useGetAnalyseAttendance } from '@/api/faculty/attendances';
@@ -10,6 +10,56 @@ import StudentInfoModal from '@/components/custom/StudentInfoModal';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import { commonEndpoints } from '@/constants/api-endpoints';
+
+//@ts-ignore
+const RenderStudentItem = ({ item, onPressInfo, onPressHistory, calculatePercentage }) => {
+  const attendanceLevel = calculateAttendanceLevel(calculatePercentage(item.attendedLecs, item.totalLecs));
+
+  return (
+    <View
+      className={`p-2 pl-4 pr-3 rounded-lg mb-2 mx-4 flex-row justify-between items-center bg-[#2D6A4F] border border-[#1B4332] ${attendanceLevel === 'Good'
+        ? 'bg-[#2D6A4F]'
+        : attendanceLevel === 'Medium'
+          ? 'bg-[#8b9e36]'
+          : 'bg-[#c33f43]'
+        }`}
+    >
+      <View className="flex-col items-start">
+        <View className="flex-row items-center justify-center gap-1">
+          <Text className="text-[#F6F5F5] font-NunitoExtraBold text-lg">
+            <FontAwesome5 name="id-badge" size={18} color="#F6F5F5" /> {item.student.username}
+          </Text>
+          <View className="bg-white border border-[#9DBDFF] rounded-full p-1 flex items-center justify-center aspect-square">
+            <Text className="text-[black] -mt-2">{item.interDivision}</Text>
+          </View>
+          <TouchableOpacity onPress={() => onPressInfo(item.student.username)}>
+            <Ionicons name="information-circle-outline" size={24} color="#9DBDFF" />
+          </TouchableOpacity>
+        </View>
+        <Text className="text-[#F6F5F5]">
+          <FontAwesome name="user" size={18} color="#F6F5F5" /> Name: {item.student.personalInfo.firstName} {item.student.personalInfo.lastName}
+        </Text>
+      </View>
+
+      <View className="flex-row items-center justify-between">
+        <TouchableOpacity
+          className="mr-1"
+          onPress={() => onPressHistory(item.student.username)}
+        >
+          <FontAwesome name="history" size={24} color="#9DBDFF" />
+        </TouchableOpacity>
+        <View className="mr-1">
+          <Text className="text-white font-NunitoMedium">
+            {item.attendedLecs}/{item.totalLecs}
+          </Text>
+        </View>
+        <View className="bg-white p-2 rounded-full">
+          <Text className="font-NunitoExtraBold text-base">{calculatePercentage(item.attendedLecs, item.totalLecs)}</Text>
+        </View>
+      </View>
+    </View>
+  );
+};
 
 const AnalyseAttendanceScreen = () => {
   const router = useRouter();
@@ -28,6 +78,10 @@ const AnalyseAttendanceScreen = () => {
   const searchWidth = new Animated.Value(40); // Initial width for search button
   const [animatedWidth, setAnimatedWidth] = useState(searchWidth); // Control the width
 
+  const [isPending, startTransition] = useTransition();
+
+  console.log('Rendered: AnalyseAttendanceScreen');
+
   // Fetch offline data when the component mounts
   useEffect(() => {
     const fetchOfflineData = async () => {
@@ -36,7 +90,6 @@ const AnalyseAttendanceScreen = () => {
         if (cachedData) {
           setOfflineData(JSON.parse(cachedData)); // Load offline data
         }
-        console.log('Offline data fetched:', cachedData);
       } catch (error) {
         console.error('Error fetching offline data:', error);
       } finally {
@@ -115,36 +168,27 @@ const AnalyseAttendanceScreen = () => {
       }
     });
 
-  // Toggle Sorting
   const toggleSorting = (mode: 'asc' | 'desc') => {
-    if (filter === mode) {
-      setFilter(''); // Remove sorting if already selected
-    } else {
-      setFilter(mode); // Apply sorting
-    }
+    startTransition(() => {
+      if (filter === mode) {
+        setFilter('');
+      } else {
+        setFilter(mode);
+      }
+    });
   };
 
-  // Animate Search bar expansion and collapse
   const toggleSearch = () => {
-    if (isSearchActive) {
-      // Close search
-      Animated.timing(animatedWidth, {
-        toValue: 40, // Back to icon size
-        duration: 300,
-        useNativeDriver: false,
-      }).start(() => {
-        setIsSearchActive(false); // Turn off search mode
-        setSearchText(''); // Reset search text
+    Animated.timing(animatedWidth, {
+      toValue: isSearchActive ? 40 : 250,
+      duration: 300,
+      useNativeDriver: false,
+    }).start(() => {
+      startTransition(() => {
+        setIsSearchActive(!isSearchActive);
+        if (!isSearchActive) setSearchText('');
       });
-    } else {
-      // Open search
-      setIsSearchActive(true); // Activate search mode
-      Animated.timing(animatedWidth, {
-        toValue: 250, // Full width of search bar
-        duration: 300,
-        useNativeDriver: false,
-      }).start();
-    }
+    });
   };
 
   // Open Google Sheet
@@ -229,60 +273,25 @@ const AnalyseAttendanceScreen = () => {
       </View>
 
       {/* List of Students */}
-      <FlatList
-        data={filteredData}
-        keyExtractor={(item) => item.student.username}
-        renderItem={({ item }) => (
-          <View
-            className={`p-2 pl-4 pr-3 rounded-lg mb-2 mx-4 flex-row justify-between items-center bg-[#2D6A4F] border border-[#1B4332] ${
-              // @ts-ignore 
-              calculateAttendanceLevel(calculatePercentage(item.attendedLecs, item.totalLecs)) === 'Good'
-                ? 'bg-[#2D6A4F]'
-                // @ts-ignore
-                : calculateAttendanceLevel(calculatePercentage(item.attendedLecs, item.totalLecs)) === 'Medium'
-                  ? 'bg-[#8b9e36]'
-                  : 'bg-[#c33f43]'
-              }`}
-          >
-            <View className="flex-col items-start">
-              <View className="flex-row items-center justify-center gap-1">
-                <Text className="text-[#F6F5F5] font-NunitoExtraBold text-lg">
-                  <FontAwesome5 name="id-badge" size={18} color="#F6F5F5" /> {item.student.username}
-                </Text>
-                <View className="bg-white border border-[#9DBDFF] rounded-full p-1 flex items-center justify-center aspect-square">
-                  <Text className="text-[black] -mt-2">{item.interDivision}</Text>
-                </View>
-                <TouchableOpacity onPress={() => setSelectedStudentUsername(item.student.username)}>
-                  <Ionicons name="information-circle-outline" size={24} color="#9DBDFF" />
-                </TouchableOpacity>
-              </View>
-              <Text className="text-[#F6F5F5]">
-                <FontAwesome name="user" size={18} color="#F6F5F5" /> Name: {item.student.personalInfo.firstName}{' '}
-                {item.student.personalInfo.lastName}
-              </Text>
-            </View>
-
-            <View className="flex-row items-center justify-between">
-              <TouchableOpacity
-                className="mr-1"
-                // @ts-ignore
-                onPress={() => router.push(`/faculty/(tabs)/home/subject/${id}/analyse/student-previous-attendances?username=${item.student.username}`)}
-              >
-                <FontAwesome name="history" size={24} color="#9DBDFF" />
-              </TouchableOpacity>
-              <View className="mr-1">
-                <Text className="text-white font-NunitoMedium">
-                  {item.attendedLecs}/{item.totalLecs}
-                </Text>
-              </View>
-              <View className="bg-white p-2 rounded-full">
-                <Text className="font-NunitoExtraBold text-base">{calculatePercentage(item.attendedLecs, item.totalLecs)}</Text>
-              </View>
-            </View>
-          </View>
-        )}
-        contentContainerStyle={{ paddingBottom: 250 }}
-      />
+      {isPending ? (
+        <ActivityIndicator size="small" color="#9DBDFF" />
+      ) : (
+        <FlatList
+          data={filteredData}
+          keyExtractor={(item) => item.student.username}
+          renderItem={({ item }) => (
+            <RenderStudentItem
+              item={item}
+              onPressInfo={(username: string) => setSelectedStudentUsername(username)}
+              onPressHistory={(username: string) =>
+                router.push(`/faculty/(tabs)/home/subject/${id}/analyse/student-previous-attendances?username=${username}`)
+              }
+              calculatePercentage={calculatePercentage}
+            />
+          )}
+          contentContainerStyle={{ paddingBottom: 250 }}
+        />
+      )}
 
       {/* Student Info Modal */}
       {selectedStudentUsername && (

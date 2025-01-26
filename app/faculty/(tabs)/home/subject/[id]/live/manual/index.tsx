@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,7 +7,7 @@ import { FontAwesome, FontAwesome5, Ionicons } from '@expo/vector-icons';
 import StudentInfoModal from '@/components/custom/StudentInfoModal';
 
 // Reusable StudentCard component with React.memo
-const StudentCard = React.memo(({ item, isPresent, toggleAttendance, showInfo }: any) => {
+const StudentCard = memo(({ item, isPresent, toggleAttendance, showInfo }: any) => {
   return (
     <TouchableOpacity
       onPress={() => toggleAttendance(item.id)}
