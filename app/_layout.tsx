@@ -70,19 +70,19 @@ export default function RootLayout() {
     const initializeAppCheck = async () => {
       console.log('initializing app check');
       try {
-        // const appCheck = firebase.appCheck();
-        // const rnfbProvider = appCheck.newReactNativeFirebaseAppCheckProvider();
-        // console.log('app check debug token', process.env.EXPO_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN);
-        // rnfbProvider.configure({
-        //   android: {
-        //     provider: __DEV__ ? 'debug' : 'playIntegrity',
-        //     debugToken: process.env.EXPO_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN
-        //   },
-        // });
-        // await appCheck.initializeAppCheck({
-        //   provider: rnfbProvider,
-        //   isTokenAutoRefreshEnabled: true
-        // });
+        const appCheck = firebase.appCheck();
+        const rnfbProvider = appCheck.newReactNativeFirebaseAppCheckProvider();
+        console.log('app check debug token', process.env.EXPO_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN);
+        rnfbProvider.configure({
+          android: {
+            provider: __DEV__ ? 'debug' : 'playIntegrity',
+            debugToken: process.env.EXPO_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN
+          },
+        });
+        await appCheck.initializeAppCheck({
+          provider: rnfbProvider,
+          isTokenAutoRefreshEnabled: true
+        });
       } catch (error) {
         console.error('Failed to initialize Firebase App Check', error);
       }
