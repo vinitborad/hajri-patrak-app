@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, memo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, TextInput, Alert } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useGetAttendanceInfo } from '@/api/faculty/attendances';
@@ -136,6 +136,40 @@ const ViewAttendanceScreen = () => {
     }
   };
 
+  const RenderStudentItem = memo(
+    ({
+      item,
+      isStudentPresent,
+      confirmStudentSwitch,
+      loadingStudentId,
+      setSelectedStudentUsername,
+    }: any) => {
+      // Calculate presence here
+      const isPresent = isStudentPresent(item.id);
+
+      return (
+        <StudentCard
+          item={item}
+          isPresent={isPresent}
+          loadingStudentId={loadingStudentId}
+          // Pass isPresent to confirmStudentSwitch
+          confirmStudentSwitch={() => confirmStudentSwitch(item.id, isPresent)}
+          setSelectedStudentUsername={() =>
+            setSelectedStudentUsername(item.username)
+          }
+        />
+      );
+    }
+  );
+
+  // Filter students based on searchText
+  const filteredStudents = sortedStudents.filter((student: any) => {
+    const fullName = `${student.firstName} ${student.lastName}`.toLowerCase();
+    return (
+      student.username.includes(searchText) || fullName.includes(searchText.toLowerCase())
+    );
+  });
+
   if (isOfflineLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-[#1E1E1E] pb-16">
@@ -153,57 +187,6 @@ const ViewAttendanceScreen = () => {
       </View>
     );
   }
-
-  const ListHeaderComponent = () => (
-    <View className="px-4">
-      <View className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
-        <Text className="text-2xl font-NunitoExtraBold text-[#9DBDFF] mb-2">{subjectDetails.subjectName}</Text>
-        <View className="flex flex-row items-center mb-1">
-          <Ionicons name="git-branch-outline" size={16} color="#9DBDFF" />
-          <Text className="text-[#F6F5F5] ml-2">Branch: {subjectDetails.branch}</Text>
-        </View>
-        <View className="flex flex-row items-center mb-1">
-          <Ionicons name="calendar-outline" size={16} color="#9DBDFF" />
-          <Text className="text-[#F6F5F5] ml-2">Semester: {subjectDetails.semester}</Text>
-        </View>
-        <View className="flex flex-row items-center mb-1">
-          <Ionicons name="layers-outline" size={16} color="#9DBDFF" />
-          <Text className="text-[#F6F5F5] ml-2">Division: {subjectDetails.division}</Text>
-        </View>
-        <View className="flex flex-row items-center mb-1">
-          <Ionicons name="book-outline" size={16} color="#9DBDFF" />
-          <Text className="text-[#F6F5F5] ml-2">Type: {subjectDetails.subjectType}</Text>
-        </View>
-        <View className="flex flex-row items-center mb-1">
-          <Ionicons name="key-outline" size={16} color="#9DBDFF" />
-          <Text className="text-[#F6F5F5] ml-2">Code: {subjectDetails.subjectCode}</Text>
-        </View>
-        <View className="flex flex-row items-center mb-1">
-          <Ionicons name="time-outline" size={16} color="#9DBDFF" />
-          <Text className="text-[#F6F5F5] ml-2">Lecture Hours: {attendanceDetails.value}</Text>
-        </View>
-        <View className="flex flex-row items-center mt-2">
-          <Ionicons name="chatbubble-outline" size={16} color="#9DBDFF" />
-          <Text className="text-[#F6F5F5] ml-2">Attendance Message: {attendanceDetails.message}</Text>
-        </View>
-      </View>
-
-      <View className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
-        <View className="flex flex-row items-center">
-          <Ionicons name="people-outline" size={20} color="#9DBDFF" />
-          <Text className="text-xl font-NunitoExtraBold text-[#9DBDFF] ml-2">Present Count : {presentCount} / {totalCount}</Text>
-        </View>
-      </View>
-    </View>
-  );
-
-  // Filter students based on searchText
-  const filteredStudents = sortedStudents.filter((student: any) => {
-    const fullName = `${student.firstName} ${student.lastName}`.toLowerCase();
-    return (
-      student.username.includes(searchText) || fullName.includes(searchText.toLowerCase())
-    );
-  });
 
   return (
     <View className="flex flex-1 bg-[#1E1E1E]">
@@ -234,42 +217,24 @@ const ViewAttendanceScreen = () => {
       <FlatList
         data={filteredStudents}
         keyExtractor={(item: any) => item.id}
-        renderItem={({ item }) => {
-          const isPresent = isStudentPresent(item.id);
-          return (
-            <View
-              className={`p-2 pl-4 pr-5 rounded-lg mb-2 mx-4 flex-row justify-between items-center ${isPresent ? 'bg-[#2D6A4F]' : 'bg-[#c33f43]'
-                } border border-[#1B4332}`}
-            >
-              <View>
-                <View className='flex-row items-center gap-x-1'>
-                  <Text className="text-[#F6F5F5] font-NunitoExtraBold text-lg">
-                    <FontAwesome5 name="id-badge" size={18} color="#F6F5F5" /> {item.username}
-                  </Text>
-                  <TouchableOpacity onPress={() => setSelectedStudentUsername(item.username)}>
-                    <Ionicons name="information-circle-outline" size={24} color="#9DBDFF" />
-                  </TouchableOpacity>
-                </View>
-                <Text className="text-[#F6F5F5]">
-                  <FontAwesome name="user" size={18} color="#F6F5F5" /> Name: {item?.firstName} {item?.lastName}
-                </Text>
-              </View>
-              <TouchableOpacity
-                className={`p-3 rounded-full ${isPresent ? 'bg-[#A7C957]' : 'bg-[#FF6B6B]'}`}
-                onPress={() => confirmStudentSwitch(item.id, isPresent)}
-                disabled={loadingStudentId === item.id}
-              >
-                {loadingStudentId === item.id ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <MaterialIcons name="edit" size={20} color="#fff" />
-                )}
-              </TouchableOpacity>
-            </View>
-          );
-        }}
+        renderItem={({ item }) => (
+          <RenderStudentItem
+            item={item}
+            isStudentPresent={isStudentPresent}
+            confirmStudentSwitch={confirmStudentSwitch}
+            loadingStudentId={loadingStudentId}
+            setSelectedStudentUsername={setSelectedStudentUsername}
+          />
+        )}
         contentContainerStyle={{ paddingBottom: 200 }}
-        ListHeaderComponent={ListHeaderComponent}
+        ListHeaderComponent={
+          <ListHeaderComponentItem
+            subjectDetails={subjectDetails}
+            attendanceDetails={attendanceDetails}
+            presentCount={presentCount}
+            totalCount={totalCount}
+          />
+        }
       />
 
       {/* Student Info Modal */}
@@ -283,5 +248,93 @@ const ViewAttendanceScreen = () => {
     </View>
   );
 };
+
+const ListHeaderComponentItem = memo(({
+  subjectDetails,
+  attendanceDetails,
+  presentCount,
+  totalCount,
+}: any) => (
+  <View className="px-4">
+    <View className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
+      <Text className="text-2xl font-NunitoExtraBold text-[#9DBDFF] mb-2">{subjectDetails.subjectName}</Text>
+      <View className="flex flex-row items-center mb-1">
+        <Ionicons name="git-branch-outline" size={16} color="#9DBDFF" />
+        <Text className="text-[#F6F5F5] ml-2">Branch: {subjectDetails.branch}</Text>
+      </View>
+      <View className="flex flex-row items-center mb-1">
+        <Ionicons name="calendar-outline" size={16} color="#9DBDFF" />
+        <Text className="text-[#F6F5F5] ml-2">Semester: {subjectDetails.semester}</Text>
+      </View>
+      <View className="flex flex-row items-center mb-1">
+        <Ionicons name="layers-outline" size={16} color="#9DBDFF" />
+        <Text className="text-[#F6F5F5] ml-2">Division: {subjectDetails.division}</Text>
+      </View>
+      <View className="flex flex-row items-center mb-1">
+        <Ionicons name="book-outline" size={16} color="#9DBDFF" />
+        <Text className="text-[#F6F5F5] ml-2">Type: {subjectDetails.subjectType}</Text>
+      </View>
+      <View className="flex flex-row items-center mb-1">
+        <Ionicons name="key-outline" size={16} color="#9DBDFF" />
+        <Text className="text-[#F6F5F5] ml-2">Code: {subjectDetails.subjectCode}</Text>
+      </View>
+      <View className="flex flex-row items-center mb-1">
+        <Ionicons name="time-outline" size={16} color="#9DBDFF" />
+        <Text className="text-[#F6F5F5] ml-2">Lecture Hours: {attendanceDetails.value}</Text>
+      </View>
+      <View className="flex flex-row items-center mt-2">
+        <Ionicons name="chatbubble-outline" size={16} color="#9DBDFF" />
+        <Text className="text-[#F6F5F5] ml-2">Attendance Message: {attendanceDetails.message}</Text>
+      </View>
+    </View>
+
+    <View className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
+      <View className="flex flex-row items-center">
+        <Ionicons name="people-outline" size={20} color="#9DBDFF" />
+        <Text className="text-xl font-NunitoExtraBold text-[#9DBDFF] ml-2">Present Count : {presentCount} / {totalCount}</Text>
+      </View>
+    </View>
+  </View>
+));
+
+const StudentCard = memo(({
+  item,
+  isPresent,
+  loadingStudentId,
+  confirmStudentSwitch,
+  setSelectedStudentUsername,
+}: any) => {
+  return (
+    <View
+      className={`p-2 pl-4 pr-5 rounded-lg mb-2 mx-4 flex-row justify-between items-center ${isPresent ? 'bg-[#2D6A4F]' : 'bg-[#c33f43]'
+        } border border-[#1B4332}`}
+    >
+      <View>
+        <View className='flex-row items-center gap-x-1'>
+          <Text className="text-[#F6F5F5] font-NunitoExtraBold text-lg">
+            <FontAwesome5 name="id-badge" size={18} color="#F6F5F5" /> {item.username}
+          </Text>
+          <TouchableOpacity onPress={setSelectedStudentUsername}>
+            <Ionicons name="information-circle-outline" size={24} color="#9DBDFF" />
+          </TouchableOpacity>
+        </View>
+        <Text className="text-[#F6F5F5]">
+          <FontAwesome name="user" size={18} color="#F6F5F5" /> Name: {item?.firstName} {item?.lastName}
+        </Text>
+      </View>
+      <TouchableOpacity
+        className={`p-3 rounded-full ${isPresent ? 'bg-[#A7C957]' : 'bg-[#FF6B6B]'}`}
+        onPress={confirmStudentSwitch}
+        disabled={loadingStudentId === item.id}
+      >
+        {loadingStudentId === item.id ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <MaterialIcons name="edit" size={20} color="#fff" />
+        )}
+      </TouchableOpacity>
+    </View>
+  )
+});
 
 export default ViewAttendanceScreen;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, Image, TouchableOpacity, ActivityIndicator, Alert, Linking } from 'react-native';
 import { Octicons, Ionicons, MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -183,7 +183,10 @@ const AdminProfileScreen = () => {
           <Text className="text-[#FF6B6B] text-lg ml-4 font-NunitoBold">Change Password</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity className="flex-row items-center mb-4 p-4 bg-[#3b3e44] rounded-lg border border-[#9DBDFF]">
+        <TouchableOpacity
+          className="flex-row items-center mb-4 p-4 bg-[#3b3e44] rounded-lg border border-[#9DBDFF]"
+          onPress={() => Linking.openURL(process.env.EXPO_PUBLIC_GOOGLE_FORM_LINK || '')}
+        >
           <Ionicons name="document-text" size={24} color="#9DBDFF" />
           <Text className="text-[#F6F5F5] text-lg ml-4 font-NunitoBold">Form</Text>
         </TouchableOpacity>

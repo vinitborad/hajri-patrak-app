@@ -295,7 +295,7 @@ const AdminSignInScreen = () => {
                 </TouchableOpacity>
                 <View className='flex items-center justify-center'>
                   <Text className="text-[#64748B] font-NunitoLight text-xs">
-                    © 2024 LDCE. All Rights Reserved
+                    © 2025 LDCE. All Rights Reserved
                   </Text>
                 </View>
               </View>
