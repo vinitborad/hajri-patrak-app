@@ -159,7 +159,7 @@ const QueuedAttendancesScreen = () => {
       )}
 
       {/* Sync Button (Fixed at the bottom, above the tab bar) */}
-      <View className="absolute bottom-20 left-0 right-0 flex-row justify-center">
+      <View className="absolute bottom-24 left-0 right-0 flex-row justify-center">
         <TouchableOpacity
           className="bg-[#FF6B6B] rounded-t-3xl flex-row justify-center items-center px-4 py-1"
           onPress={() => onSyncPress()}
