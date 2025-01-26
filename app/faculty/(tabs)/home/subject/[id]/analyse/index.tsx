@@ -36,6 +36,7 @@ const AnalyseAttendanceScreen = () => {
         if (cachedData) {
           setOfflineData(JSON.parse(cachedData)); // Load offline data
         }
+        console.log('Offline data fetched:', cachedData);
       } catch (error) {
         console.error('Error fetching offline data:', error);
       } finally {
