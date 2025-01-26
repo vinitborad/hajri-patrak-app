@@ -4,6 +4,8 @@ import { EvilIcons, Ionicons } from '@expo/vector-icons'; // For dropdown icon
 import axios from 'axios';
 import { useRouter } from 'expo-router';
 import Icon from '@/assets/images/icon.png';
+import { authEndpoints } from '@/constants/api-endpoints';
+import * as SecureStore from 'expo-secure-store';
 
 const ForgotPasswordScreen = () => {
   const [role, setRole] = useState<'student' | 'faculty' | 'admin'>('student');
@@ -45,12 +47,24 @@ const ForgotPasswordScreen = () => {
       Alert.alert('Error', 'Please enter a valid username.');
       return;
     }
-
     try {
-      Alert.alert('Success', 'Password reset email sent successfully.');
-    } catch (error) {
+      const token = await SecureStore.getItemAsync('token');
+
+      const response = await axios.post(authEndpoints.FORGOT_PASSWORD(role),
+        { username },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const message = response.data?.message || 'Password reset email sent successfully.';
+      Alert.alert('Success', message);
+    } catch (error: any) {
       console.log(error);
-      Alert.alert('Error', 'Something went wrong, please try again.');
+      const errorMessage = error.response?.data?.message || 'Something went wrong, please try again.';
+      Alert.alert('Error', errorMessage);
     }
   };
 
