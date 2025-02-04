@@ -13,7 +13,7 @@ import { firebase } from "@react-native-firebase/app-check"
 import QueryProvider from '@/utils/QueryProvider';
 import { logout } from '@/utils/auth/logout';
 import { checkTokenValidity } from '@/utils/auth/check-token-validity';
-import { setupAxiosInterceptors } from '@/utils/auth/axios-interceptor';
+import { setupAxiosInterceptorForAppCheck, setupAxiosInterceptors } from '@/utils/auth/axios-interceptor';
 // Import your global CSS file
 
 export {
@@ -101,9 +101,27 @@ export default function RootLayout() {
       }
     };
 
-    initializeAppCheck();
-    validateToken();
-    setupAxiosInterceptors(router);
+    const initializeApp = async () => {
+      try {
+        // First initialize app check
+        await initializeAppCheck();
+
+        // Then validate token
+        await validateToken();
+
+        // Finally setup axios interceptors
+        await setupAxiosInterceptors(router);
+
+        // Finally setup axios interceptors for app check
+        await setupAxiosInterceptorForAppCheck();
+      } catch (error) {
+        console.error('Error initializing app:', error);
+      }
+
+    };
+
+    // Call the initialization function
+    initializeApp();
   }, []);
 
   if (!loaded || isCheckingToken) {
