@@ -4,10 +4,18 @@ import { Router } from 'expo-router';
 import { Alert } from 'react-native';
 
 export const logout = async (router: Router) => {
+  // Get the role before clearing
+  const role = await SecureStore.getItemAsync('role');
+
+  // Always clear secure store items
   await SecureStore.deleteItemAsync('token');
   await SecureStore.deleteItemAsync('role');
-  // clear whole async store
-  await AsyncStorage.clear();
-  Alert.alert('You have been logged out !')
+
+  // Clear AsyncStorage only if not faculty
+  if (role !== 'faculty') {
+    await AsyncStorage.clear();
+  }
+
+  Alert.alert('You have been logged out!')
   router.replace('/');
 }
