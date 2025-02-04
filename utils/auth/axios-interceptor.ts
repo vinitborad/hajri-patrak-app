@@ -37,7 +37,7 @@ export const setupAxiosInterceptors = async (router: any) => {
       async error => {
         // If the error is a 401 Unauthorized error or session expired
         if (
-          error.response?.status === 401 ||
+          error.response?.status === 401 &&
           error.response?.data?.message === 'Session expired, please log in again'
         ) {
           logout(router); // Log out the user
