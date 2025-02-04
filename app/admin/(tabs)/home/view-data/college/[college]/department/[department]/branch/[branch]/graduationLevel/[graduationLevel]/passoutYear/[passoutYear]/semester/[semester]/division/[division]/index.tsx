@@ -221,8 +221,8 @@ const DivisionInfoScreen = () => {
   // Render Subject Card
   const renderSubjectItem = ({ item }: { item: any }) => (
     <TouchableOpacity
-      key={item.subjectCode}
-      className="flex-row justify-between items-center bg-[#3b3e44] p-4 pr-5 rounded-lg shadow-md m-2 border border-[#9DBDFF]"
+      key={item.subjectId}
+      className="flex-row justify-between items-start bg-[#3b3e44] p-4 pr-5 rounded-lg shadow-md m-2 border border-[#9DBDFF]"
       onPress={() =>
         router.push({
           // @ts-ignore
@@ -242,33 +242,44 @@ const DivisionInfoScreen = () => {
         })
       }
     >
-      <View className="flex-row items-center gap-1">
-        <Text className="text-lg font-NunitoBold text-[#9DBDFF] capitalize">{item.subjectName}</Text>
-        <Text className="text-sm font-Nunito text-[#F6F5F5]">({item.subjectCode})</Text>
+      <View className="flex-1 mr-3">
+        <Text className="text-lg font-NunitoBold text-[#9DBDFF] capitalize flex-wrap">
+          {item.subjectName}
+        </Text>
+        <Text className="text-sm font-Nunito text-[#F6F5F5]">
+          ({item.subjectCode})
+        </Text>
+      </View>
+
+      <View className="flex-row items-center gap-x-3">
         <TouchableOpacity
           onPress={() => {
-            setSelectedSubject(item); // Set selected subject
-            setNewSubjectName(item.subjectName); // Pre-fill with the current subject name
-            setModalVisible(true); // Show the modal
+            setSelectedSubject(item);
+            setNewSubjectName(item.subjectName);
+            setModalVisible(true);
           }}
         >
           <Entypo name="pencil" size={24} color="#e6eeff" />
         </TouchableOpacity>
+
+        <TouchableOpacity
+          disabled={isSubjectDeleting === item.subjectId}
+          onPress={() => deleteSubject(item.subjectId)}
+        >
+          {isSubjectDeleting === item.subjectId ? (
+            <ActivityIndicator size="small" color="#FF6B6B" />
+          ) : (
+            <MaterialIcons name="delete" size={24} color="#FF6B6B" />
+          )}
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity disabled={isSubjectDeleting === item.subjectId} onPress={() => deleteSubject(item.subjectId)}>
-        {isSubjectDeleting === item.subjectId ? (
-          <ActivityIndicator size="small" color="#FF6B6B" />
-        ) : (
-          <MaterialIcons name="delete" size={24} color="#FF6B6B" />
-        )}
-      </TouchableOpacity>
     </TouchableOpacity>
   );
 
   // Render Inter-Division Card
   const renderInterDivisionItem = ({ item }: { item: any }) => (
     <TouchableOpacity
-      key={item.interDivision}
+      key={item._id}
       className="flex-row justify-between items-center bg-[#3b3e44] p-4 pr-5 rounded-lg shadow-md m-2 border border-[#9DBDFF]"
       onPress={() => {
         router.push({
@@ -308,7 +319,11 @@ const DivisionInfoScreen = () => {
         {/* Subjects Section */}
         <Text className="text-[#F6F5F5] text-xl font-NunitoExtraBold px-3 py-2">Subjects</Text>
         {divisionData.subjects.length > 0 ? (
-          divisionData.subjects.map((subject: any) => renderSubjectItem({ item: subject }))
+          divisionData.subjects.map((subject: any) => (
+            <React.Fragment key={subject.subjectId}>
+              {renderSubjectItem({ item: subject })}
+            </React.Fragment>
+          ))
         ) : (
           <Text className="text-[#FF6B6B] text-center p-4">No subjects available</Text>
         )}
@@ -316,7 +331,11 @@ const DivisionInfoScreen = () => {
         {/* Inter-Divisions Section */}
         <Text className="text-[#F6F5F5] text-xl font-NunitoExtraBold px-3 py-2">Inter Divisions</Text>
         {divisionData.interDivisions.length > 0 ? (
-          divisionData.interDivisions.map((division: any) => renderInterDivisionItem({ item: division }))
+          divisionData.interDivisions.map((division: any) => (
+            <React.Fragment key={division._id}>
+              {renderInterDivisionItem({ item: division })}
+            </React.Fragment>
+          ))
         ) : (
           <Text className="text-[#FF6B6B] text-center p-4">No inter-divisions available</Text>
         )}
