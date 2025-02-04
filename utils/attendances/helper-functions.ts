@@ -68,60 +68,61 @@ export const closeAttendance = async (subjectId: string, message: string) => {
     }
     let parsedLiveAttendance = JSON.parse(liveAttendance);
     const networkStatus = await isConnected();
-    if (networkStatus) {
-      if (!parsedLiveAttendance._id) {
-        await callCreateAttendance(subjectId);
-        parsedLiveAttendance = await AsyncStorage.getItem(LIVE_ATTENDANCE(subjectId));
-      }
-      if (parsedLiveAttendance._id) {
-        // call mark api
-        const markResponse = await axios.post(facultyEndpoints.MANUAL_MARK_ATTENDANCE,
-          {
-            attendanceId: parsedLiveAttendance?._id,
-            studentIdLists: parsedLiveAttendance?.presentStudentsList,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (markResponse.data.success) {
-          const closeResponse = await axios.post(facultyEndpoints.CLOSE_ATTENDANCE,
-            {
-              attendanceId: parsedLiveAttendance._id,
-              message: message,
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          if (closeResponse.data.success) {
-            await AsyncStorage.removeItem(LIVE_ATTENDANCE(subjectId));
-            return {
-              success: true,
-              message: "Attendance closed successfully.",
-            }
-          }
-        }
-      }
-    }
-    if (!networkStatus) {
-      parsedLiveAttendance.message = message;
-      parsedLiveAttendance.uniqueId = `${new Date().getTime()}`;
-      await addAttendanceToQueue(parsedLiveAttendance);
-      await AsyncStorage.removeItem(LIVE_ATTENDANCE(subjectId));
-      return {
-        success: true,
-        message: "Attendance moved to pending attendances !",
-      }
-    }
+    //NOTE: temporary moving all attendance to queue so attendance dont hang between low network signals
+    // if (networkStatus) {
+    //   if (!parsedLiveAttendance._id) {
+    //     await callCreateAttendance(subjectId);
+    //     parsedLiveAttendance = await AsyncStorage.getItem(LIVE_ATTENDANCE(subjectId));
+    //   }
+    //   if (parsedLiveAttendance._id) {
+    //     // call mark api
+    //     const markResponse = await axios.post(facultyEndpoints.MANUAL_MARK_ATTENDANCE,
+    //       {
+    //         attendanceId: parsedLiveAttendance?._id,
+    //         studentIdLists: parsedLiveAttendance?.presentStudentsList,
+    //       },
+    //       {
+    //         headers: {
+    //           Authorization: `Bearer ${token}`,
+    //         },
+    //       }
+    //     );
+    //     if (markResponse.data.success) {
+    //       const closeResponse = await axios.post(facultyEndpoints.CLOSE_ATTENDANCE,
+    //         {
+    //           attendanceId: parsedLiveAttendance._id,
+    //           message: message,
+    //         },
+    //         {
+    //           headers: {
+    //             Authorization: `Bearer ${token}`,
+    //           },
+    //         }
+    //       );
+    //       if (closeResponse.data.success) {
+    //         await AsyncStorage.removeItem(LIVE_ATTENDANCE(subjectId));
+    //         return {
+    //           success: true,
+    //           message: "Attendance closed successfully.",
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
+    // if (!networkStatus) {
+    parsedLiveAttendance.message = message;
+    parsedLiveAttendance.uniqueId = `${new Date().getTime()}`;
+    await addAttendanceToQueue(parsedLiveAttendance);
+    await AsyncStorage.removeItem(LIVE_ATTENDANCE(subjectId));
     return {
-      success: false,
-      message: "Something is going wrong !",
+      success: true,
+      message: "Attendance moved to pending attendances !",
     }
+    // }
+    // return {
+    //   success: false,
+    //   message: "Something is going wrong !",
+    // }
   } catch (error: any) {
     return {
       success: false,

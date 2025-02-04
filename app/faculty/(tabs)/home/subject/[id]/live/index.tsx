@@ -85,7 +85,7 @@ const LiveAttendanceScreen = () => {
       // If possible fetch data from server also
       const networkStatus = await isConnected();
       if (networkStatus) {
-        createCallHandling();
+        await createCallHandling();
         const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(id as string));
         if (liveData) {
           const parsedLiveData = JSON.parse(liveData);
@@ -165,7 +165,7 @@ const LiveAttendanceScreen = () => {
     try {
       const networkStatus = await isConnected();
       if (networkStatus) {
-        createCallHandling();
+        await createCallHandling();
         const liveData = await AsyncStorage.getItem(LIVE_ATTENDANCE(id as string));
         if (liveData) {
           const parsedLiveData = JSON.parse(liveData);
