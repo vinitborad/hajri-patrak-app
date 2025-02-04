@@ -58,29 +58,8 @@ const Index = () => {
   }
 
   return (
-    <View className='flex-1 items-center bg-[#1E1E1E] p-6'>
+    <View className='flex-1 items-center bg-[#1E1E1E] px-6'>
       <Stack.Screen options={{ headerShown: true }} />
-
-      <TouchableOpacity
-        onPress={() => role === 'student' ? router.push('/student/qr') : null} // Disable navigation for non-students
-        className={`mt-6 w-full h-32 rounded-lg flex items-center justify-center border border-[#9DBDFF] bg-[#686D76] ${role !== 'student' ? 'opacity-50' : ''}`}
-        activeOpacity={role === 'student' ? 0.7 : 1} // Disable button press for non-students
-        disabled={role !== 'student'} // Disable TouchableOpacity for non-student roles
-      >
-        {role === 'student' ? (
-          <View className="flex items-center justify-center">
-            <FontAwesome name="qrcode" size={50} color="#9DBDFF" />
-            <Text className='font-NunitoExtraBold text-[#9DBDFF]'>SCAN</Text>
-          </View>
-        ) : (
-          <View className="flex items-center justify-center">
-            <FontAwesome name="user-times" size={50} color="#FF6B6B" />
-            <Text className='font-NunitoExtraBold text-[#FF6B6B]'>You Can't Scan QR !</Text>
-          </View>
-        )}
-      </TouchableOpacity>
-
-      <Text className="mt-8 mb-4 w-full pl-3 text-[#F6F5F5] text-xl font-NunitoExtraBold">SUBJECTS</Text>
 
       {/* If no subjects are found, show a message instead of the list */}
       {(!dataToShow?.subjects || dataToShow.subjects.length === 0) ? (
@@ -90,9 +69,36 @@ const Index = () => {
           data={dataToShow.subjects}
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => <SubjectItem subject={item} router={router} />}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 200 }}
+          ListHeaderComponent={() => (
+            <>
+              <TouchableOpacity
+                onPress={() => role === 'student' ? router.push('/student/qr') : null} // Disable navigation for non-students
+                className={`mt-6 w-full h-32 rounded-lg flex items-center justify-center border border-[#9DBDFF] bg-[#686D76] ${role !== 'student' ? 'opacity-50' : ''}`}
+                activeOpacity={role === 'student' ? 0.7 : 1} // Disable button press for non-students
+                disabled={role !== 'student'} // Disable TouchableOpacity for non-student roles
+              >
+                {role === 'student' ? (
+                  <View className="flex items-center justify-center">
+                    <FontAwesome name="qrcode" size={50} color="#9DBDFF" />
+                    <Text className='font-NunitoExtraBold text-[#9DBDFF]'>SCAN</Text>
+                  </View>
+                ) : (
+                  <View className="flex items-center justify-center">
+                    <FontAwesome name="user-times" size={50} color="#FF6B6B" />
+                    <Text className='font-NunitoExtraBold text-[#FF6B6B]'>You Can't Scan QR !</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+
+              <Text className="mt-8 mb-4 w-full pl-3 text-[#F6F5F5] text-xl font-NunitoExtraBold">SUBJECTS</Text>
+            </>
+          )}
         />
       )}
     </View>
+
   );
 };
 
