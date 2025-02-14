@@ -283,7 +283,7 @@ const AdminSignInScreen = () => {
                     className='h-3 w-3 bg-green-600 rounded-full -mt-0.5'
                   />
                   <Text className="text-[#64748B] font-NunitoLight text-xs">
-                    AV22HSW23
+                    V1.0.0B1
                   </Text>
                 </View>
                 <TouchableOpacity

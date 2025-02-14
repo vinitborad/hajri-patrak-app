@@ -136,7 +136,7 @@ const ForgotPasswordScreen = () => {
           <View className="flex w-10/12 items-center gap-y-3">
             {/* Username Input */}
             <TextInput
-              placeholder="Enter your username"
+              placeholder={role === 'student' ? 'Roll Number' : 'Username'}
               placeholderTextColor="#A0A0A0"
               value={username}
               onChangeText={setUsername}
