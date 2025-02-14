@@ -34,6 +34,7 @@ export const facultyEndpoints = {
   // structure enpoints
   GET_ACTIVE_SUBJECTS_STRUCTURE: `${BASE_URL}/faculty/data/active-structure`,
   GET_PREVIOUS_DIVISIONS_STRUCTURE: `${BASE_URL}/faculty/data/previous-structure`,
+  GET_FACULTY_LIST_OF_SUBJECT: `${BASE_URL}/faculty/data/subject/faculty-list`,
 
   // attendance endpoints
   GET_PREVIOUS_ATTENDANCES: `${BASE_URL}/faculty/attendance/previous-attendances`,
@@ -47,6 +48,7 @@ export const facultyEndpoints = {
   GET_QR_CODE: `${BASE_URL}/code-pairs/create`,
   // edit attendance endpoints
   CHANGE_STUDENT_STATUS: `${BASE_URL}/faculty/attendance/student/change-status`,
+  CHANGE_ATTENDANCE_FACULTY: `${BASE_URL}/faculty/attendance/change-faculty`,
   DELETE_ATTENDANCE: `${BASE_URL}/faculty/attendance`,
 
   // profile endpoints
