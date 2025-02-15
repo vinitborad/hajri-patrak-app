@@ -11,6 +11,7 @@ import axios from 'axios';
 import { facultyEndpoints } from '@/constants/api-endpoints';
 import * as SecureStore from 'expo-secure-store';
 import { useAttendanceStore } from '@/stores/attendance-store';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 
 const SubjectDetailScreen = () => {
   const { id } = useLocalSearchParams();
@@ -35,6 +36,12 @@ const SubjectDetailScreen = () => {
   const [editingAttendanceId, setEditingAttendanceId] = useState<string | null>(null);
   const [facultyList, setFacultyList] = useState<any[]>([]);
   const [isFacultyListLoading, setFacultyListLoading] = useState(false);
+  // ----------------------------------------------
+
+  // ---- New state for DateTime Picker modal ----
+  const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState(false);
+  const [editingAttendanceTimeId, setEditingAttendanceTimeId] = useState<string | null>(null);
+  const [selectedDateTime, setSelectedDateTime] = useState(new Date());
   // ----------------------------------------------
 
   useEffect(() => {
@@ -271,60 +278,106 @@ const SubjectDetailScreen = () => {
   };
   // ---------------------------------------------------------
 
+  // ---- New function to open the DateTime Picker modal ----
+  const openDateTimePicker = (attendanceId: string, currentTime: string) => {
+    setEditingAttendanceTimeId(attendanceId);
+    setSelectedDateTime(new Date(currentTime));
+    setIsDateTimePickerVisible(true);
+  };
+
+  // ---- New: Handle DateTime selection ----
+  const handleConfirmDateTime = async (newDate: Date) => {
+    // Call patch endpoint to update attendance time
+    try {
+      const token = await SecureStore.getItemAsync('token');
+      const response = await axios.patch(
+        facultyEndpoints.CHANGE_ATTENDANCE_TIME,
+        {
+          attendanceId: editingAttendanceTimeId,
+          newTime: newDate.toISOString(),
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.success) {
+        Alert.alert('Success', response.data.message);
+        // Refresh the data after updating
+        await refetch();
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.response?.data?.message || 'Something went wrong');
+    } finally {
+      setIsDateTimePickerVisible(false);
+      setEditingAttendanceTimeId(null);
+    }
+  };
+
   //@ts-ignore
-  const renderAttendanceItem = ({ item }) => (
-    <View key={item.id} className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
-      {/* Time stamps */}
-      <Text className="text-[#F6F5F5] text-lg mb-2">
-        {new Date(item.createdAt).toLocaleDateString()} {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-      </Text>
-      {/* Message */}
-      <Text className="text-[#9DBDFF] font-NunitoExtraBold text-xl mb-2">{item.message || 'N / A'}</Text>
-      {/* Present Students */}
-      <View className="flex flex-row items-center mb-2">
-        <Ionicons name="people-outline" size={20} color="#9DBDFF" />
-        <Text className="text-[#F6F5F5] ml-2">{item.presentStudentsCount}/{item.totalStudents} Students Present</Text>
+  const renderAttendanceItem = ({ item }) => {
+    // Format date, day, and time from createdAt
+    const dt = new Date(item.createdAt);
+    const dateStr = dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const dayStr = dt.toLocaleDateString('en-GB', { weekday: 'long' });
+    const timeStr = dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+    return (
+      <View key={item.id} className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
+        {/* Date, Day, Time with Edit Icon */}
+        <View className="flex-row items-center mb-2">
+          <TouchableOpacity onPress={() => openDateTimePicker(item.id, item.createdAt)}>
+            <Ionicons name="create-outline" size={16} color="#9DBDFF" />
+          </TouchableOpacity>
+          <Text className="text-[#F6F5F5] text-lg ml-2">
+            {dateStr} ({dayStr}) : {timeStr}
+          </Text>
+        </View>
+        {/* Message */}
+        <Text className="text-[#9DBDFF] font-NunitoExtraBold text-xl mb-2">{item.message || 'N / A'}</Text>
+        {/* Present Students */}
+        <View className="flex flex-row items-center mb-2">
+          <Ionicons name="people-outline" size={20} color="#9DBDFF" />
+          <Text className="text-[#F6F5F5] ml-2">{item.presentStudentsCount}/{item.totalStudents} Students Present</Text>
+        </View>
+        {/* Faculty Info with Edit Icon */}
+        <View className="flex flex-row items-center mb-2">
+          <Ionicons name="person-outline" size={20} color="#9DBDFF" />
+          <Text className="text-[#F6F5F5] ml-2">
+            Created By: {item.faculty.personalInfo.firstName + ' ' + item.faculty.personalInfo.lastName || 'N / A'}
+          </Text>
+          <TouchableOpacity className="ml-1" onPress={() => handleOpenFacultyModal(item.id)}>
+            <AntDesign name="edit" size={20} color="#9DBDFF" />
+          </TouchableOpacity>
+        </View>
+        {/* Actions */}
+        <View className="flex flex-row justify-between mt-1">
+          <TouchableOpacity
+            className="bg-red-500 p-2 rounded-lg flex flex-row items-center"
+            onPress={() => confirmDeleteAttendance(item.id)}
+            disabled={loadingAttendanceId === item.id}
+          >
+            {loadingAttendanceId === item.id ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <>
+                <MaterialIcons name="delete-outline" size={20} color="white" />
+                <Text className="text-white ml-2">Delete</Text>
+              </>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity className="bg-blue-500 p-2 rounded-lg flex flex-row items-center">
+            <MaterialIcons name="swap-horizontal-circle" size={20} color="white" />
+            <Text className="text-white ml-2">Switch</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="bg-green-500 p-2 rounded-lg flex flex-row items-center"
+            onPress={() => router.push(`/faculty/(tabs)/home/subject/${id}/attendance/${item.id}`)}
+          >
+            <MaterialIcons name="visibility" size={20} color="white" />
+            <Text className="text-white ml-2">View</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      {/* Faculty Info with Edit Icon */}
-      <View className="flex flex-row items-center mb-2">
-        <Ionicons name="person-outline" size={20} color="#9DBDFF" />
-        <Text className="text-[#F6F5F5] ml-2">
-          Created By: {item.faculty.personalInfo.firstName + ' ' + item.faculty.personalInfo.lastName || 'N / A'}
-        </Text>
-        <TouchableOpacity className="ml-1" onPress={() => handleOpenFacultyModal(item.id)}>
-          <AntDesign name="edit" size={20} color="#9DBDFF" />
-        </TouchableOpacity>
-      </View>
-      {/* Actions */}
-      <View className="flex flex-row justify-between mt-1">
-        <TouchableOpacity
-          className="bg-red-500 p-2 rounded-lg flex flex-row items-center"
-          onPress={() => confirmDeleteAttendance(item.id)}
-          disabled={loadingAttendanceId === item.id}
-        >
-          {loadingAttendanceId === item.id ? (
-            <ActivityIndicator size="small" color="white" />
-          ) : (
-            <>
-              <MaterialIcons name="delete-outline" size={20} color="white" />
-              <Text className="text-white ml-2">Delete</Text>
-            </>
-          )}
-        </TouchableOpacity>
-        <TouchableOpacity className="bg-blue-500 p-2 rounded-lg flex flex-row items-center">
-          <MaterialIcons name="swap-horizontal-circle" size={20} color="white" />
-          <Text className="text-white ml-2">Switch</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          className="bg-green-500 p-2 rounded-lg flex flex-row items-center"
-          onPress={() => router.push(`/faculty/(tabs)/home/subject/${id}/attendance/${item.id}`)}
-        >
-          <MaterialIcons name="visibility" size={20} color="white" />
-          <Text className="text-white ml-2">View</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View className="flex flex-1 bg-[#1E1E1E] px-4">
@@ -491,6 +544,17 @@ const SubjectDetailScreen = () => {
         </View>
       </Modal>
       {/* ----- End of Edit Faculty Modal ----- */}
+
+      {/* ----- New DateTime Picker Modal ----- */}
+      <DateTimePickerModal
+        isVisible={isDateTimePickerVisible}
+        mode="datetime"
+        date={selectedDateTime}
+        onConfirm={handleConfirmDateTime}
+        onCancel={() => setIsDateTimePickerVisible(false)}
+      />
+      {/* ----- End of DateTime Picker Modal ----- */}
+
     </View>
   );
 };

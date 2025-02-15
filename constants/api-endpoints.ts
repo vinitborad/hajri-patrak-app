@@ -49,6 +49,7 @@ export const facultyEndpoints = {
   // edit attendance endpoints
   CHANGE_STUDENT_STATUS: `${BASE_URL}/faculty/attendance/student/change-status`,
   CHANGE_ATTENDANCE_FACULTY: `${BASE_URL}/faculty/attendance/change-faculty`,
+  CHANGE_ATTENDANCE_TIME: `${BASE_URL}/faculty/attendance/change-time`,
   DELETE_ATTENDANCE: `${BASE_URL}/faculty/attendance`,
 
   // profile endpoints
