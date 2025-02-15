@@ -52,8 +52,6 @@ const FacultyProfile = () => {
             try {
               await SecureStore.deleteItemAsync('token');
               await SecureStore.deleteItemAsync('role');
-              // Clear async storage
-              // await AsyncStorage.clear();
               // Invalidate all queries in React Query
               queryClient.clear();
               router.replace('/');

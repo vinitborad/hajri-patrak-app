@@ -11,6 +11,7 @@ import axios from 'axios';
 import { facultyEndpoints } from '@/constants/api-endpoints';
 import * as SecureStore from 'expo-secure-store';
 import { useAttendanceStore } from '@/stores/attendance-store';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 
 const SubjectDetailScreen = () => {
   const { id } = useLocalSearchParams();
@@ -21,6 +22,7 @@ const SubjectDetailScreen = () => {
   const shouldRefresh = useAttendanceStore((state) => state.shouldRefresh);
   const setShouldRefresh = useAttendanceStore((state) => state.setShouldRefresh);
 
+  // State for Create Attendance Modal (existing)
   const [isModalVisible, setModalVisible] = useState(false);
   const [value, setValue] = useState('');
   const [selectedInterDivisions, setSelectedInterDivisions] = useState<any[]>([]);
@@ -29,11 +31,23 @@ const SubjectDetailScreen = () => {
   const [liveAttendance, setLiveAttendance] = useState<any>(null);
   const [loadingAttendanceId, setLoadingAttendanceId] = useState<string | null>(null); // For showing loader on delete
 
+  // ---- New state for "Edit Faculty" modal ----
+  const [isFacultyModalVisible, setFacultyModalVisible] = useState(false);
+  const [editingAttendanceId, setEditingAttendanceId] = useState<string | null>(null);
+  const [facultyList, setFacultyList] = useState<any[]>([]);
+  const [isFacultyListLoading, setFacultyListLoading] = useState(false);
+  // ----------------------------------------------
+
+  // ---- New state for DateTime Picker modal ----
+  const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState(false);
+  const [editingAttendanceTimeId, setEditingAttendanceTimeId] = useState<string | null>(null);
+  const [selectedDateTime, setSelectedDateTime] = useState(new Date());
+  // ----------------------------------------------
+
   useEffect(() => {
     // Set the refetch function in the store
     setRefetch(refetch);
   }, [refetch]);
-
 
   useEffect(() => {
     if (shouldRefresh) {
@@ -86,7 +100,7 @@ const SubjectDetailScreen = () => {
         <Stack.Screen options={{ headerShown: false }} />
         <ActivityIndicator size="large" color="#9DBDFF" />
       </View>
-    )
+    );
   }
 
   if (error && !offlineData) {
@@ -95,7 +109,7 @@ const SubjectDetailScreen = () => {
         <Stack.Screen options={{ headerShown: false }} />
         <Text className="text-[#FF6B6B]">N / A</Text>
       </View>
-    )
+    );
   }
 
   const dataToShow = data || offlineData;
@@ -120,7 +134,7 @@ const SubjectDetailScreen = () => {
         message: '',
         retry: 0,
         close: false,
-      }
+      };
       await AsyncStorage.setItem(LIVE_ATTENDANCE(id as string), JSON.stringify(attendanceData));
       setLiveAttendance(attendanceData);
 
@@ -135,11 +149,11 @@ const SubjectDetailScreen = () => {
     }
   };
 
-  const toggleInterDivision = (div: { _id: string, interDivision: string }) => {
+  const toggleInterDivision = (div: { _id: string; interDivision: string }) => {
     setSelectedInterDivisions((prev) => {
-      const exists = prev.some(item => item._id === div._id);
+      const exists = prev.some((item) => item._id === div._id);
       if (exists) {
-        return prev.filter(item => item._id !== div._id);
+        return prev.filter((item) => item._id !== div._id);
       } else {
         return [...prev, div];
       }
@@ -147,7 +161,7 @@ const SubjectDetailScreen = () => {
   };
 
   const isSelected = (interDivision: string) => {
-    return selectedInterDivisions.some(item => item.interDivision === interDivision);
+    return selectedInterDivisions.some((item) => item.interDivision === interDivision);
   };
 
   const confirmDeleteAttendance = (attendanceId: string) => {
@@ -174,7 +188,6 @@ const SubjectDetailScreen = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-
       // Refetch the updated attendances
       await refetch();
     } catch (error: any) {
@@ -209,66 +222,166 @@ const SubjectDetailScreen = () => {
     } catch (error) {
       Alert.alert('Error', 'Something went wrong !');
     }
-  }
+  };
+
+  // ---- New function to open the "Edit Faculty" modal ----
+  const handleOpenFacultyModal = (attendanceId: string) => {
+    setEditingAttendanceId(attendanceId);
+    setFacultyModalVisible(true);
+    fetchFacultyList();
+  };
+
+  // Function to fetch the faculty list for the subject
+  const fetchFacultyList = async () => {
+    try {
+      setFacultyListLoading(true);
+      const token = await SecureStore.getItemAsync('token');
+      const response = await axios.get(facultyEndpoints.GET_FACULTY_LIST_OF_SUBJECT, {
+        params: { subjectId: id },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.data.success) {
+        setFacultyList(response.data.data.facultyList);
+      }
+    } catch (error) {
+      console.error('Error fetching faculty list:', error);
+    } finally {
+      setFacultyListLoading(false);
+    }
+  };
+
+  // Function to call the patch API to change the faculty for an attendance record
+  const handleChangeFaculty = async (newFacultyUsername: string) => {
+    if (!editingAttendanceId) return;
+    try {
+      const token = await SecureStore.getItemAsync('token');
+      const response = await axios.patch(
+        facultyEndpoints.CHANGE_ATTENDANCE_FACULTY,
+        {
+          attendanceId: editingAttendanceId,
+          newFacultyUsername,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (response.data.success) {
+        Alert.alert('Success', response.data.message);
+        setFacultyModalVisible(false);
+        setEditingAttendanceId(null);
+        // Refetch updated attendance data
+        await refetch();
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.response?.data?.message || 'Something went wrong');
+    }
+  };
+  // ---------------------------------------------------------
+
+  // ---- New function to open the DateTime Picker modal ----
+  const openDateTimePicker = (attendanceId: string, currentTime: string) => {
+    setEditingAttendanceTimeId(attendanceId);
+    setSelectedDateTime(new Date(currentTime));
+    setIsDateTimePickerVisible(true);
+  };
+
+  // ---- New: Handle DateTime selection ----
+  const handleConfirmDateTime = async (newDate: Date) => {
+    // Call patch endpoint to update attendance time
+    try {
+      const token = await SecureStore.getItemAsync('token');
+      const response = await axios.patch(
+        facultyEndpoints.CHANGE_ATTENDANCE_TIME,
+        {
+          attendanceId: editingAttendanceTimeId,
+          newTime: newDate.toISOString(),
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.success) {
+        Alert.alert('Success', response.data.message);
+        // Refresh the data after updating
+        await refetch();
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.response?.data?.message || 'Something went wrong');
+    } finally {
+      setIsDateTimePickerVisible(false);
+      setEditingAttendanceTimeId(null);
+    }
+  };
 
   //@ts-ignore
-  const renderAttendanceItem = ({ item }) => (
-    <View key={item.id} className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
-      {/* Time stamps */}
-      <Text className="text-[#F6F5F5] text-lg mb-2">
-        {new Date(item.createdAt).toLocaleDateString()} {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-      </Text>
-      {/* Message */}
-      <Text className="text-[#9DBDFF] font-NunitoExtraBold text-xl mb-2">{item.message || 'N / A'}</Text>
-      {/* Present Students */}
-      <View className="flex flex-row items-center mb-2">
-        <Ionicons name="people-outline" size={20} color="#9DBDFF" />
-        <Text className="text-[#F6F5F5] ml-2">{item.presentStudentsCount}/{item.totalStudents} Students Present</Text>
-      </View>
-      {/* faculty info */}
-      <View className="flex flex-row items-center mb-2">
-        <Ionicons name="person-outline" size={20} color="#9DBDFF" />
-        <Text className="text-[#F6F5F5] ml-2">Created By: {item.faculty.personalInfo.firstName + ' ' + item.faculty.personalInfo.lastName || 'N / A'}</Text>
-      </View>
-      {/* Actions */}
-      <View className="flex flex-row justify-between mt-1">
+  const renderAttendanceItem = ({ item }) => {
+    // Format date, day, and time from createdAt
+    const dt = new Date(item.createdAt);
+    const dateStr = dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const dayStr = dt.toLocaleDateString('en-GB', { weekday: 'long' });
+    const timeStr = dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true });
 
-        <TouchableOpacity
-          className="bg-red-500 p-2 rounded-lg flex flex-row items-center"
-          onPress={() => confirmDeleteAttendance(item.id)}
-          disabled={loadingAttendanceId === item.id}
-        >
-          {loadingAttendanceId === item.id ? (
-            <ActivityIndicator size="small" color="white" />
-          ) : (
-            <>
-              <MaterialIcons name="delete-outline" size={20} color="white" />
-              <Text className="text-white ml-2">Delete</Text>
-            </>
-          )}
-        </TouchableOpacity>
-        <TouchableOpacity className="bg-blue-500 p-2 rounded-lg flex flex-row items-center">
-          <MaterialIcons name="swap-horizontal-circle" size={20} color="white" />
-          <Text className="text-white ml-2">Switch</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          className="bg-green-500 p-2 rounded-lg flex flex-row items-center"
-          onPress={() => router.push(`/faculty/(tabs)/home/subject/${id}/attendance/${item.id}`)}
-        >
-          <MaterialIcons name="visibility" size={20} color="white" />
-          <Text className="text-white ml-2">View</Text>
-        </TouchableOpacity>
+    return (
+      <View key={item.id} className="bg-[#3b3e44] p-4 rounded-lg mb-4 border border-[#9DBDFF]">
+        {/* Date, Day, Time with Edit Icon */}
+        <View className="flex-row items-center mb-2">
+          <TouchableOpacity onPress={() => openDateTimePicker(item.id, item.createdAt)}>
+            <Ionicons name="create-outline" size={16} color="#9DBDFF" />
+          </TouchableOpacity>
+          <Text className="text-[#F6F5F5] text-lg ml-2">
+            {dateStr} ({dayStr}) : {timeStr}
+          </Text>
+        </View>
+        {/* Message */}
+        <Text className="text-[#9DBDFF] font-NunitoExtraBold text-xl mb-2">{item.message || 'N / A'}</Text>
+        {/* Present Students */}
+        <View className="flex flex-row items-center mb-2">
+          <Ionicons name="people-outline" size={20} color="#9DBDFF" />
+          <Text className="text-[#F6F5F5] ml-2">{item.presentStudentsCount}/{item.totalStudents} Students Present</Text>
+        </View>
+        {/* Faculty Info with Edit Icon */}
+        <View className="flex flex-row items-center mb-2">
+          <Ionicons name="person-outline" size={20} color="#9DBDFF" />
+          <Text className="text-[#F6F5F5] ml-2">
+            Created By: {item.faculty.personalInfo.firstName + ' ' + item.faculty.personalInfo.lastName || 'N / A'}
+          </Text>
+          <TouchableOpacity className="ml-1" onPress={() => handleOpenFacultyModal(item.id)}>
+            <AntDesign name="edit" size={20} color="#9DBDFF" />
+          </TouchableOpacity>
+        </View>
+        {/* Actions */}
+        <View className="flex flex-row justify-between mt-1">
+          <TouchableOpacity
+            className="bg-red-500 p-2 rounded-lg flex flex-row items-center"
+            onPress={() => confirmDeleteAttendance(item.id)}
+            disabled={loadingAttendanceId === item.id}
+          >
+            {loadingAttendanceId === item.id ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <>
+                <MaterialIcons name="delete-outline" size={20} color="white" />
+                <Text className="text-white ml-2">Delete</Text>
+              </>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity className="bg-blue-500 p-2 rounded-lg flex flex-row items-center">
+            <MaterialIcons name="swap-horizontal-circle" size={20} color="white" />
+            <Text className="text-white ml-2">Switch</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="bg-green-500 p-2 rounded-lg flex flex-row items-center"
+            onPress={() => router.push(`/faculty/(tabs)/home/subject/${id}/attendance/${item.id}`)}
+          >
+            <MaterialIcons name="visibility" size={20} color="white" />
+            <Text className="text-white ml-2">View</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View className="flex flex-1 bg-[#1E1E1E] px-4">
-      <Stack.Screen
-        options={{
-          headerShown: false,
-        }}
-      />
+      <Stack.Screen options={{ headerShown: false }} />
 
       <FlatList
         data={closedAttendances}
@@ -343,26 +456,23 @@ const SubjectDetailScreen = () => {
               </TouchableOpacity>
             )}
 
-
             <View className="mb-2 pt-3 flex-row justify-start items-center pl-2 gap-2">
               <FontAwesome name="history" size={24} color="#ffab62" />
               <Text className="text-[#ffab62] text-xl font-NunitoExtraBold">Previous Attendances</Text>
             </View>
-
           </View>
         )}
         renderItem={renderAttendanceItem}
-        contentContainerStyle={{ paddingBottom: 150 }} // Add extra space for the tab bar
-        showsVerticalScrollIndicator={false} // Hide the vertical scrollbar
+        contentContainerStyle={{ paddingBottom: 150 }} // Extra space for tab bar
+        showsVerticalScrollIndicator={false} // Hide scrollbar
       />
 
-      {/* Create Attendance Modal */}
+      {/* ----- Create Attendance Modal (existing) ----- */}
       <Modal visible={isModalVisible} transparent={true} animationType="slide">
         <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
           <View className="bg-[#3b3e44] p-6 rounded-lg border border-[#9DBDFF] w-[85%]">
             <Text className="text-lg font-NunitoExtraBold text-[#9DBDFF] mb-4 text-center">Create Attendance</Text>
-
-            {/* Value Selector (Single Select) */}
+            {/* Value Selector */}
             <Text className="text-[#F6F5F5] font-NunitoExtraBold mb-2">Select Value (Hours):</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 10 }}>
               {[1, 2, 3, 4, 5].map((val) => (
@@ -371,14 +481,11 @@ const SubjectDetailScreen = () => {
                   onPress={() => setValue(val.toString())}
                   className={`mx-2 p-4 rounded-lg ${value === val.toString() ? 'bg-[#9DBDFF]' : 'bg-[#2D2D2D]'}`}
                 >
-                  <Text className={`text-lg ${value === val.toString() ? 'text-white' : 'text-[#F6F5F5]'}`}>
-                    {val}
-                  </Text>
+                  <Text className={`text-lg ${value === val.toString() ? 'text-white' : 'text-[#F6F5F5]'}`}>{val}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
-
-            {/* InterDivisions Selector (Multiple Select) */}
+            {/* InterDivisions Selector */}
             <Text className="text-[#F6F5F5] font-NunitoExtraBold mt-4 mb-2">Select InterDivisions:</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 10 }}>
               {subjectDetails.interDivisions?.map((div: any) => (
@@ -387,13 +494,12 @@ const SubjectDetailScreen = () => {
                   onPress={() => toggleInterDivision(div)}
                   className={`mx-2 p-4 rounded-lg ${isSelected(div.interDivision) ? 'bg-[#9DBDFF]' : 'bg-[#2D2D2D]'}`}
                 >
-                  <Text className={`text-lg ${selectedInterDivisions.includes(div.interDivision) ? 'text-white' : 'text-[#F6F5F5]'}`}>
+                  <Text className={`text-lg ${isSelected(div.interDivision) ? 'text-white' : 'text-[#F6F5F5]'}`}>
                     {div.interDivision}
                   </Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
-
             <View className="flex-row justify-between mt-6">
               <TouchableOpacity className="bg-red-500 p-3 rounded-lg w-[45%]" onPress={() => setModalVisible(false)}>
                 <Text className="text-white text-center">Cancel</Text>
@@ -405,6 +511,50 @@ const SubjectDetailScreen = () => {
           </View>
         </View>
       </Modal>
+      {/* ----- End of Create Attendance Modal ----- */}
+
+      {/* ----- New Edit Faculty Modal ----- */}
+      <Modal visible={isFacultyModalVisible} transparent={true} animationType="slide">
+        <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
+          <View className="bg-[#3b3e44] p-6 rounded-lg border border-[#9DBDFF] w-[85%]">
+            <Text className="text-lg font-NunitoExtraBold text-[#9DBDFF] mb-4 text-center">Select Faculty</Text>
+            {isFacultyListLoading ? (
+              <ActivityIndicator size="large" color="#9DBDFF" />
+            ) : (
+              <ScrollView style={{ maxHeight: 300 }}>
+                {facultyList.map((faculty) => (
+                  <TouchableOpacity
+                    key={faculty.id}
+                    onPress={() => handleChangeFaculty(faculty.username)}
+                    className="p-3 border-b border-gray-500"
+                  >
+                    <Text className="text-white">
+                      {faculty.firstName} {faculty.lastName} ({faculty.username})
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
+            <View className="flex-row justify-end mt-4">
+              <TouchableOpacity className="bg-red-500 p-2 rounded-lg" onPress={() => setFacultyModalVisible(false)}>
+                <Text className="text-white">Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      {/* ----- End of Edit Faculty Modal ----- */}
+
+      {/* ----- New DateTime Picker Modal ----- */}
+      <DateTimePickerModal
+        isVisible={isDateTimePickerVisible}
+        mode="datetime"
+        date={selectedDateTime}
+        onConfirm={handleConfirmDateTime}
+        onCancel={() => setIsDateTimePickerVisible(false)}
+      />
+      {/* ----- End of DateTime Picker Modal ----- */}
+
     </View>
   );
 };

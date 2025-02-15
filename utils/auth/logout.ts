@@ -1,5 +1,4 @@
 import * as SecureStore from 'expo-secure-store';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Router } from 'expo-router';
 import { Alert } from 'react-native';
 
@@ -10,11 +9,6 @@ export const logout = async (router: Router) => {
   // Always clear secure store items
   await SecureStore.deleteItemAsync('token');
   await SecureStore.deleteItemAsync('role');
-
-  // Clear AsyncStorage only if not faculty
-  if (role !== 'faculty') {
-    await AsyncStorage.clear();
-  }
 
   Alert.alert('You have been logged out!')
   router.replace('/');

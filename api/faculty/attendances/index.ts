@@ -82,21 +82,23 @@ export const useGetAttendanceInfo = (attendanceId: string) => {
   });
 }
 
-export const useGetAnalyseAttendance = (subjectId: string) => {
+export const useGetAnalyseAttendance = (subjectId: string, facultyList: string[] = []) => {
   return useQuery({
     queryKey: ['analyse-attendance', subjectId],
     queryFn: async () => {
       const token = await SecureStore.getItemAsync('token');
-      const response = await axios.get(commonEndpoints.GET_ANALYSE_ATTENDANCE,
+      const response = await axios.post(commonEndpoints.GET_ANALYSE_ATTENDANCE,
+        {
+          subjectId,
+          facultyList,
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          params: {
-            subjectId: subjectId,
-          },
         }
       );
+      // console.log('Analyse Attendance:', response.data.data);
       return response.data.data;
     },
     //TODO: later add proper timings for caching here rather than fetching at every focus

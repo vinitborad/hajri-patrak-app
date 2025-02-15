@@ -110,7 +110,7 @@ const SubjectDetail = () => {
 
   //@ts-ignore
   const renderAttendanceItem = ({ item }) => {
-    const dateIST = moment(item.date).tz("Asia/Kolkata").format("DD MMM YYYY, hh:mm A");
+    const dateIST = moment(item.date).tz("Asia/Kolkata").format("dddd, DD MMM YYYY"); // Include day of the week
     const isAttended = item.isPresent;
 
     return (

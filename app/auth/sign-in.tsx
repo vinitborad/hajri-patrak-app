@@ -137,7 +137,7 @@ const SignInScreen = () => {
 
                   <View className="flex w-10/12 items-center gap-y-3 mt-5">
                     <TextInput
-                      placeholder="Username"
+                      placeholder={role === 'student' ? 'Enrollment Number' : 'Username'}
                       placeholderTextColor="#A0A0A0"
                       value={username}
                       onChangeText={setUsername}
