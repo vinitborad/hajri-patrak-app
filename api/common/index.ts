@@ -8,13 +8,13 @@ export const useCommonGetSubjectAnalyse = (subjectId: string) => {
     queryKey: ['subject-analysis', subjectId],
     queryFn: async () => {
       const token = await SecureStore.getItemAsync('token');
-      const response = await axios.get(commonEndpoints.GET_ANALYSE_ATTENDANCE,
+      const response = await axios.post(commonEndpoints.GET_ANALYSE_ATTENDANCE,
+        {
+          subjectId,
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
-          },
-          params: {
-            subjectId: subjectId,
           },
         }
       );
