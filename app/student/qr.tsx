@@ -101,31 +101,31 @@ export default function App() {
     const currentLocation = await getPreciseLocation();
 
     if (currentLocation) {
-      if (checkProximityToInstitute(currentLocation)) {
-        const value: string = data.data;
-        const oCode = value.slice(0, 5);
-        const code = value.slice(5);
+      // if (checkProximityToInstitute(currentLocation)) {
+      const value: string = data.data;
+      const oCode = value.slice(0, 5);
+      const code = value.slice(5);
 
-        try {
-          const token = await SecureStore.getItemAsync('token');
+      try {
+        const token = await SecureStore.getItemAsync('token');
 
-          const response = await axios.post(
-            studentEndpoints.QR_MARK_ATTENDANCE,
-            { oCode, time: adjustedTimeUTC, code },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
+        const response = await axios.post(
+          studentEndpoints.QR_MARK_ATTENDANCE,
+          { oCode, time: adjustedTimeUTC, code },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-          if (response.data.success) {
-            Alert.alert('Success', response.data.message || 'Attendance marked successfully');
-          } else {
-            Alert.alert('Error', response.data.message || 'Failed to mark attendance');
-          }
-        } catch (error: any) {
-          Alert.alert('Error', error.response?.data?.message || 'Failed to mark attendance');
+        if (response.data.success) {
+          Alert.alert('Success', response.data.message || 'Attendance marked successfully');
+        } else {
+          Alert.alert('Error', response.data.message || 'Failed to mark attendance');
         }
-      } else {
-        Alert.alert('Error', 'You are not in the institute');
+      } catch (error: any) {
+        Alert.alert('Error', error.response?.data?.message || 'Failed to mark attendance');
       }
+      // } else {
+      //   Alert.alert('Error', 'You are not in the institute');
+      // }
     }
   };
 
